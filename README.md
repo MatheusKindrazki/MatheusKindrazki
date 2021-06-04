@@ -1,7 +1,5 @@
 <img align="right" height="200px" src="./image.png" />
 
-<img src=404 onerror=alert(document.domain)/>
-
 # Olá 👋
 Meu nome é Matheus Kindrazki e sou Chapter Lead na [@Positivo](https://www.linkedin.com/company/positivosolucoesdidaticas/). Apaixonado pela comunidade javascript, amo me relacionar com as pessoas, entender problemas e propor soluções. Atualmente trabalho com Frontend utilizando **React JS Utilizando Typescript e Angular**, Mas também tenho conhecimento em Backend usando **Node, PHP e Python**.
 
