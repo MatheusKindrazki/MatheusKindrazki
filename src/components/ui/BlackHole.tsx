@@ -73,8 +73,7 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
   const shockwaveRef = useRef(0) // radius of shockwave ring
   const formationFiredRef = useRef(false)
   const [mediaReady, setMediaReady] = useState(false)
-  const [mediaOpacity, setMediaOpacity] = useState(0)
-  const [mediaScale, setMediaScale] = useState(0.3)
+  const mediaRef = useRef<HTMLDivElement>(null)
 
   const isVideo = src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.mov')
 
@@ -427,13 +426,17 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
         if (!formationFiredRef.current) {
           formationFiredRef.current = true
           onFormationComplete?.()
+          setMediaReady(true)
         }
 
         const mAlpha = phase === 'media' ? easeOutQuart(phaseProgress) : 1
         const mScale = phase === 'media' ? lerp(0.3, 1, easeOutExpo(phaseProgress)) : 1
-        setMediaReady(true)
-        setMediaOpacity(mAlpha)
-        setMediaScale(mScale)
+
+        // Update DOM directly via ref to avoid React re-renders
+        if (mediaRef.current) {
+          mediaRef.current.style.opacity = String(mAlpha)
+          mediaRef.current.style.transform = `translate(-50%, -50%) scale(${mScale})`
+        }
 
         // Persistent gentle glow around the video
         const persistGrad = ctx.createRadialGradient(CX, CY, 130, CX, CY, 360)
@@ -493,14 +496,15 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
       {/* Media emerging from black hole center */}
       {mediaReady && (
         <div
+          ref={mediaRef}
           className="absolute rounded-full overflow-hidden"
           style={{
             width: mediaSize,
             height: mediaSize,
             top: '50%',
             left: `calc(50% + ${offsetX}px)`,
-            transform: `translate(-50%, -50%) scale(${mediaScale})`,
-            opacity: mediaOpacity,
+            transform: 'translate(-50%, -50%) scale(0.3)',
+            opacity: 0,
             maskImage: 'radial-gradient(circle, black 45%, rgba(0,0,0,0.5) 65%, transparent 80%)',
             WebkitMaskImage: 'radial-gradient(circle, black 45%, rgba(0,0,0,0.5) 65%, transparent 80%)',
           }}
