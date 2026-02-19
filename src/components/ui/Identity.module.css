@@ -1,0 +1,86 @@
+.identity {
+  position: relative;
+  width: 42px;
+  height: 42px;
+}
+
+.identity div {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.identity div:nth-child(1) { background-color: #419d78; }
+.identity div:nth-child(2) { background-color: #e0a458; }
+.identity div:nth-child(3) { background-color: #d9594c; }
+.identity div:nth-child(4) { background-color: #53a2be; }
+
+/* Rest state - dots in a row */
+.rest div:nth-child(1) { left: 0; top: 17px; }
+.rest div:nth-child(2) { left: 11px; top: 17px; }
+.rest div:nth-child(3) { left: 22px; top: 17px; }
+.rest div:nth-child(4) { left: 33px; top: 17px; }
+
+/* Working state - dots rotate in a square */
+.working div:nth-child(1) { animation: workGreen 1.4s ease-in-out infinite; }
+.working div:nth-child(2) { animation: workYellow 1.4s ease-in-out infinite; }
+.working div:nth-child(3) { animation: workRed 1.4s ease-in-out infinite; }
+.working div:nth-child(4) { animation: workBlue 1.4s ease-in-out infinite; }
+
+@keyframes workGreen {
+  0%, 100% { left: 0; top: 0; }
+  25% { left: 34px; top: 0; }
+  50% { left: 34px; top: 34px; }
+  75% { left: 0; top: 34px; }
+}
+
+@keyframes workYellow {
+  0%, 100% { left: 34px; top: 0; }
+  25% { left: 34px; top: 34px; }
+  50% { left: 0; top: 34px; }
+  75% { left: 0; top: 0; }
+}
+
+@keyframes workRed {
+  0%, 100% { left: 34px; top: 34px; }
+  25% { left: 0; top: 34px; }
+  50% { left: 0; top: 0; }
+  75% { left: 34px; top: 0; }
+}
+
+@keyframes workBlue {
+  0%, 100% { left: 0; top: 34px; }
+  25% { left: 0; top: 0; }
+  50% { left: 34px; top: 0; }
+  75% { left: 34px; top: 34px; }
+}
+
+/* Robot state - dots bounce */
+.robot div {
+  top: 17px !important;
+}
+.robot div:nth-child(1) { left: 0; animation: bounce 0.6s ease-in-out infinite; }
+.robot div:nth-child(2) { left: 11px; animation: bounce 0.6s ease-in-out infinite 0.15s; }
+.robot div:nth-child(3) { left: 22px; animation: bounce 0.6s ease-in-out infinite 0.3s; }
+.robot div:nth-child(4) { left: 33px; animation: bounce 0.6s ease-in-out infinite 0.45s; }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Loading state - same as working but with opacity pulse */
+.loading div {
+  opacity: 0.5;
+}
+.loading div:nth-child(1) { animation: workGreen 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite; }
+.loading div:nth-child(2) { animation: workYellow 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 0.35s; }
+.loading div:nth-child(3) { animation: workRed 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 0.7s; }
+.loading div:nth-child(4) { animation: workBlue 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 1.05s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

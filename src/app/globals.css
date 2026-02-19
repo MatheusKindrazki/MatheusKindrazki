@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+    --color-kindra-green: #419d78;
+    --color-kindra-yellow: #e0a458;
+    --color-kindra-red: #d9594c;
+    --color-kindra-blue: #53a2be;
+    --color-kindra-gray: #666666;
+    --color-kindra-bg: #000000;
+    --color-kindra-bg-alt: #1c2023;
+    --color-kindra-text: #dddddd;
+    --color-kindra-text-white: #ffffff;
+
+    --font-heading: "Roboto Slab", serif;
+    --font-body: "Montserrat", sans-serif;
+
+    --ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    background-color: var(--color-kindra-bg);
+    color: var(--color-kindra-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 21px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::selection {
+    background-color: rgba(224, 164, 88, 0.3);
+    color: #fff;
+}
+
+a {
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.7s var(--ease-smooth) 0s;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.margin-auto {
+    margin: auto;
+}
