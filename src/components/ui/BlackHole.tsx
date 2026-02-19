@@ -72,10 +72,16 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
   const startRef = useRef(0)
   const shockwaveRef = useRef(0) // radius of shockwave ring
   const formationFiredRef = useRef(false)
+  const onFormationCompleteRef = useRef(onFormationComplete)
   const [mediaReady, setMediaReady] = useState(false)
   const mediaRef = useRef<HTMLDivElement>(null)
 
   const isVideo = src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.mov')
+
+  // Keep the callback ref updated
+  useEffect(() => {
+    onFormationCompleteRef.current = onFormationComplete
+  }, [onFormationComplete])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -425,7 +431,7 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
         // Fire formation complete callback once
         if (!formationFiredRef.current) {
           formationFiredRef.current = true
-          onFormationComplete?.()
+          onFormationCompleteRef.current?.()
           setMediaReady(true)
         }
 
