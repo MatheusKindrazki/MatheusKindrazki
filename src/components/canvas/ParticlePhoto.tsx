@@ -78,7 +78,7 @@ function AnimatedParticles({
 }: ParticlesProps) {
   const data = useImageParticles(imageSrc, 500, 2, maxWidth, xOffset, edgeFade)
   const pointsRef = useRef<THREE.Points>(null)
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   const mouseState = useRef({ isDown: false, lastX: 0, lastY: 0 })
   const progressRef = useRef(animate ? 0 : 1)
   const explodingRef = useRef(false)
@@ -125,8 +125,10 @@ function AnimatedParticles({
   }, [explode])
 
   // Mouse handlers
-  useMemo(() => {
-    if (typeof window === 'undefined') return
+  useEffect(() => {
+    if (typeof window === 'undefined' || !gl.domElement) return
+
+    const domElement = gl.domElement
 
     const onMouseDown = (e: MouseEvent) => {
       mouseState.current = { isDown: true, lastX: e.clientX, lastY: e.clientY }
@@ -144,16 +146,16 @@ function AnimatedParticles({
       }
     }
 
-    window.addEventListener('mousedown', onMouseDown)
+    domElement.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
-    window.addEventListener('mousemove', onMouseMove)
+    domElement.addEventListener('mousemove', onMouseMove)
 
     return () => {
-      window.removeEventListener('mousedown', onMouseDown)
+      domElement.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mouseup', onMouseUp)
-      window.removeEventListener('mousemove', onMouseMove)
+      domElement.removeEventListener('mousemove', onMouseMove)
     }
-  }, [camera])
+  }, [camera, gl.domElement])
 
   // Animation loop
   useFrame((_, delta) => {
@@ -198,12 +200,14 @@ function StaticParticles({
 }: Omit<ParticlesProps, 'animate' | 'explode' | 'onExplodeComplete'>) {
   const data = useImageParticles(imageSrc, 500, 2, maxWidth, xOffset, edgeFade)
   const pointsRef = useRef<THREE.Points>(null)
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   const mouseState = useRef({ isDown: false, lastX: 0, lastY: 0 })
   const circleMap = useMemo(() => createCircleTexture(), [])
 
-  useMemo(() => {
-    if (typeof window === 'undefined') return
+  useEffect(() => {
+    if (typeof window === 'undefined' || !gl.domElement) return
+    const domElement = gl.domElement
+
     const onMouseDown = (e: MouseEvent) => {
       mouseState.current = { isDown: true, lastX: e.clientX, lastY: e.clientY }
     }
@@ -217,15 +221,15 @@ function StaticParticles({
         mouseState.current.lastY = e.clientY
       }
     }
-    window.addEventListener('mousedown', onMouseDown)
+    domElement.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
-    window.addEventListener('mousemove', onMouseMove)
+    domElement.addEventListener('mousemove', onMouseMove)
     return () => {
-      window.removeEventListener('mousedown', onMouseDown)
+      domElement.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mouseup', onMouseUp)
-      window.removeEventListener('mousemove', onMouseMove)
+      domElement.removeEventListener('mousemove', onMouseMove)
     }
-  }, [camera])
+  }, [camera, gl.domElement])
 
   useFrame(() => {
     if (!mouseState.current.isDown) {
