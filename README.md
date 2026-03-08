@@ -9,11 +9,11 @@ Building and scaling educational technology, digital products, and technical pla
 
 ## About
 
-I'm a Principal Engineer focused on **frontend architecture at scale**, **microfrontends**, **design systems**, and **developer experience as a force multiplier**. My work centers on creating coherent systems that reduce cognitive load, systemic risk, and entropy — enabling multiple squads to ship with consistency and confidence.
+I'm an entrepreneur and Principal Engineer focused on **frontend architecture at scale**, **microfrontends**, **design systems**, and **developer experience as a force multiplier**. My work centers on creating coherent systems, digital products, and technical foundations that reduce cognitive load, systemic risk, and entropy — enabling multiple squads to ship with consistency and confidence.
 
 I approach problems with analytical depth and a preference for **mechanisms over magic**: governance frameworks (RFCs/ADRs), canonical documentation, observable pipelines, and automation that makes the right thing the easy thing. I also apply AI pragmatically in production contexts — RAG orchestration, evaluation pipelines, datasets, and quality gates.
 
-Beyond corporate engineering, I build products that matter: privacy-first tools, intelligent transcription systems, and experiences that ship.
+Beyond corporate engineering, I build and operate products that matter: privacy-first tools, intelligent transcription systems, and experiences designed to ship and endure.
 
 ## Core Focus Areas
 
