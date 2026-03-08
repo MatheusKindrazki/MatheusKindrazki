@@ -83,9 +83,6 @@ I work across three layers simultaneously:
 **Software Engineering Degree**
 Specialized training in Cloud Computing (AWS, Azure) and DevOps practices
 
-**Neurodivergent (ASD Level 1)**
-Analytical, visual, and systems-oriented thinking. I value clarity, structure, and operational precision.
-
 ---
 
 **Building coherent systems, one mechanism at a time.**
