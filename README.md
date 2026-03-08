@@ -1,7 +1,7 @@
 # Matheus Kindrazki
 
-**Principal Engineer** at [Arco Educação](https://www.arcoeducacao.com.br)
-Building scalable educational technology infrastructure that impacts millions of students across Brazil
+**Entrepreneur and Principal Engineer** at [Arco Educação](https://www.arcoeducacao.com.br)
+Building and scaling educational technology, digital products, and technical platforms that impact millions of students across Brazil
 
 [@kindraScript](https://x.com/kindraScript) • [matheus@kindrazki.dev](mailto:matheus@kindrazki.dev) • [kindrazki.dev](https://kindrazki.dev) • Curitiba, Brazil
 
