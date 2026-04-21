@@ -4,9 +4,15 @@ import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+function reducedMotion(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
 function OrbitParticles() {
   const pointsRef = useRef<THREE.Points>(null)
   const timeRef = useRef(0)
+  const freezeRef = useRef(reducedMotion())
 
   const { positions, colors, count } = useMemo(() => {
     const orbitCount = 5
@@ -48,6 +54,9 @@ function OrbitParticles() {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return
+    // Freeze the orbital motion when the user prefers reduced motion.
+    // Particles stay at their initial ring layout (t = 0).
+    if (freezeRef.current) return
     timeRef.current += delta * 0.3
 
     const posArr = pointsRef.current.geometry.attributes.position.array as Float32Array

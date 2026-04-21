@@ -2,14 +2,15 @@ export const profile = {
   name: 'Matheus Kindrazki',
   nickname: 'Kindra',
   age: 29,
-  title: 'Principal Engineer',
-  company: 'Arco Educacao',
+  title: 'Co-founder & Builder',
+  company: 'MokLabs Venture Studio',
+  secondaryRole: 'Founding team at Lugui.ai',
   email: 'matheus@kindrazki.dev',
-  location: 'Curitiba, PR',
-  bio: 'Ahh, meu nome e Matheus, mas pode me chamar de Kindra =)',
-  headline: 'Construo plataformas que escalam para milhoes de alunos.',
+  location: 'Curitiba, Brazil',
+  bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
+  headline: 'Building ventures where bold ideas meet careful engineering.',
   description:
-    '5 anos arquitetando micro frontends, design systems e developer experience na maior empresa de educacao do Brasil. Agora expandindo para AI aplicada, RAG e produtos proprios.',
+    'Co-founder at MokLabs Venture Studio and part of the founding team at Lugui.ai. 8+ years architecting platforms used by millions of students — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
   social: {
     github: 'https://github.com/MatheusKindrazki',
     linkedin: 'https://linkedin.com/in/matheuskindrazki',
@@ -20,14 +21,32 @@ export const profile = {
 
 export const projects = [
   {
-    title: 'Arco Educacao Platform',
-    description: 'Microfrontend ecosystem with Module Federation, enabling independent squad velocity while maintaining system coherence. Iris Design System integration and governance across product surfaces.',
+    title: 'Jarvis — Personal AI Operating System',
+    description: 'My personal knowledge graph + AI agent. Connects memory, entities, tasks, and decisions across every project I touch. A living second brain built on MCP servers, vector search, and a growing taxonomy of what I know. This very page has a live Jarvis instance — ask it anything about me.',
+    tags: ['MCP', 'RAG', 'Vector DB', 'Personal AI', 'Knowledge Graph', 'Claude'],
+    color: 'yellow' as const,
+  },
+  {
+    title: 'MokLabs Venture Studio',
+    description: 'Co-founded venture studio focused on turning sharp ideas into shipped products. Platform engineering, design systems, and AI infrastructure at the core — building the scaffolding every new venture reuses.',
+    tags: ['Venture Studio', 'Platform', 'Design Systems', 'Founder'],
+    color: 'yellow' as const,
+  },
+  {
+    title: 'Lugui.ai',
+    description: 'Founding team member building an AI-native product from day zero. Architecting the frontend, RAG pipelines, and the developer experience that lets a small team ship like a large one.',
+    tags: ['AI', 'RAG', 'Next.js', 'LangChain', 'Founding Team'],
+    color: 'blue' as const,
+  },
+  {
+    title: 'Arco Educação Platform',
+    description: 'Architected the microfrontend ecosystem at Arco Educação with Module Federation, enabling independent squad velocity while maintaining system coherence. Led Iris Design System integration and governance across product surfaces reaching millions of students.',
     tags: ['React', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design System'],
     color: 'green' as const,
   },
   {
     title: 'AI Education Tools',
-    description: 'RAG systems over 10k+ document bases, automated essay correction with OCR/HTR pipelines, semantic search infrastructure for educational content.',
+    description: 'RAG systems over 10k+ document bases, automated essay correction with OCR/HTR pipelines, and semantic search infrastructure for educational content.',
     tags: ['LangChain', 'RAG', 'OCR', 'Python', 'Vector DB'],
     color: 'blue' as const,
   },
@@ -45,8 +64,8 @@ export const projects = [
     color: 'red' as const,
   },
   {
-    title: 'Cafe com Codigo',
-    description: 'Recurring engineering community ritual for knowledge sharing and technical culture building at Arco.',
+    title: 'Café com Código',
+    description: 'Recurring engineering community ritual for knowledge sharing and technical culture building, originally seeded at Arco.',
     tags: ['Community', 'Tech Talks', 'Engineering Culture'],
     color: 'green' as const,
   },
@@ -90,17 +109,17 @@ export const philosophy = [
 ]
 
 export const timeline = [
-  { year: '2017', title: 'Inicio com PHP Back-end', description: 'Primeiros passos como desenvolvedor back-end.' },
-  { year: '2018', title: 'Transicao para Front-end', description: 'Descobri a paixao por interfaces e experiencia do usuario.' },
-  { year: '2020', title: 'Arco Educacao', description: 'Entrei como desenvolvedor frontend na maior empresa de educacao do Brasil.' },
-  { year: '2022', title: 'Tech Lead', description: 'Lideranca tecnica de times, arquitetura de micro frontends.' },
-  { year: '2024', title: 'Principal Engineer', description: 'Arquitetura em escala, governanca, DX e iniciativas de AI.' },
-  { year: '2025', title: 'AI & Beyond', description: 'Expandindo para AI aplicada, RAG orchestration e produtos proprios.' },
+  { year: '2017', title: 'Started as a Backend Developer', description: 'First steps as a backend developer with PHP.' },
+  { year: '2018', title: 'Transitioned to Frontend', description: 'Discovered a passion for interfaces and user experience.' },
+  { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a frontend engineer at the largest education company in Brazil.' },
+  { year: '2022', title: 'Tech Lead', description: 'Technical leadership of teams, microfrontend architecture.' },
+  { year: '2024', title: 'Principal Engineer', description: 'Architecture at scale, governance, DX, and AI initiatives.' },
+  { year: '2025', title: 'Founder Era', description: 'Co-founded MokLabs Venture Studio. Joined the founding team at Lugui.ai. Adventuring at the edges of technology.' },
 ]
 
 export const navLinks = [
-  { href: '/projetos', label: 'Projetos', color: 'green' as const },
+  { href: '/projetos', label: 'Projects', color: 'green' as const },
   { href: '/skills', label: 'Skills', color: 'blue' as const },
-  { href: '/sobre', label: 'Sobre', color: 'yellow' as const },
-  { href: '/contato', label: 'Contato', color: 'red' as const },
+  { href: '/sobre', label: 'About', color: 'yellow' as const },
+  { href: '/contato', label: 'Contact', color: 'red' as const },
 ]

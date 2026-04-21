@@ -57,6 +57,25 @@ export default function useStarsCanvas(
     resize()
     prepare(canvas.width, canvas.height)
 
+    // When the user prefers reduced motion, render a single static frame of
+    // stars (no drift, no bounce, no radius pulse) and skip the rAF loop.
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (reduceMotion) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      for (const c of circlesRef.current) {
+        ctx.beginPath()
+        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2, false)
+        ctx.fillStyle = c.color
+        ctx.fill()
+      }
+      return () => {
+        // nothing to clean up — no listeners, no rAF scheduled
+      }
+    }
+
     const animate = () => {
       animFrameRef.current = requestAnimationFrame(animate)
       ctx.clearRect(0, 0, canvas.width, canvas.height)

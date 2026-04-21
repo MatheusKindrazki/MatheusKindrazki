@@ -4,9 +4,15 @@ import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+function reducedMotion(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
 function Grid() {
   const pointsRef = useRef<THREE.Points>(null)
   const timeRef = useRef(0)
+  const freezeRef = useRef(reducedMotion())
 
   const { positions, count } = useMemo(() => {
     const spacing = 20
@@ -30,6 +36,8 @@ function Grid() {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return
+    // Freeze the idle wave when the user prefers reduced motion.
+    if (freezeRef.current) return
     timeRef.current += delta
 
     const posArr = pointsRef.current.geometry.attributes.position.array as Float32Array

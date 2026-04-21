@@ -18,9 +18,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Matheus Kindrazki - Principal Engineer",
+  title: "Matheus Kindrazki — Co-founder & Builder",
   description:
-    "Principal Engineer focused on frontend architecture at scale, microfrontends, design systems, and AI.",
+    "Co-founder at MokLabs Venture Studio. Founding team at Lugui.ai. Technology adventurer building ventures at the edges of engineering and AI.",
 };
 
 export default function RootLayout({
@@ -30,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="pt-BR"
+      lang="en"
       className={`${robotoSlab.variable} ${montserrat.variable}`}
     >
       <body>

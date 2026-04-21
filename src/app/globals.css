@@ -11,6 +11,13 @@
     --color-kindra-text: #dddddd;
     --color-kindra-text-white: #ffffff;
 
+    /* Text scale on black void — all meet or exceed WCAG AA (4.5:1) */
+    --color-kindra-meta-low: #7a7a7a;
+    --color-kindra-meta-mid: #9a9a9a;
+    --color-kindra-meta-high: #d0d0d0;
+    --color-kindra-rule: #3a3a3a;
+    --color-kindra-rule-strong: #555555;
+
     --font-heading: "Roboto Slab", serif;
     --font-body: "Montserrat", sans-serif;
 
@@ -60,3 +67,147 @@ a:hover {
 .margin-auto {
     margin: auto;
 }
+
+/* Custom cursor: hide the native cursor on desktop (pointer-capable) devices.
+   Activated only when <CustomCursor /> successfully mounts (it adds
+   `.custom-cursor-active` to <body>). Touch devices keep their native cursor. */
+@media (hover: hover) and (min-width: 768px) {
+    body.custom-cursor-active,
+    body.custom-cursor-active * {
+        cursor: none !important;
+    }
+}
+
+/* Keyboard focus — visible for keyboard users (desktop hides native cursor) */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+details:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid var(--color-kindra-yellow);
+    outline-offset: 2px;
+    outline-style: solid;
+    border-radius: 0;
+}
+
+/* When custom cursor is active (desktop ≥768px), keyboard focus gets stronger emphasis
+   since there's no native cursor to visually anchor the user */
+body.custom-cursor-active :focus-visible {
+    outline-offset: 3px;
+}
+
+/* Marquee — horizontal token scroll used on /skills hero */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.animate-marquee {
+    animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
+/* Grain drift — very slow so grain feels alive without being distracting */
+@keyframes grain-drift {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(-2%, 1%);
+    }
+    50% {
+        transform: translate(1%, -2%);
+    }
+    75% {
+        transform: translate(-1%, 2%);
+    }
+}
+.animate-grain {
+    animation: grain-drift 18s ease-in-out infinite;
+}
+
+/* Yellow shimmer — slow horizontal light pass for key accents */
+@keyframes shimmer-pass {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+.shimmer-yellow {
+    background: linear-gradient(
+        90deg,
+        currentColor 0%,
+        currentColor 40%,
+        rgba(255, 255, 255, 0.35) 50%,
+        currentColor 60%,
+        currentColor 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer-pass 6s ease-in-out infinite;
+}
+
+/* Neutral shimmer — scoped to /now's ornamental ampersand.
+   Uses meta-mid as base with a soft white flash. Yellow shimmer remains
+   reserved for the home hero. */
+.shimmer-neutral {
+    background: linear-gradient(
+        90deg,
+        var(--color-kindra-meta-mid) 0%,
+        var(--color-kindra-meta-mid) 40%,
+        rgba(255, 255, 255, 0.55) 50%,
+        var(--color-kindra-meta-mid) 60%,
+        var(--color-kindra-meta-mid) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer-pass 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+        animation: none;
+    }
+    .animate-grain {
+        animation: none;
+    }
+    .shimmer-yellow {
+        animation: none;
+        background: none;
+        color: inherit;
+    }
+    .shimmer-neutral {
+        animation: none;
+        background: none;
+        color: var(--color-kindra-meta-mid);
+    }
+}
+
+/* Home hero off-axis subtitle — reduce rotation on narrow viewports
+   so the cantilever doesn't push the text past the container edge.
+   Pure CSS (no JS) to avoid SSR hydration mismatch. */
+.subtitle-offaxis {
+    transform: rotate(-1deg) translateX(-0.125rem);
+}
+@media (min-width: 640px) {
+    .subtitle-offaxis {
+        transform: rotate(-2deg) translateX(-0.25rem);
+    }
+}
+

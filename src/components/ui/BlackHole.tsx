@@ -84,6 +84,28 @@ export default function BlackHole({ src, alt = '', className = '', offsetX = 0, 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Reduced-motion short-circuit: skip the 7.6s formation sequence entirely.
+    // Render nothing on the canvas, snap the video in at final state, and
+    // fire the formation-complete callback synchronously so dependent logic
+    // (e.g. the /skills gravitational ramp) activates immediately.
+    const reduceMotion =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+      setMediaReady(true)
+      setMediaOpacity(1)
+      setMediaScale(1)
+      if (!formationFiredRef.current) {
+        formationFiredRef.current = true
+        onFormationComplete?.()
+      }
+      return
+    }
+
     // Full viewport sizing
     let W = window.innerWidth
     let H = window.innerHeight

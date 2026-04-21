@@ -1,21 +1,19 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
+/**
+ * PageTransition — thin wrapper around the Galactic Aperture overlay system.
+ *
+ * The actual three-phase transition logic (collapse → void → expand) lives
+ * in `GalacticAperture`. This file is kept as the public entry point so the
+ * rest of the app can import a single, stable name for "the site transition."
+ */
+
+import GalacticAperture from "@/components/layout/GalacticAperture";
 
 interface PageTransitionProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
 }
 
-export default function PageTransition({ children, className = '' }: PageTransitionProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
+export default function PageTransition({ children }: PageTransitionProps) {
+  return <GalacticAperture>{children}</GalacticAperture>;
 }
