@@ -31,7 +31,11 @@ export default function SobrePage() {
             className={`${styles.photoStage} ${exploding ? styles.photoStageExploding : ""}`}
           >
             <ParticlePhoto
-              imageSrc="/images/kindra-photo.png"
+              imageSrc="/images/kindra-projetos.png"
+              maxWidth={760}
+              xOffset={330}
+              particleSize={1.45}
+              edgeFade={0.22}
               animate
               explode={exploding}
               onExplodeComplete={onExplodeComplete}
