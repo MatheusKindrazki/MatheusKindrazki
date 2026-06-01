@@ -10,8 +10,8 @@ import { useEffect, useState } from 'react'
  * subscribe to changes so toggling the OS / DevTools preference live updates
  * every consumer.
  *
- * Use this inside non-react-three-fiber components or anywhere we can't depend
- * on framer-motion's own `useReducedMotion()`.
+ * Use this inside components that should not depend on framer-motion's own
+ * `useReducedMotion()`.
  */
 export default function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false)

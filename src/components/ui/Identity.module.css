@@ -12,10 +12,11 @@
   transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.identity div:nth-child(1) { background-color: #419d78; }
-.identity div:nth-child(2) { background-color: #e0a458; }
-.identity div:nth-child(3) { background-color: #d9594c; }
-.identity div:nth-child(4) { background-color: #53a2be; }
+/* Brand dots derive from the canonical @theme palette — no parallel hexes. */
+.identity div:nth-child(1) { background-color: var(--color-kindra-green); }
+.identity div:nth-child(2) { background-color: var(--color-kindra-yellow); }
+.identity div:nth-child(3) { background-color: var(--color-kindra-red); }
+.identity div:nth-child(4) { background-color: var(--color-kindra-blue); }
 
 /* Rest state - dots in a row */
 .rest div:nth-child(1) { left: 0; top: 17px; }

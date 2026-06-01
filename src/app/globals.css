@@ -18,10 +18,56 @@
     --color-kindra-rule: #3a3a3a;
     --color-kindra-rule-strong: #555555;
 
+    /* Warm off-white for editorial headings on the void (was referenced by
+       /projetos before it existed — silently fell back to inherited grey). */
+    --color-kindra-cream: #ece5d8;
+    /* Near-black for text pressed onto an accent fill (inverted chips/buttons). */
+    --color-kindra-on-accent: #020403;
+
     --font-heading: "Roboto Slab", serif;
     --font-body: "Montserrat", sans-serif;
 
     --ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+
+    /* ── Spatial system ─────────────────────────────────────────────
+       Single source of truth for the page shell + content measures.
+       Resolves the prior 500-vs-520 min-height drift and the
+       610/650/900/1000/1060/1120 content-width spread. */
+    --shell-max-w: 1280px;
+    --shell-min-h: 520px;
+    --shell-max-h: 960px;
+    --shell-pad-x: clamp(1.25rem, 4vw, 3rem);
+
+    /* Inner reading measures (3-step scale). */
+    --measure-narrow: 650px;   /* skills / sobre / contato copy */
+    --measure-wide: 1000px;    /* home hero, wide spreads */
+    --measure-ledger: 1060px;  /* projetos build ledger */
+
+    /* Section vertical rhythm (clamp-based, viewport-aware). */
+    --section-pad-sm: clamp(2rem, 5vh, 3rem);
+    --section-pad-md: clamp(3rem, 8vh, 5rem);
+    --section-pad-lg: clamp(4rem, 12vh, 8rem);
+
+    /* ── Type scale ─────────────────────────────────────────────────
+       Clamp-based, reconciles the 48px..176px H1 spread into a system.
+       --text-display reserved for the /now ornamental hero. */
+    --text-display: clamp(3.5rem, 9vw, 8.5rem);
+    --text-h1: clamp(2.6rem, 6vw, 4.5rem);
+    --text-h2: clamp(1.7rem, 3vw, 2.4rem);
+    --text-deck: clamp(1rem, 1.4vw, 1.25rem);
+    --text-body: 0.9375rem;
+    --text-caption: 0.8125rem;
+    --text-eyebrow: 0.6875rem;
+
+    /* ── z-index ladder ─────────────────────────────────────────────
+       Encodes the invariant: overlay > explode > chrome > content.
+       Promote ad-hoc 0/1/2/10/30/50/9998 literals to these names. */
+    --z-backdrop: 1;
+    --z-grain: 2;
+    --z-content: 10;
+    --z-chrome: 30;
+    --z-explode: 50;
+    --z-overlay: 9998;
 }
 
 * {
@@ -69,8 +115,9 @@ a:hover {
 }
 
 /* Custom cursor: hide the native cursor on desktop (pointer-capable) devices.
-   Activated only when <CustomCursor /> successfully mounts (it adds
-   `.custom-cursor-active` to <body>). Touch devices keep their native cursor. */
+   The Pixi CursorLayer (src/pixi/layers/CursorLayer.ts) toggles
+   `.custom-cursor-active` on <body> when it mounts. Touch devices and
+   reduced-motion users keep their native cursor. */
 @media (hover: hover) and (min-width: 768px) {
     body.custom-cursor-active,
     body.custom-cursor-active * {
@@ -210,4 +257,3 @@ body.custom-cursor-active :focus-visible {
         transform: rotate(-2deg) translateX(-0.25rem);
     }
 }
-
