@@ -97,6 +97,8 @@ export class PortraitParticlesLayer implements PixiLayer {
       config.xOffset ?? 250,
       config.edgeFade ?? 0.15,
       config.brightness ?? 1,
+      config.density ?? 2,
+      config.maxParticles ?? 30000,
     ].join("|");
 
     if (signature !== this.signature) {
@@ -186,8 +188,8 @@ export class PortraitParticlesLayer implements PixiLayer {
       config.maxWidth ?? 700,
       config.xOffset ?? 250,
       config.edgeFade ?? 0.15,
-      2,
-      30000,
+      config.density ?? 2,
+      config.maxParticles ?? 30000,
       config.brightness ?? 1,
     );
     if (currentLoad !== this.loadId || signature !== this.signature) return;

@@ -15,6 +15,10 @@ export interface PortraitSceneConfig {
   edgeFade?: number;
   /** Brightness boost for dark photos (1 = original, >1 lifts shadows). */
   brightness?: number;
+  /** Pixel sampling step (lower = denser). Default 2. */
+  density?: number;
+  /** Max particle count cap. Default 30000. Raise for a solid, filled photo. */
+  maxParticles?: number;
   animate?: boolean;
   explode?: boolean;
   onExplodeComplete?: () => void;

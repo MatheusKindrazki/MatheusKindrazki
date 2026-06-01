@@ -12,6 +12,10 @@ interface ParticlePhotoProps {
   edgeFade?: number;
   /** Brightness boost for dark photos (1 = original, >1 lifts shadows). */
   brightness?: number;
+  /** Pixel sampling step (lower = denser). Default 2. */
+  density?: number;
+  /** Max particle count cap. Default 30000. Raise for a solid, filled photo. */
+  maxParticles?: number;
   animate?: boolean;
   explode?: boolean;
   onExplodeComplete?: () => void;
@@ -24,6 +28,8 @@ export default function ParticlePhoto({
   particleSize = 1.8,
   edgeFade = 0.15,
   brightness = 1,
+  density = 2,
+  maxParticles = 30000,
   animate = false,
   explode = false,
   onExplodeComplete,
@@ -38,6 +44,8 @@ export default function ParticlePhoto({
       particleSize,
       edgeFade,
       brightness,
+      density,
+      maxParticles,
       animate,
       explode,
       onExplodeComplete,
@@ -45,9 +53,11 @@ export default function ParticlePhoto({
     [
       animate,
       brightness,
+      density,
       edgeFade,
       explode,
       imageSrc,
+      maxParticles,
       maxWidth,
       onExplodeComplete,
       particleSize,
