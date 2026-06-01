@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-import PageNav from "@/components/ui/PageNav";
+import { useRef } from "react";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import PageChrome from "@/components/layout/PageChrome";
+import PageNav from "@/components/ui/PageNav";
+import Eyebrow from "@/components/ui/Eyebrow";
+import MetaRow from "@/components/ui/MetaRow";
+import PageShell, { useShellNav } from "@/components/layout/PageShell";
+import ScrollStage from "@/components/layout/ScrollStage";
+import Section from "@/components/layout/Section";
+import { site } from "@/lib/content";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 
 type Status = "building" | "alpha" | "in-progress" | "beta" | "in-production";
@@ -22,10 +24,6 @@ interface ListItem {
   name: string;
   description: string;
 }
-
-// Single source of truth for the page's "last touched" marker.
-const LAST_UPDATED_ISO = "2026-04-17";
-const NEXT_REFRESH_LABEL = "may 2026";
 
 const buildingItems: BuildingItem[] = [
   {
@@ -92,7 +90,7 @@ const thinkingAbout = [
   "How small teams ship with disproportionate impact.",
   "Where AI genuinely removes toil vs. where it just performs productivity.",
   "The difference between craftsmanship and craftsmanship-theater.",
-  "Why most \u201Cplatforms\u201D are just products that refuse to admit it.",
+  "Why most “platforms” are just products that refuse to admit it.",
 ];
 
 const notDoing: { name: string; status: string }[] = [
@@ -111,6 +109,8 @@ const statusTone: Record<Status, string> = {
 
 // ──────────────────────────────────────────────────────────────────────
 // Instrument cluster — the dashboard signature of /now. Preserved.
+// Counters derive from the real buildingItems array; the "days ago" stamp
+// reads the single site.lastUpdatedIso source of truth.
 // ──────────────────────────────────────────────────────────────────────
 function InstrumentCluster() {
   const reduceMotion = usePrefersReducedMotion();
@@ -119,7 +119,7 @@ function InstrumentCluster() {
   const alphaCount = buildingItems.filter((i) => i.status === "alpha").length;
   const inProgressCount = buildingItems.filter((i) => i.status === "in-progress").length;
 
-  const lastUpdated = new Date(LAST_UPDATED_ISO + "T00:00:00Z");
+  const lastUpdated = new Date(site.lastUpdatedIso + "T00:00:00Z");
   const now = new Date();
   const diffMs = now.getTime() - lastUpdated.getTime();
   const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
@@ -135,7 +135,7 @@ function InstrumentCluster() {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      <div className="flex flex-col gap-3 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] md:flex-row md:items-baseline md:justify-between md:gap-8">
+      <div className="flex flex-col gap-3 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] md:flex-row md:items-baseline md:justify-between md:gap-8">
         <span className="inline-flex items-baseline gap-3">
           <span
             aria-hidden="true"
@@ -182,7 +182,7 @@ function InstrumentCluster() {
             <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
             next refresh ~{" "}
             <span className="text-[var(--color-kindra-meta-mid)]">
-              {NEXT_REFRESH_LABEL}
+              {site.nextRefresh}
             </span>
           </span>
         </span>
@@ -258,7 +258,7 @@ function FooterLiveDot() {
 
 // ──────────────────────────────────────────────────────────────────────
 // Column — a single department in the Spread. Header with index + name
-// in Mark color, italic subtitle, hairline rule, then item list.
+// in accent color, italic subtitle, hairline rule, then item list.
 // ──────────────────────────────────────────────────────────────────────
 interface ColumnProps {
   index: string;
@@ -272,7 +272,7 @@ function Column({ index, title, italic, color, children }: ColumnProps) {
   return (
     <div className="flex flex-col">
       <div
-        className="flex items-baseline gap-2 text-[10px] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
+        className="flex items-baseline gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
         style={{
           fontFamily: "var(--font-body)",
           fontVariantNumeric: "tabular-nums",
@@ -306,133 +306,113 @@ function Column({ index, title, italic, color, children }: ColumnProps) {
 }
 
 export default function NowPage() {
+  return (
+    <PageShell hudRole="online · living" stripText={`◈ MK · currently · ${site.lastUpdated}`}>
+      <NowContent />
+    </PageShell>
+  );
+}
+
+function NowContent() {
   const reduceMotion = usePrefersReducedMotion();
-  const router = useRouter();
+  const { onNavClick } = useShellNav();
 
-  const handleBackClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      router.push("/");
-    },
-    [router],
-  );
-
-  const handleNavClick = useCallback(
-    (href: string) => (e: React.MouseEvent) => {
-      e.preventDefault();
-      router.push(href);
-    },
-    [router],
-  );
-
-  // ONE parallax instance at page level — native window scroll.
-  const { scrollY } = useScroll();
+  // ONE parallax instance, wired to the ScrollStage scroll container (the
+  // shell traps scroll inside a fixed-height box, so window.scrollY never
+  // moves — useScroll must target the actual scroll element).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll({ container: scrollRef });
   const parallaxY = useTransform(scrollY, [0, 500], [0, -60]);
 
   return (
-    <div className="margin-auto relative w-full max-w-[1280px] h-screen min-h-[500px] max-h-[960px] overflow-hidden cursor-grab active:cursor-grabbing">
-      <PageChrome
-        index="00"
-        label="now"
-        hudRole="online · living"
-        stripText="◈ MK · currently · april 2026"
-        showBack={true}
-        onBackClick={handleBackClick}
-      />
+    <ScrollStage ref={scrollRef}>
+      {/* ─────────────────────────────────────────────────────────
+          Section 1 — MASSIVE HERO
+         ───────────────────────────────────────────────────────── */}
+      <Section bare>
+        <div
+          className="mx-auto w-[90%]"
+          style={{ maxWidth: "var(--measure-ledger)" }}
+        >
+          <motion.div
+            style={reduceMotion ? undefined : { y: parallaxY }}
+            className="will-change-transform w-full"
+          >
+            <Eyebrow
+              index="06"
+              label="a living page"
+              accent="var(--color-kindra-green)"
+            />
 
-      <div className="relative z-10 h-full overflow-y-auto snap-y snap-mandatory cursor-auto active:cursor-auto">
-        <div className="mx-auto w-[90%] max-w-[1120px] pb-32">
-          {/* ─────────────────────────────────────────────────────────
-              Section 1 — MASSIVE HERO
-             ───────────────────────────────────────────────────────── */}
-          <section className="relative min-h-[100vh] flex items-center snap-start pt-16">
-            <motion.div
-              style={reduceMotion ? undefined : { y: parallaxY }}
-              className="will-change-transform w-full"
+            {/* Massive ornamental title — display type scale */}
+            <h1
+              className="mt-8 font-bold text-[var(--color-kindra-text-white)]"
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize: "var(--text-display)",
+                letterSpacing: "-0.03em",
+                lineHeight: 0.95,
+              }}
             >
-              {/* Eyebrow */}
-              <p
-                className="mb-8 flex flex-wrap items-center gap-3 text-[10px] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
-                style={{ fontFamily: "var(--font-body)" }}
-              >
-                <span className="h-px w-10 bg-[var(--color-kindra-rule)]" />
-                <span>
-                  <span className="text-[var(--color-kindra-rule-strong)]">[</span>{" "}
-                  <span className="text-[var(--color-kindra-meta-low)]">/ 00</span>{" "}
-                  <span className="text-[var(--color-kindra-rule)]">&mdash;</span>{" "}
-                  a living page{" "}
-                  <span className="text-[var(--color-kindra-rule-strong)]">]</span>
-                </span>
-                <span className="text-[var(--color-kindra-rule)]">&middot;</span>
-                <span className="text-[var(--color-kindra-meta-low)]">
-                  updated april 2026
-                </span>
-              </p>
+              Currently
+            </h1>
 
-              {/* Massive title */}
-              <h1
-                className="font-bold text-white"
+            {/* & thinking ahead */}
+            <p
+              className="mt-4 italic text-[var(--color-kindra-meta-mid)] tracking-[-0.01em]"
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
+                lineHeight: 1.1,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="not-italic inline-block align-baseline shimmer-neutral"
                 style={{
                   fontFamily: "var(--font-heading)",
-                  fontSize: "clamp(5rem, 13vw, 11rem)",
-                  letterSpacing: "-0.03em",
-                  lineHeight: 0.95,
+                  fontStyle: "italic",
+                  fontSize: "1.3em",
+                  transform: "rotate(-5deg) translateY(0.08em)",
+                  marginRight: "0.12em",
+                  lineHeight: 1,
+                  color: "var(--color-kindra-meta-mid)",
                 }}
               >
-                Currently
-              </h1>
+                &amp;
+              </span>
+              thinking ahead
+            </p>
 
-              {/* & thinking ahead */}
-              <p
-                className="mt-4 italic text-[var(--color-kindra-meta-mid)] tracking-[-0.01em]"
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "clamp(1.75rem, 3vw, 2.75rem)",
-                  lineHeight: 1.1,
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="not-italic inline-block align-baseline shimmer-neutral"
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontStyle: "italic",
-                    fontSize: "1.3em",
-                    transform: "rotate(-5deg) translateY(0.08em)",
-                    marginRight: "0.12em",
-                    lineHeight: 1,
-                    color: "var(--color-kindra-meta-mid)",
-                  }}
-                >
-                  &amp;
-                </span>
-                thinking ahead
-              </p>
+            {/* Lede */}
+            <p
+              className="mt-8 max-w-[640px] text-[var(--color-kindra-text)] font-light"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-deck)",
+                lineHeight: 1.55,
+              }}
+            >
+              A snapshot of what&apos;s on my desk, in my head, and on my
+              calendar. This page is short on purpose. Updated every few
+              weeks.
+            </p>
 
-              {/* Lede */}
-              <p
-                className="mt-8 max-w-[640px] text-[#c8c8c8] font-light"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontSize: "clamp(1rem, 1.4vw, 1.25rem)",
-                  lineHeight: 1.55,
-                }}
-              >
-                A snapshot of what&apos;s on my desk, in my head, and on my
-                calendar. This page is short on purpose. Updated every few
-                weeks.
-              </p>
+            {/* Instrument cluster */}
+            <InstrumentCluster />
+          </motion.div>
+        </div>
+      </Section>
 
-              {/* Instrument cluster */}
-              <InstrumentCluster />
-            </motion.div>
-          </section>
-
-          {/* ─────────────────────────────────────────────────────────
-              Section 2 — THE SPREAD (4-column magazine grid)
-             ───────────────────────────────────────────────────────── */}
-          <section className="relative min-h-[100vh] flex flex-col justify-center snap-start py-20">
-            <div className="grid items-start grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xl:gap-10">
+      {/* ─────────────────────────────────────────────────────────
+          Section 2 — THE SPREAD (4-column magazine grid)
+         ───────────────────────────────────────────────────────── */}
+      <Section bare>
+        <div
+          className="mx-auto w-[90%]"
+          style={{ maxWidth: "var(--measure-ledger)" }}
+        >
+          <div className="grid items-start grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xl:gap-10">
             {/* Column 1 — BUILDING (yellow) */}
             <Column
               index="01"
@@ -451,7 +431,7 @@ export default function NowPage() {
                       ◆
                     </span>
                     <h3
-                      className="text-[17px] font-bold text-white tracking-[-0.01em] leading-[1.25]"
+                      className="text-[17px] font-bold text-[var(--color-kindra-text-white)] tracking-[-0.01em] leading-[1.25]"
                       style={{ fontFamily: "var(--font-heading)" }}
                     >
                       {item.name}
@@ -480,7 +460,7 @@ export default function NowPage() {
               {learningItems.map((item) => (
                 <div key={item.name}>
                   <h3
-                    className="text-[17px] font-bold text-white tracking-[-0.01em] leading-[1.25]"
+                    className="text-[17px] font-bold text-[var(--color-kindra-text-white)] tracking-[-0.01em] leading-[1.25]"
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
                     {item.name}
@@ -508,7 +488,7 @@ export default function NowPage() {
               {readingItems.map((item) => (
                 <div key={item.name}>
                   <h3
-                    className="text-[16px] font-bold italic text-white tracking-[-0.01em] leading-[1.3]"
+                    className="text-[16px] font-bold italic text-[var(--color-kindra-text-white)] tracking-[-0.01em] leading-[1.3]"
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
                     {item.name}
@@ -559,21 +539,61 @@ export default function NowPage() {
                 </p>
               ))}
             </Column>
-            </div>
-          </section>
+          </div>
+        </div>
+      </Section>
 
-          {/* ─────────────────────────────────────────────────────────
-              Section 3 — FEATURED QUOTE (the thesis)
-             ───────────────────────────────────────────────────────── */}
-          <section className="mx-auto max-w-[900px] min-h-[100vh] flex flex-col justify-center snap-start py-20">
-            {/* Hairline above */}
-            <div
-              aria-hidden="true"
-              className="mb-3 h-px w-16 bg-[var(--color-kindra-rule-strong)]"
-            />
-            {/* Label with signature square marker */}
+      {/* ─────────────────────────────────────────────────────────
+          Section 3 — FEATURED QUOTE (the thesis)
+         ───────────────────────────────────────────────────────── */}
+      <Section measure="wide" innerClassName="flex flex-col justify-center">
+        {/* Hairline above */}
+        <div
+          aria-hidden="true"
+          className="mb-3 h-px w-16 bg-[var(--color-kindra-rule-strong)]"
+        />
+        {/* Label with signature square marker */}
+        <p
+          className="mb-6 flex items-center gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
+          style={{
+            fontFamily: "var(--font-body)",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          <span
+            aria-hidden="true"
+            className="inline-block"
+            style={{
+              width: "0.5em",
+              height: "0.5em",
+              backgroundColor: "var(--color-kindra-yellow)",
+            }}
+          />
+          <span>/ thesis</span>
+        </p>
+        {/* The line */}
+        <p
+          className="text-balance font-bold text-[var(--color-kindra-text-white)]"
+          style={{
+            fontFamily: "var(--font-heading)",
+            fontSize: "clamp(2rem, 4.5vw, 3.75rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.05,
+          }}
+        >
+          Mechanisms over magic. Coherence over cleverness.
+        </p>
+      </Section>
+
+      {/* ─────────────────────────────────────────────────────────
+          Section 4 & 5 — NOT DOING & FOOTER
+         ───────────────────────────────────────────────────────── */}
+      <Section bare>
+        <div className="mx-auto flex w-[90%] flex-col" style={{ maxWidth: "var(--measure-ledger)" }}>
+          {/* Spacer to push Not Doing to the center */}
+          <div className="flex flex-col items-center justify-center text-center">
             <p
-              className="mb-6 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
+              className="mb-10 flex items-center gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-red)]"
               style={{
                 fontFamily: "var(--font-body)",
                 fontVariantNumeric: "tabular-nums",
@@ -585,108 +605,66 @@ export default function NowPage() {
                 style={{
                   width: "0.5em",
                   height: "0.5em",
-                  backgroundColor: "var(--color-kindra-yellow)",
+                  backgroundColor: "currentColor",
                 }}
               />
-              <span>/ thesis</span>
+              <span>/ not doing</span>
             </p>
-            {/* The line */}
-            <p
-              className="text-balance font-bold text-white"
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "clamp(2rem, 4.5vw, 3.75rem)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.05,
-              }}
-            >
-              Mechanisms over magic. Coherence over cleverness.
-            </p>
-          </section>
 
-          {/* ─────────────────────────────────────────────────────────
-              Section 4 & 5 — NOT DOING & FOOTER
-             ───────────────────────────────────────────────────────── */}
-          <section className="relative min-h-[100vh] flex flex-col snap-start pb-12 pt-20">
-            {/* Flex-grow spacer to push Not Doing to the center */}
-            <div className="flex-grow flex flex-col items-center justify-center text-center">
-              <p
-                className="mb-10 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase text-[var(--color-kindra-red)]"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="inline-block"
-                  style={{
-                    width: "0.5em",
-                    height: "0.5em",
-                    backgroundColor: "currentColor",
-                  }}
-                />
-                <span>/ not doing</span>
-              </p>
-
-              <div className="flex flex-col gap-6">
-                {notDoing.map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-3"
-                  >
-                    <span
-                      className="line-through decoration-[var(--color-kindra-red)] decoration-2 text-[18px] md:text-[22px] font-medium text-[#888]"
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      {item.name}
-                    </span>
-                    <span
-                      className="text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
-                      {item.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <footer className="border-t border-[var(--color-kindra-rule)] pt-8 mt-16 w-full">
-              <p
-                className="text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                <FooterLiveDot />
-                idx.00
-                <span className="mx-2 text-[var(--color-kindra-rule)]">&middot;</span>
-                living document
-                <span className="mx-2 text-[var(--color-kindra-rule)]">&middot;</span>
-                last update &middot; apr 2026
-                <span className="mx-2 text-[var(--color-kindra-rule)]">&middot;</span>
-                /now inspired by{" "}
-                <a
-                  href="https://nownownow.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline decoration-[var(--color-kindra-rule)] underline-offset-2 transition-colors duration-500 hover:text-white hover:decoration-[var(--color-kindra-yellow)]"
+            <div className="flex flex-col gap-6">
+              {notDoing.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex flex-col sm:flex-row items-center justify-center gap-3"
                 >
-                  nownownow.com
-                </a>
-              </p>
-              
-              <PageNav current="/now" onClick={handleNavClick} />
-            </footer>
-          </section>
+                  <span
+                    className="line-through decoration-[var(--color-kindra-red)] decoration-2 text-[18px] md:text-[22px] font-medium text-[var(--color-kindra-meta-low)]"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    {item.name}
+                  </span>
+                  <span
+                    className="text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <footer className="mt-16 w-full">
+            <MetaRow
+              items={[
+                <>
+                  <FooterLiveDot />
+                  idx.06
+                </>,
+                "living document",
+                <>last update · {site.lastUpdated}</>,
+                <>
+                  /now inspired by{" "}
+                  <a
+                    href="https://nownownow.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-[var(--color-kindra-rule)] underline-offset-2 transition-colors duration-500 hover:text-[var(--color-kindra-text-white)] hover:decoration-[var(--color-kindra-yellow)]"
+                  >
+                    nownownow.com
+                  </a>
+                </>,
+              ]}
+            />
+
+            <PageNav current="/now" onClick={onNavClick} />
+          </footer>
         </div>
-      </div>
-    </div>
+      </Section>
+    </ScrollStage>
   );
 }

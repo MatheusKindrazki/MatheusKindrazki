@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent, useId } from 'react'
 import { FiArrowRight } from 'react-icons/fi'
-import { getColorValue } from '@/lib/colors'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -20,7 +19,7 @@ function FloatingField({ id, label, type = 'text', name, required, rows = 4 }: F
   const [hasValue, setHasValue] = useState(false)
 
   const labelFloated = focused || hasValue
-  const accent = getColorValue('red')
+  const accent = 'var(--color-kindra-red)'
 
   const sharedInputProps = {
     id,
@@ -34,7 +33,7 @@ function FloatingField({ id, label, type = 'text', name, required, rows = 4 }: F
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setHasValue(e.target.value.length > 0),
     className:
-      'peer w-full bg-transparent text-white text-[14px] leading-[22px] pt-5 pb-2 outline-none resize-none',
+      'peer w-full bg-transparent text-[var(--color-kindra-text-white)] text-[14px] leading-[22px] pt-5 pb-2 outline-none resize-none',
     style: {
       fontFamily: 'var(--font-body)',
     } as React.CSSProperties,
@@ -49,7 +48,11 @@ function FloatingField({ id, label, type = 'text', name, required, rows = 4 }: F
           transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
           top: labelFloated ? '0px' : '22px',
           fontSize: labelFloated ? '9.5px' : '11px',
-          color: labelFloated ? (focused ? accent : '#888') : 'var(--color-kindra-meta-low)',
+          color: labelFloated
+            ? focused
+              ? accent
+              : 'var(--color-kindra-meta-mid)'
+            : 'var(--color-kindra-meta-low)',
           fontFamily: 'var(--font-body)',
           letterSpacing: '0.25em',
         }}
@@ -66,7 +69,7 @@ function FloatingField({ id, label, type = 'text', name, required, rows = 4 }: F
       {/* Underline */}
       <span
         aria-hidden
-        className="pointer-events-none absolute left-0 bottom-0 h-px w-full bg-[#333]"
+        className="pointer-events-none absolute left-0 bottom-0 h-px w-full bg-[var(--color-kindra-rule)]"
       />
       <span
         aria-hidden
@@ -122,11 +125,11 @@ export default function ContactForm() {
     }
   }
 
-  const red = getColorValue('red')
-  const green = getColorValue('green')
+  const red = 'var(--color-kindra-red)'
+  const green = 'var(--color-kindra-green)'
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-[520px] flex-col gap-8">
+    <form onSubmit={handleSubmit} className="flex max-w-[var(--measure-narrow)] flex-col gap-8">
       <FloatingField id={nameId} label="Name" name="name" required />
       <FloatingField id={emailId} label="Email" type="email" name="email" required />
       <FloatingField id={messageId} label="Message" type="textarea" name="message" required rows={4} />

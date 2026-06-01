@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Identity from "@/components/ui/Identity";
 import { useLiveTime } from "@/hooks/useLiveTime";
+import { site } from "@/lib/content";
 
 interface PageChromeProps {
   /** Zero-padded index, e.g. "01", "02" — shown in wordmark and default strip. */
@@ -90,10 +91,10 @@ export default function PageChrome({
         >
           <div className="flex items-center justify-end gap-2">
             <span className="relative inline-flex h-[6px] w-[6px]">
-              <span className="absolute inset-0 animate-ping rounded-full bg-[#419d78] opacity-70" />
-              <span className="relative inline-flex h-[6px] w-[6px] rounded-full bg-[#419d78]" />
+              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-kindra-green)] opacity-70" />
+              <span className="relative inline-flex h-[6px] w-[6px] rounded-full bg-[var(--color-kindra-green)]" />
             </span>
-            <span className="text-[#888]">{hudRole}</span>
+            <span className="text-[var(--color-kindra-meta-mid)]">{hudRole}</span>
           </div>
           <div
             className="mt-2 text-[12px] tracking-[0.2em] text-white/80"
@@ -105,7 +106,9 @@ export default function PageChrome({
             {time}
           </div>
           <div className="mt-0.5">Curitiba · BRT · -25.42° -49.27°</div>
-          <div className="text-[var(--color-kindra-meta-low)]">portfolio · v3.0 · 2026</div>
+          <div className="text-[var(--color-kindra-meta-low)]">
+            portfolio · {site.version} · {site.year}
+          </div>
         </div>
       </motion.div>
 
