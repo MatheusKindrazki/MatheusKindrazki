@@ -21,6 +21,18 @@ interface ParticlePhotoProps {
   onExplodeComplete?: () => void;
 }
 
+function normalizeDensity(value: number | undefined): number {
+  const num = Number(value);
+  if (isNaN(num) || num <= 0) return 2;
+  return Math.max(1, Math.round(num));
+}
+
+function normalizeMaxParticles(value: number | undefined): number {
+  const num = Number(value);
+  if (isNaN(num) || num <= 0) return 30000;
+  return Math.round(num);
+}
+
 export default function ParticlePhoto({
   imageSrc = "/images/kindra-photo.png",
   maxWidth = 700,
@@ -36,6 +48,10 @@ export default function ParticlePhoto({
 }: ParticlePhotoProps) {
   const { setPortraitScene } = usePixiScene();
 
+  // Normalize props before passing to stage/adapter
+  const normalizedDensity = normalizeDensity(density);
+  const normalizedMaxParticles = normalizeMaxParticles(maxParticles);
+
   const config = useMemo<PortraitSceneConfig>(
     () => ({
       imageSrc,
@@ -44,8 +60,8 @@ export default function ParticlePhoto({
       particleSize,
       edgeFade,
       brightness,
-      density,
-      maxParticles,
+      density: normalizedDensity,
+      maxParticles: normalizedMaxParticles,
       animate,
       explode,
       onExplodeComplete,
@@ -53,11 +69,11 @@ export default function ParticlePhoto({
     [
       animate,
       brightness,
-      density,
+      normalizedDensity,
       edgeFade,
       explode,
       imageSrc,
-      maxParticles,
+      normalizedMaxParticles,
       maxWidth,
       onExplodeComplete,
       particleSize,
