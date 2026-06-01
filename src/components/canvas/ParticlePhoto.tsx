@@ -10,6 +10,8 @@ interface ParticlePhotoProps {
   xOffset?: number;
   particleSize?: number;
   edgeFade?: number;
+  /** Brightness boost for dark photos (1 = original, >1 lifts shadows). */
+  brightness?: number;
   animate?: boolean;
   explode?: boolean;
   onExplodeComplete?: () => void;
@@ -21,6 +23,7 @@ export default function ParticlePhoto({
   xOffset = 250,
   particleSize = 1.8,
   edgeFade = 0.15,
+  brightness = 1,
   animate = false,
   explode = false,
   onExplodeComplete,
@@ -34,12 +37,14 @@ export default function ParticlePhoto({
       xOffset,
       particleSize,
       edgeFade,
+      brightness,
       animate,
       explode,
       onExplodeComplete,
     }),
     [
       animate,
+      brightness,
       edgeFade,
       explode,
       imageSrc,

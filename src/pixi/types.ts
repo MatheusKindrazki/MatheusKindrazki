@@ -13,6 +13,8 @@ export interface PortraitSceneConfig {
   xOffset?: number;
   particleSize?: number;
   edgeFade?: number;
+  /** Brightness boost for dark photos (1 = original, >1 lifts shadows). */
+  brightness?: number;
   animate?: boolean;
   explode?: boolean;
   onExplodeComplete?: () => void;

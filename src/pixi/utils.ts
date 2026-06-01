@@ -149,6 +149,20 @@ export interface ImageParticleSeed {
   depth: number;
 }
 
+/**
+ * Lift a dark pixel toward visibility without blowing out highlights.
+ * `amount` of 1 is a no-op; >1 brightens. Uses a gamma-style curve so shadows
+ * open up more than midtones (dark portraits read on a black void), then a
+ * mild gain. Clamped to 0-255.
+ */
+function boostChannel(value: number, amount: number): number {
+  if (amount <= 1) return value;
+  const norm = value / 255;
+  const gamma = 1 / amount; // amount 1.6 → gamma ~0.625, lifts shadows
+  const lifted = Math.pow(norm, gamma);
+  return Math.min(255, Math.round(lifted * 255));
+}
+
 export async function createImageParticleSeeds(
   imageSrc: string,
   maxWidth = 700,
@@ -156,6 +170,7 @@ export async function createImageParticleSeeds(
   edgeFade = 0.15,
   step = 2,
   maxParticles = 30000,
+  brightness = 1,
 ): Promise<ImageParticleSeed[]> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
@@ -201,7 +216,11 @@ export async function createImageParticleSeeds(
         relY,
         scatterX: relX + Math.cos(angle) * dist,
         scatterY: relY + Math.sin(angle) * dist,
-        tint: rgbToHex(pixels[i], pixels[i + 1], pixels[i + 2]),
+        tint: rgbToHex(
+          boostChannel(pixels[i], brightness),
+          boostChannel(pixels[i + 1], brightness),
+          boostChannel(pixels[i + 2], brightness),
+        ),
         alpha: clamp(pixelAlpha * fade),
         depth: Math.random(),
       });
