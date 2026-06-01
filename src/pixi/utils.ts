@@ -206,8 +206,14 @@ export async function createImageParticleSeeds(
       const fade = getEdgeFade(x, y, w, h, fadeX, fadeY);
       if (fade <= 0.01) continue;
 
-      const relX = x - w / 2 + xOffset;
-      const relY = y - h / 2;
+      // Jitter each sample off the rigid sampling grid by up to ±step/2.
+      // Without this, every particle lands on an exact multiple of `step`,
+      // so they line up into visible vertical/horizontal scanlines. The
+      // jitter breaks that lattice into an organic point cloud.
+      const jitterX = (Math.random() - 0.5) * step;
+      const jitterY = (Math.random() - 0.5) * step;
+      const relX = x - w / 2 + xOffset + jitterX;
+      const relY = y - h / 2 + jitterY;
       const angle = Math.random() * Math.PI * 2;
       const dist = randomRange(360, 1120);
 
@@ -229,12 +235,18 @@ export async function createImageParticleSeeds(
 
   if (candidates.length <= maxParticles) return candidates;
 
-  const stride = candidates.length / maxParticles;
-  const sampled: ImageParticleSeed[] = [];
+  // Random (partial Fisher-Yates) downsample. A fixed-stride pick
+  // (candidates[i * stride]) drops particles in a regular pattern — since the
+  // array is row-major, that systematically thins whole columns and *amplifies*
+  // the scanline look. Shuffling the first `maxParticles` slots picks an
+  // unbiased random subset that keeps the cloud even.
   for (let i = 0; i < maxParticles; i++) {
-    sampled.push(candidates[Math.floor(i * stride)]);
+    const j = i + Math.floor(Math.random() * (candidates.length - i));
+    const tmp = candidates[i];
+    candidates[i] = candidates[j];
+    candidates[j] = tmp;
   }
-  return sampled;
+  return candidates.slice(0, maxParticles);
 }
 
 /**
