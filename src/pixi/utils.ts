@@ -169,7 +169,7 @@ export async function createImageParticleSeeds(
   xOffset = 250,
   edgeFade = 0.15,
   step = 2,
-  maxParticles = 30000,
+  maxParticles = 200000,
   brightness = 1,
 ): Promise<ImageParticleSeed[]> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -206,14 +206,8 @@ export async function createImageParticleSeeds(
       const fade = getEdgeFade(x, y, w, h, fadeX, fadeY);
       if (fade <= 0.01) continue;
 
-      // Jitter each sample off the rigid sampling grid by up to ±step/2.
-      // Without this, every particle lands on an exact multiple of `step`,
-      // so they line up into visible vertical/horizontal scanlines. The
-      // jitter breaks that lattice into an organic point cloud.
-      const jitterX = (Math.random() - 0.5) * step;
-      const jitterY = (Math.random() - 0.5) * step;
-      const relX = x - w / 2 + xOffset + jitterX;
-      const relY = y - h / 2 + jitterY;
+      const relX = x - w / 2 + xOffset;
+      const relY = y - h / 2;
       const angle = Math.random() * Math.PI * 2;
       const dist = randomRange(360, 1120);
 
@@ -235,18 +229,17 @@ export async function createImageParticleSeeds(
 
   if (candidates.length <= maxParticles) return candidates;
 
-  // Random (partial Fisher-Yates) downsample. A fixed-stride pick
-  // (candidates[i * stride]) drops particles in a regular pattern — since the
-  // array is row-major, that systematically thins whole columns and *amplifies*
-  // the scanline look. Shuffling the first `maxParticles` slots picks an
-  // unbiased random subset that keeps the cloud even.
+  // Safety cap only — keep the cloud dense. The production (three.js) build
+  // renders EVERY sampled pixel with no cap, which is what makes the photo
+  // read as a solid image; we mirror that by defaulting the cap high enough
+  // that it almost never triggers, and only downsample (evenly) as a
+  // last-resort perf guard for very large images.
+  const stride = candidates.length / maxParticles;
+  const sampled: ImageParticleSeed[] = [];
   for (let i = 0; i < maxParticles; i++) {
-    const j = i + Math.floor(Math.random() * (candidates.length - i));
-    const tmp = candidates[i];
-    candidates[i] = candidates[j];
-    candidates[j] = tmp;
+    sampled.push(candidates[Math.round(i * stride)]);
   }
-  return candidates.slice(0, maxParticles);
+  return sampled;
 }
 
 /**

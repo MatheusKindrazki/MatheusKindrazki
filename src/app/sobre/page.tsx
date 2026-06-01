@@ -32,13 +32,10 @@ export default function SobrePage() {
           >
             <ParticlePhoto
               imageSrc="/images/kindra-projetos.png"
-              maxWidth={820}
+              maxWidth={760}
               xOffset={330}
-              particleSize={2.6}
+              particleSize={1.45}
               edgeFade={0.22}
-              brightness={2.4}
-              density={1}
-              maxParticles={80000}
               animate
               explode={exploding}
               onExplodeComplete={onExplodeComplete}

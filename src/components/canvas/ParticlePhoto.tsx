@@ -29,7 +29,7 @@ export default function ParticlePhoto({
   edgeFade = 0.15,
   brightness = 1,
   density = 2,
-  maxParticles = 30000,
+  maxParticles = 200000,
   animate = false,
   explode = false,
   onExplodeComplete,
