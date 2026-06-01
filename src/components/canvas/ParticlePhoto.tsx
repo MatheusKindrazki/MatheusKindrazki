@@ -4,6 +4,8 @@ import { useEffect, useMemo } from "react";
 import { usePixiScene } from "@/pixi/PixiSceneContext";
 import type { PortraitSceneConfig } from "@/pixi/types";
 
+const DEFAULT_MAX_PARTICLES = 200000;
+
 interface ParticlePhotoProps {
   imageSrc?: string;
   maxWidth?: number;
@@ -14,7 +16,7 @@ interface ParticlePhotoProps {
   brightness?: number;
   /** Pixel sampling step (lower = denser). Default 2. */
   density?: number;
-  /** Max particle count cap. Default 30000. Raise for a solid, filled photo. */
+  /** Max particle count cap. Default 200000. Raise for a solid, filled photo. */
   maxParticles?: number;
   animate?: boolean;
   explode?: boolean;
@@ -29,7 +31,7 @@ function normalizeDensity(value: number | undefined): number {
 
 function normalizeMaxParticles(value: number | undefined): number {
   const num = Number(value);
-  if (isNaN(num) || num <= 0) return 30000;
+  if (isNaN(num) || num <= 0) return DEFAULT_MAX_PARTICLES;
   return Math.round(num);
 }
 
@@ -41,7 +43,7 @@ export default function ParticlePhoto({
   edgeFade = 0.15,
   brightness = 1,
   density = 2,
-  maxParticles = 200000,
+  maxParticles = DEFAULT_MAX_PARTICLES,
   animate = false,
   explode = false,
   onExplodeComplete,
