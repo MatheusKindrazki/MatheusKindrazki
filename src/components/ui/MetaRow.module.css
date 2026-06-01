@@ -1,0 +1,29 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.rule {
+  flex-shrink: 0;
+  width: 40px;
+  height: 1px;
+  background: var(--color-kindra-rule);
+}
+
+.items {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 0;
+}
+
+.dot {
+  margin-inline: 8px;
+  color: var(--color-kindra-rule-strong);
+}

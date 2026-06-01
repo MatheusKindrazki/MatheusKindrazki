@@ -1,0 +1,77 @@
+/* ──────────────────────────────────────────────────────────────────
+   Shared page-shell primitives. Promoted from the per-page Tailwind
+   skeleton + the projetos CSS module into ONE tokenized source so all
+   six routes share the same container, scroll model, and section rhythm.
+   Tokens come from globals.css @theme (--shell-*, --measure-*, --z-*).
+   ─────────────────────────────────────────────────────────────────── */
+
+.shell {
+  position: relative;
+  z-index: var(--z-content);
+  width: 100%;
+  max-width: var(--shell-max-w);
+  height: 100vh;
+  min-height: var(--shell-min-h);
+  max-height: var(--shell-max-h);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* The inner scroll layer with snap. On desktop the shell is a fixed-height
+   viewport box; on narrow screens we release the snap + fixed height so
+   content reflows naturally (previously only /projetos had this fallback). */
+.scroll {
+  position: relative;
+  z-index: var(--z-content);
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.section {
+  min-height: 100%;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  padding-block: var(--section-pad-md);
+  padding-inline: var(--shell-pad-x);
+}
+
+/* Inner reading measures. Default centered column; modifiers pick the width. */
+.measure {
+  width: 90%;
+  margin-inline: auto;
+}
+.narrow { max-width: var(--measure-narrow); }
+.wide { max-width: var(--measure-wide); }
+.ledger { max-width: var(--measure-ledger); }
+
+/* ── Mobile / narrow fallback ──────────────────────────────────────
+   Below 820px: stop trapping the user in a 100vh snap box. Let the
+   shell grow with content and disable mandatory snap so every section
+   is reachable by normal scrolling (fixes the 5 pages that had no
+   svh/snap-disable escape hatch). */
+@media (max-width: 820px) {
+  .shell {
+    height: auto;
+    min-height: 100svh;
+    max-height: none;
+    overflow: visible;
+  }
+  .scroll {
+    height: auto;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .section {
+    min-height: auto;
+    scroll-snap-align: none;
+    padding-block: var(--section-pad-lg);
+  }
+}
