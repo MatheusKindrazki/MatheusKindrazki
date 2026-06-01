@@ -12,7 +12,7 @@ export default function BackArrow({ onClick }: BackArrowProps) {
   return (
     <Link href="/" onClick={onClick} className="inline-flex items-center gap-2 group" title="Back">
       <motion.span
-        className="text-[#666] group-hover:text-white transition-colors duration-500 text-2xl"
+        className="text-[var(--color-kindra-meta-low)] group-hover:text-white transition-colors duration-500 text-2xl"
         // Skip the infinite nudge when the user prefers reduced motion.
         animate={reduceMotion ? { x: 0 } : { x: [0, -6, 0] }}
         transition={

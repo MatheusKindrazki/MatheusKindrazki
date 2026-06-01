@@ -244,6 +244,12 @@ body.custom-cursor-active :focus-visible {
         background: none;
         color: var(--color-kindra-meta-mid);
     }
+    .animate-pulse {
+        animation: none !important;
+    }
+    .animate-ping {
+        animation: none !important;
+    }
 }
 
 /* Home hero off-axis subtitle — reduce rotation on narrow viewports

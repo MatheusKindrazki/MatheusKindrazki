@@ -9,7 +9,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 0.7s var(--ease-smooth);
 }
 
 /* Brand dots derive from the canonical @theme palette — no parallel hexes. */
@@ -25,10 +25,10 @@
 .rest div:nth-child(4) { left: 33px; top: 17px; }
 
 /* Working state - dots rotate in a square */
-.working div:nth-child(1) { animation: workGreen 1.4s ease-in-out infinite; }
-.working div:nth-child(2) { animation: workYellow 1.4s ease-in-out infinite; }
-.working div:nth-child(3) { animation: workRed 1.4s ease-in-out infinite; }
-.working div:nth-child(4) { animation: workBlue 1.4s ease-in-out infinite; }
+.working div:nth-child(1) { animation: workGreen 1.4s var(--ease-smooth) infinite; }
+.working div:nth-child(2) { animation: workYellow 1.4s var(--ease-smooth) infinite; }
+.working div:nth-child(3) { animation: workRed 1.4s var(--ease-smooth) infinite; }
+.working div:nth-child(4) { animation: workBlue 1.4s var(--ease-smooth) infinite; }
 
 @keyframes workGreen {
   0%, 100% { left: 0; top: 0; }
@@ -62,10 +62,10 @@
 .robot div {
   top: 17px !important;
 }
-.robot div:nth-child(1) { left: 0; animation: bounce 0.6s ease-in-out infinite; }
-.robot div:nth-child(2) { left: 11px; animation: bounce 0.6s ease-in-out infinite 0.15s; }
-.robot div:nth-child(3) { left: 22px; animation: bounce 0.6s ease-in-out infinite 0.3s; }
-.robot div:nth-child(4) { left: 33px; animation: bounce 0.6s ease-in-out infinite 0.45s; }
+.robot div:nth-child(1) { left: 0; animation: bounce 0.6s var(--ease-smooth) infinite; }
+.robot div:nth-child(2) { left: 11px; animation: bounce 0.6s var(--ease-smooth) infinite 0.15s; }
+.robot div:nth-child(3) { left: 22px; animation: bounce 0.6s var(--ease-smooth) infinite 0.3s; }
+.robot div:nth-child(4) { left: 33px; animation: bounce 0.6s var(--ease-smooth) infinite 0.45s; }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
@@ -76,12 +76,29 @@
 .loading div {
   opacity: 0.5;
 }
-.loading div:nth-child(1) { animation: workGreen 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite; }
-.loading div:nth-child(2) { animation: workYellow 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 0.35s; }
-.loading div:nth-child(3) { animation: workRed 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 0.7s; }
-.loading div:nth-child(4) { animation: workBlue 1.4s ease-in-out infinite, pulse 1.4s ease-in-out infinite 1.05s; }
+.loading div:nth-child(1) { animation: workGreen 1.4s var(--ease-smooth) infinite, pulse 1.4s var(--ease-smooth) infinite; }
+.loading div:nth-child(2) { animation: workYellow 1.4s var(--ease-smooth) infinite, pulse 1.4s var(--ease-smooth) infinite 0.35s; }
+.loading div:nth-child(3) { animation: workRed 1.4s var(--ease-smooth) infinite, pulse 1.4s var(--ease-smooth) infinite 0.7s; }
+.loading div:nth-child(4) { animation: workBlue 1.4s var(--ease-smooth) infinite, pulse 1.4s var(--ease-smooth) infinite 1.05s; }
 
 @keyframes pulse {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity div {
+    animation: none !important;
+    transition-duration: 0.05s;
+  }
+
+  /* Mantém as posições dos estados mas sem animação */
+  .working div,
+  .loading div {
+    animation: none !important;
+  }
+
+  .robot div {
+    animation: none !important;
+  }
 }
