@@ -9,6 +9,7 @@ import MetaRow from "@/components/ui/MetaRow";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
 import { timeline, philosophy } from "@/lib/content";
 import { getColorValue } from "@/lib/colors";
 import { stagger, fadeUp } from "@/lib/motion";
@@ -36,7 +37,9 @@ export default function SobrePage() {
               onExplodeComplete={onExplodeComplete}
             />
           </div>
-          <div aria-hidden className={styles.vignette} />
+          {/* Photo sits right-of-center; darken the left so the left-anchored
+              text column stays legible over it. */}
+          <ContentScrim side="left" intensity="strong" />
         </>
       )}
     >
@@ -52,7 +55,7 @@ function SobreContent() {
   return (
     <ScrollStage>
       {/* Section 1 — Hero */}
-      <Section>
+      <Section align="left">
         <motion.div variants={stagger} initial="hidden" animate="show">
           <motion.div variants={fadeUp}>
             <Eyebrow index="04" label="who i am" accent={yellow} />
@@ -102,7 +105,7 @@ function SobreContent() {
       </Section>
 
       {/* Section 2 — Journey timeline */}
-      <Section>
+      <Section align="left">
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -138,7 +141,7 @@ function SobreContent() {
       </Section>
 
       {/* Section 3 — Philosophy */}
-      <Section>
+      <Section align="left">
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -173,7 +176,7 @@ function SobreContent() {
       </Section>
 
       {/* Section 4 — Formation / closing */}
-      <Section>
+      <Section align="left">
         <motion.div
           variants={stagger}
           initial="hidden"

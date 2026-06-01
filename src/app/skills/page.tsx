@@ -11,6 +11,7 @@ import MetaRow from "@/components/ui/MetaRow";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
 import { skillCategories } from "@/lib/content";
 import { getColorValue, getColorWithAlpha } from "@/lib/colors";
 import { stagger, fadeUp } from "@/lib/motion";
@@ -74,7 +75,14 @@ function SkillsBackground({ exploding, onExplodeComplete }: SkillsBackgroundProp
     if (exploding) onExplodeComplete();
   }, [exploding, onExplodeComplete]);
 
-  return <BlackHole src="/images/kindra-skills.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />;
+  return (
+    <>
+      <BlackHole src="/images/kindra-skills.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
+      {/* Black hole + DJ photo sit right-of-center; darken the left so the
+          left-anchored text column stays legible over it. */}
+      <ContentScrim side="left" intensity="strong" />
+    </>
+  );
 }
 
 function SkillsContent() {
@@ -114,7 +122,10 @@ function SkillsContent() {
           const dy = bhY - itemY;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
           const proximity = clamp01(1 - Math.max(0, distance - 90) / range);
-          const strength = proximity * proximity * ramp;
+          // Damp the warp so text stays readable: the gravitational pull is a
+          // signature touch, not a legibility tax. 0.62 keeps the motion felt
+          // without smearing the pull-quote into the black hole.
+          const strength = proximity * proximity * ramp * 0.62;
 
           if (strength < 0.006) {
             item.style.transform = "";
@@ -133,7 +144,9 @@ function SkillsContent() {
           const skewY = ny * 3.4 * strength;
           const scaleX = 1 + strength * 0.055;
           const scaleY = 1 - strength * 0.022;
-          const blur = Math.max(0, strength - 0.62) * 0.7;
+          // Only the closest items blur, and gently — never enough to make the
+          // reading text fuzzy.
+          const blur = Math.max(0, strength - 0.5) * 0.45;
 
           item.style.willChange = "transform, filter, opacity";
           item.style.transformOrigin = `${nx > 0 ? "right" : "left"} center`;
@@ -160,7 +173,7 @@ function SkillsContent() {
   return (
     <ScrollStage ref={scrollRef}>
       {/* Section 1 — Hero */}
-      <Section data-gravity-item>
+      <Section data-gravity-item align="left">
         <motion.div variants={stagger} initial="hidden" animate="show">
           <Eyebrow index="03" label="what i do" />
 
@@ -270,7 +283,7 @@ function SkillsContent() {
       </Section>
 
       {/* Section 2 — Categories grid */}
-      <Section>
+      <Section align="left" measure="wide">
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -316,7 +329,7 @@ function SkillsContent() {
       </Section>
 
       {/* Section 3 — Fun fact as pull-quote */}
-      <Section data-gravity-item>
+      <Section data-gravity-item align="left">
         <motion.div
           initial="hidden"
           whileInView="show"

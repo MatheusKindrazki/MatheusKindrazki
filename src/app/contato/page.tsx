@@ -11,6 +11,7 @@ import ContactForm from "@/components/ui/ContactForm";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
 import { profile } from "@/lib/content";
 import { FaGithub, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -69,16 +70,8 @@ export default function ContatoPage() {
             />
           </div>
 
-          {/* Left-side vignette — darkens the text column so the photo reads as an accent on the right */}
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              zIndex: "var(--z-backdrop)",
-              background:
-                "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 85%)",
-            }}
-          />
+          {/* Shared reading scrim — darkens the left text column so the photo reads as an accent on the right */}
+          <ContentScrim side="left" intensity="strong" />
         </>
       )}
     >
@@ -106,7 +99,7 @@ function ContatoContent() {
   return (
     <ScrollStage>
       {/* Section 1 - Hero + email CTA + socials */}
-      <Section innerClassName="py-10">
+      <Section align="left" innerClassName="py-10">
         <motion.div variants={stagger} initial="hidden" animate="show">
           <motion.div variants={fadeUp}>
             <Eyebrow index="05" label="let's talk" />
@@ -303,7 +296,7 @@ function ContatoContent() {
       </Section>
 
       {/* Section 2 - Form */}
-      <Section innerClassName="py-12">
+      <Section align="left" innerClassName="py-12">
         <motion.div
           variants={stagger}
           initial="hidden"

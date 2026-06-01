@@ -52,6 +52,18 @@
 .wide { max-width: var(--measure-wide); }
 .ledger { max-width: var(--measure-ledger); }
 
+/* Left-anchored column: pins content to the left so the text sits opposite a
+   right-side visual background (photo / black hole) instead of overlapping it.
+   On narrow screens it re-centers, since the background hides/recedes there. */
+.alignLeft {
+  margin-inline: 0 auto;
+}
+@media (max-width: 820px) {
+  .alignLeft {
+    margin-inline: auto;
+  }
+}
+
 /* ── Mobile / narrow fallback ──────────────────────────────────────
    Below 820px: stop trapping the user in a 100vh snap box. Let the
    shell grow with content and disable mandatory snap so every section

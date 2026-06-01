@@ -16,6 +16,7 @@ import PageNav from "@/components/ui/PageNav";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
 import { useJarvis } from "@/components/chat/JarvisProvider";
 import { profile, site } from "@/lib/content";
 import { stagger, fadeUp, fadeIn } from "@/lib/motion";
@@ -111,7 +112,9 @@ export default function Home() {
               onExplodeComplete={onExplodeComplete}
             />
           </div>
-          <div aria-hidden className={styles.vignette} />
+          {/* Black-hole-free home: ParticlePhoto portrait sits right-of-center;
+              darken the left so the left-anchored text column stays legible. */}
+          <ContentScrim side="left" intensity="strong" />
         </>
       )}
     >
@@ -130,7 +133,7 @@ function HomeContent() {
   return (
     <>
       <ScrollStage>
-        <Section measure="wide">
+        <Section measure="wide" align="left">
           <motion.main variants={stagger} initial="hidden" animate="show">
             {/* Greeting */}
             <motion.p variants={fadeUpVariant} className={styles.greeting}>

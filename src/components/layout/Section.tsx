@@ -4,11 +4,18 @@ import type { ReactNode } from "react";
 import styles from "./shell.module.css";
 
 type Measure = "narrow" | "wide" | "ledger";
+type Align = "center" | "left";
 
 interface SectionProps {
   children: ReactNode;
   /** Inner reading width — maps to a content-measure token. Default: narrow. */
   measure?: Measure;
+  /**
+   * Horizontal anchor for the content column. "center" (default) centers it;
+   * "left" pins it to the left so the text sits opposite a right-side visual
+   * background (photo / black hole) instead of overlapping it.
+   */
+  align?: Align;
   /** Skip the centered measure wrapper (page provides its own inner grid). */
   bare?: boolean;
   /** Extra className on the <section> (e.g. for a data-gravity-item parent). */
@@ -28,6 +35,7 @@ interface SectionProps {
 export default function Section({
   children,
   measure = "narrow",
+  align = "center",
   bare = false,
   className,
   innerClassName,
@@ -38,7 +46,11 @@ export default function Section({
       {bare ? (
         children
       ) : (
-        <div className={`${styles.measure} ${styles[measure]} ${innerClassName ?? ""}`}>
+        <div
+          className={`${styles.measure} ${styles[measure]} ${
+            align === "left" ? styles.alignLeft : ""
+          } ${innerClassName ?? ""}`}
+        >
           {children}
         </div>
       )}
