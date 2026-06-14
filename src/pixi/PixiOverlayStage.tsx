@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Application, Container, type Ticker } from "pixi.js";
 import { CursorLayer } from "@/pixi/layers/CursorLayer";
 import { TransitionLayer } from "@/pixi/layers/TransitionLayer";
+import { usePixiScene } from "@/pixi/PixiSceneContext";
 
 interface OverlayLayers {
   app: Application;
@@ -18,6 +19,7 @@ export default function PixiOverlayStage() {
   const hostRef = useRef<HTMLDivElement>(null);
   const layersRef = useRef<OverlayLayers | null>(null);
   const pathname = usePathname();
+  const { slew } = usePixiScene();
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +84,12 @@ export default function PixiOverlayStage() {
       layersRef.current = null;
     };
   }, []);
+
+  // Slew announcements arrive at navigation start (before the route push) so
+  // the telemetry band plays OVER the portrait explode — one continuous take.
+  useEffect(() => {
+    if (slew) layersRef.current?.transition.beginSlew(slew);
+  }, [slew]);
 
   useEffect(() => {
     layersRef.current?.transition.setPath(pathname);

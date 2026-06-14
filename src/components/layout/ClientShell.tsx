@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import { JarvisProvider } from '@/components/chat/JarvisProvider'
-import PageTransition from '@/components/layout/PageTransition'
 import { PixiSceneProvider } from '@/pixi/PixiSceneContext'
 import PixiBackgroundStage from '@/pixi/PixiBackgroundStage'
 import PixiOverlayStage from '@/pixi/PixiOverlayStage'
@@ -21,7 +20,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     <PixiSceneProvider>
       <JarvisProvider>
         <PixiBackgroundStage />
-        <PageTransition>{children}</PageTransition>
+        {children}
         <JarvisTrigger />
         <JarvisChat />
         <PixiOverlayStage />
