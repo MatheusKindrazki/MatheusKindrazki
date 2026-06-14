@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
 
-/** Canonical production origin — matches `metadataBase` in app/layout.tsx. */
-const BASE_URL = "https://kindrazki.dev";
+/** Canonical production origin — single-sourced from src/lib/seo.ts. */
+const BASE_URL = SITE_URL;
 
 /** The six public routes — mirrors ROUTE_META in src/lib/routeIndex.ts. */
 const ROUTES = ["/", "/projetos", "/skills", "/sobre", "/contato", "/now"] as const;
@@ -18,6 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: route === "/" ? `${BASE_URL}/` : `${BASE_URL}${route}/`,
     lastModified,
     changeFrequency: route === "/now" ? ("weekly" as const) : ("monthly" as const),
-    priority: route === "/" ? 1 : 0.6,
+    // Home is the canonical entry (1.0); the secondary routes sit in the
+    // 0.7–0.8 band so crawlers rank them just below home without flattening.
+    priority: route === "/" ? 1 : 0.8,
   }));
 }
