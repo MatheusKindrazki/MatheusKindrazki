@@ -49,12 +49,49 @@ export default function PageChrome({
         }}
       />
 
+      {/* ── Mobile chrome (< 820px) ──────────────────────────────────────
+          Under the released auto-height shell the desktop absolute offsets
+          (top-[49px]/left-6/right-6/top-1/2) no longer track the viewport, so
+          below the shell's 820px release we render a compact fixed top bar
+          that DOES track the viewport: identity dot + wordmark + route label,
+          and a working back affordance on inner routes. The live HUD/clock +
+          vertical strip stay desktop-only (hidden here, P2). */}
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+        className={shell.mobileChrome}
+      >
+        <div className={shell.mobileChromeBar}>
+          <div className={shell.mobileChromeIdent}>
+            <Identity status="rest" />
+            <div className={shell.mobileChromeWordmark}>
+              <span>Matheus · Kindrazki</span>
+              <span>
+                {label} · idx.{index}
+              </span>
+            </div>
+          </div>
+          {showBack && (
+            <Link
+              href="/"
+              onClick={onBackClick}
+              aria-label="Back to home"
+              className={shell.mobileChromeBack}
+            >
+              <span aria-hidden>&larr;</span>
+              <span>back</span>
+            </Link>
+          )}
+        </div>
+      </motion.div>
+
       {/* Top-left — Identity dots + wordmark (absolute to parent 1280px container) */}
       <motion.div
         variants={fadeIn}
         initial="hidden"
         animate="show"
-        className="absolute top-[49px] left-6 z-30 flex items-center gap-4"
+        className={`absolute top-[49px] left-6 z-30 flex items-center gap-4 ${shell.desktopChrome}`}
       >
         <Identity status="rest" />
         <div className={`hidden sm:flex flex-col ${shell.chromeWordmark}`}>
@@ -80,7 +117,7 @@ export default function PageChrome({
         variants={fadeIn}
         initial="hidden"
         animate="show"
-        className="absolute top-[49px] right-6 z-30 hidden sm:block text-right"
+        className={`absolute top-[49px] right-6 z-30 hidden sm:block text-right ${shell.desktopChrome}`}
       >
         <div className={shell.chromeHud}>
           <div className="flex items-center justify-end gap-2">
@@ -100,7 +137,7 @@ export default function PageChrome({
         variants={fadeIn}
         initial="hidden"
         animate="show"
-        className={`absolute right-5 top-1/2 z-30 hidden md:block pointer-events-none ${shell.chromeStrip}`}
+        className={`absolute right-5 top-1/2 z-30 hidden md:block pointer-events-none ${shell.chromeStrip} ${shell.desktopChrome}`}
         style={{
           writingMode: "vertical-rl",
           transform: "translateY(-50%) rotate(180deg)",

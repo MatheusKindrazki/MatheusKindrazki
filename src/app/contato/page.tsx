@@ -18,6 +18,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { FiCopy, FiCheck, FiCalendar, FiArrowUpRight } from "react-icons/fi";
 import { getColorValue } from "@/lib/colors";
 import { stagger, fadeUp, enterAt } from "@/lib/motion";
+import styles from "./contato.module.css";
 
 const ParticlePhoto = dynamic(
   () => import("@/components/canvas/ParticlePhoto"),
@@ -107,7 +108,7 @@ function ContatoContent() {
   }, []);
 
   return (
-    <ScrollStage>
+    <ScrollStage className={styles.stage}>
       {/* Section 1 - Hero + email CTA + socials. Enters via the CSS
           `.enter-rise` idiom (globals.css), not framer `initial="hidden"` —
           the SSR HTML must paint the h1 before the pixi-heavy bundle
@@ -163,7 +164,7 @@ function ContatoContent() {
                 {profile.email}
               </a>
               <span
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-kindra-rule)] text-[var(--color-kindra-meta-mid)] opacity-0 transition-all duration-500 group-hover/email:opacity-100 group-hover/email:border-[var(--color-kindra-rule-strong)] group-hover/email:text-[var(--color-kindra-text-white)]"
+                className={`${styles.touchReveal} inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-kindra-rule)] text-[var(--color-kindra-meta-mid)] opacity-0 transition-all duration-500 group-hover/email:opacity-100 group-hover/email:border-[var(--color-kindra-rule-strong)] group-hover/email:text-[var(--color-kindra-text-white)]`}
                 title={copied ? "Copied" : "Copy email"}
               >
                 <AnimatePresence mode="wait" initial={false}>
@@ -219,7 +220,7 @@ function ContatoContent() {
               target="_blank"
               rel="noopener noreferrer"
               data-cursor="link"
-              className="group/cal inline-flex items-center gap-3 text-[length:var(--text-body)] tracking-[0.05em] text-[var(--color-kindra-meta-high)] transition-colors duration-700 hover:text-[var(--color-kindra-text-white)]"
+              className={`group/cal ${styles.calLink} inline-flex items-center gap-3 text-[length:var(--text-body)] tracking-[0.05em] text-[var(--color-kindra-meta-high)] transition-colors duration-700 hover:text-[var(--color-kindra-text-white)]`}
               style={{
                 fontFamily: "var(--font-body)",
                 transitionTimingFunction: "var(--ease-smooth)",
@@ -238,7 +239,7 @@ function ContatoContent() {
                 />
               </span>
               <FiArrowUpRight
-                className="text-[13px] -translate-x-1 opacity-0 transition-all duration-700 group-hover/cal:translate-x-0 group-hover/cal:opacity-100"
+                className={`${styles.touchReveal} text-[13px] -translate-x-1 opacity-0 transition-all duration-700 group-hover/cal:translate-x-0 group-hover/cal:opacity-100`}
                 style={{ color: red }}
               />
             </a>
@@ -257,7 +258,7 @@ function ContatoContent() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/row relative flex items-center gap-4 border-b border-[var(--color-kindra-rule)] py-3 pl-4 transition-colors duration-700"
+                    className={`group/row ${styles.socialRow} relative flex items-center gap-4 border-b border-[var(--color-kindra-rule)] py-3 pl-4 transition-colors duration-700`}
                     style={{
                       transitionTimingFunction: "var(--ease-smooth)",
                     }}

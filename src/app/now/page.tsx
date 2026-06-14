@@ -19,6 +19,7 @@ import {
   type NowStatus,
 } from "@/lib/content";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
+import { useMobileFlow } from "@/hooks/useMobileFlow";
 
 // Presentation only — all /now data lives in src/lib/content.ts, where the
 // Building column is derived from `projects` (status === 'current') so the
@@ -231,6 +232,7 @@ export default function NowPage() {
 
 function NowContent() {
   const reduceMotion = usePrefersReducedMotion();
+  const isMobileFlow = useMobileFlow();
   const { onNavClick } = useShellNav();
 
   // ONE parallax instance, wired to the ScrollStage scroll container (the
@@ -239,6 +241,14 @@ function NowContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const parallaxY = useTransform(scrollY, [0, 500], [0, -60]);
+
+  // Below the 820px shell release the shell becomes height:auto and .scroll
+  // turns overflow:visible — the page scrolls on the window, NOT on scrollRef.
+  // The container-bound useScroll then never advances, but the y transform
+  // still offsets the hero, lifting "Currently" above the page (top:-1030px,
+  // unreachable). Disable parallax on mobile-flow (and reduced motion) so the
+  // hero is a plain in-flow first block that scrolls naturally.
+  const parallaxEnabled = !reduceMotion && !isMobileFlow;
 
   return (
     <ScrollStage ref={scrollRef}>
@@ -251,7 +261,7 @@ function NowContent() {
           style={{ maxWidth: "var(--measure-ledger)" }}
         >
           <motion.div
-            style={reduceMotion ? undefined : { y: parallaxY }}
+            style={parallaxEnabled ? { y: parallaxY } : undefined}
             className="will-change-transform w-full"
           >
             <Eyebrow
@@ -328,7 +338,10 @@ function NowContent() {
           className="mx-auto w-[90%]"
           style={{ maxWidth: "var(--measure-ledger)" }}
         >
-          <div className="grid items-start grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xl:gap-10">
+          {/* Breakpoints aligned to the 820px shell release: 1 col below 820
+              (mobile flow reads as a single column), 2 cols once the shell is
+              a fixed-height viewport again, 4 cols at xl (desktop unchanged). */}
+          <div className="grid items-start grid-cols-1 gap-12 min-[820px]:grid-cols-2 xl:grid-cols-4 xl:gap-10">
             {/* Column 1 — BUILDING (yellow) */}
             <Column
               index="01"

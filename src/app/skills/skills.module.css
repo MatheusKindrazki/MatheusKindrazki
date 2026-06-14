@@ -1,0 +1,57 @@
+/* ──────────────────────────────────────────────────────────────────
+   /skills route-local overrides. Two concerns, both narrow/short only —
+   desktop (>=1280px, tall) is never touched by anything in this file.
+
+   1) SHORT-LANDSCAPE RELEASE (P0 @ 1024×768): above the 820px shell
+      release the shell is still a fixed-height snap box and each
+      .section is min-height:100% of a short viewport, so a category that
+      doesn't fit one snap page lands below the fold. The shell's inner
+      scroll already reaches every snap section — what made the stack read
+      as "unreachable" was the gravity warp dragging it off-screen, now
+      disabled in JS for this band (SHORT_VIEWPORT_QUERY). Here we only
+      shrink each section's vertical padding so a short snap page isn't
+      mostly empty air and the category content sits in view. We do NOT
+      release the inner scroll: the parent .shell stays height:100vh /
+      overflow:hidden in this band (shell.module.css, out of route scope),
+      so an auto-height inner scroll would be clipped, not scrollable.
+
+   2) NARROW LEGIBILITY (P1 @ 390/768): under the released shell the
+      black-hole DJ video sits behind the now-centered category column
+      and the bright chip rows wash out. A route-local scrim pushes the
+      reading column legible without dimming the cosmic identity.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* 1 — short-landscape section padding. The 821–1280px band with a short
+   height keeps the shell's snap scroll (the inner .scroll already reaches
+   every section); we only tighten the section padding so the snap page is
+   not dominated by --section-pad-md whitespace at 768px tall. Doubled
+   class = higher specificity than shell.module.css's single .section so
+   this wins regardless of CSS-module bundle order. */
+@media (max-height: 760px) and (min-width: 821px) {
+  .section.section {
+    padding-block: var(--section-pad-sm);
+  }
+}
+
+/* 2 — narrow legibility scrim. Sits above the visual backdrop but below
+   the content, only below the 820px release where the column re-centers
+   over the black hole. Layers under ContentScrim's uniform dim for a bit
+   more contrast on the bright DJ video without hiding it. */
+.legibility {
+  display: none;
+}
+@media (max-width: 820px) {
+  .legibility {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-backdrop) + 2);
+    pointer-events: none;
+    background: radial-gradient(
+      120% 75% at 50% 42%,
+      rgba(5, 6, 10, 0.62) 0%,
+      rgba(5, 6, 10, 0.5) 45%,
+      rgba(5, 6, 10, 0.32) 100%
+    );
+  }
+}

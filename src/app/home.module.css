@@ -375,7 +375,12 @@
   gap: 12px;
 }
 
-@media (min-width: 768px) {
+/* The footer's 2-col / right-aligned desktop layout is gated to the shell
+   release (821px) — NOT 768. At 768–820 the shell is already released into
+   mobile flow, and forcing the right-aligned now lane there spilled it past
+   the viewport (~33px horizontal overflow). Aligning to the 820 source of
+   truth keeps the centered single-column footer through the released band. */
+@media (min-width: 821px) {
   .footerGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -391,7 +396,7 @@
   gap: 28px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 821px) {
   .socials {
     justify-content: flex-start;
   }
@@ -454,7 +459,7 @@
   align-items: center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 821px) {
   .nowLane {
     align-items: flex-end;
   }
@@ -510,7 +515,7 @@
   margin-top: 4px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 821px) {
   .metaLine {
     justify-content: flex-end;
   }
@@ -543,6 +548,44 @@
 @media (max-width: 560px) {
   .titleLine {
     font-size: 2.75rem;
+  }
+}
+
+/* ── Touch UX (coarse pointers) ──────────────────────────────────────
+   Footer affordances are tuned for hover: the social icon links, the
+   "currently / now" link, the inline jarvis status, and the "ask jarvis"
+   CTA all have only ~8px hit padding (≈37px box), and the social arrow +
+   underlines reveal on hover (unreachable on touch). On a coarse pointer:
+   guarantee a >=44px tap target and surface the hover-revealed
+   affordances by default. Desktop (fine pointer / hover) is untouched. */
+@media (pointer: coarse) {
+  .social,
+  .nowLink,
+  .jarvisButton,
+  .jarvisStatus {
+    min-height: 44px;
+  }
+  /* Icon-only social rows (label hidden below 640px) need width too. */
+  .social {
+    min-width: 44px;
+    justify-content: center;
+  }
+  /* 5 × 44px targets + the 28px gaps overflow a ~325px-usable 360px phone.
+     Spread them edge-to-edge and trim the gap so every target stays >=44px
+     without horizontal overflow. The 821px desktop grid lane is unaffected
+     (this only applies below 640px, where the labels are hidden anyway). */
+  @media (max-width: 639px) {
+    .socials {
+      width: 100%;
+      justify-content: space-between;
+      gap: 0;
+    }
+  }
+  /* The arrow that slides in on hover — show it so the affordance reads
+     as tappable on touch. */
+  .socialArrow {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
