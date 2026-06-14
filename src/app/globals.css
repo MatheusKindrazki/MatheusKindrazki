@@ -11,10 +11,73 @@
     --color-kindra-text: #dddddd;
     --color-kindra-text-white: #ffffff;
 
-    --font-heading: "Roboto Slab", serif;
-    --font-body: "Montserrat", sans-serif;
+    /* Text scale on black void — all meet or exceed WCAG AA (4.5:1) */
+    --color-kindra-meta-low: #7a7a7a;
+    --color-kindra-meta-mid: #9a9a9a;
+    --color-kindra-meta-high: #d0d0d0;
+    --color-kindra-rule: #3a3a3a;
+    --color-kindra-rule-strong: #555555;
+
+    /* Warm off-white for editorial headings on the void (was referenced by
+       /projetos before it existed — silently fell back to inherited grey). */
+    --color-kindra-cream: #ece5d8;
+    /* Near-black for text pressed onto an accent fill (inverted chips/buttons). */
+    --color-kindra-on-accent: #020403;
+
+    /* Font tokens — the real (hashed) families + metric fallbacks are set
+       by next/font on <html> under these same names; the values below are
+       last-resort fallbacks if those classes are missing. */
+    --font-heading: "Fraunces", serif;
+    --font-body: "Instrument Sans", sans-serif;
+    --font-data: "IBM Plex Mono", monospace;
 
     --ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+
+    /* ── Spatial system ─────────────────────────────────────────────
+       Single source of truth for the page shell + content measures.
+       Resolves the prior 500-vs-520 min-height drift and the
+       610/650/900/1000/1060/1120 content-width spread. */
+    --shell-max-w: 1280px;
+    --shell-min-h: 520px;
+    --shell-max-h: 960px;
+    --shell-pad-x: clamp(1.25rem, 4vw, 3rem);
+
+    /* Inner reading measures (3-step scale). */
+    --measure-narrow: 650px;   /* skills / sobre / contato copy */
+    --measure-wide: 1000px;    /* home hero, wide spreads */
+    --measure-ledger: 1060px;  /* projetos build ledger */
+
+    /* Section vertical rhythm (clamp-based, viewport-aware). */
+    --section-pad-sm: clamp(2rem, 5vh, 3rem);
+    --section-pad-md: clamp(3rem, 8vh, 5rem);
+    --section-pad-lg: clamp(4rem, 12vh, 8rem);
+
+    /* ── Type scale ─────────────────────────────────────────────────
+       Clamp-based, reconciles the 48px..176px H1 spread into a system.
+       --text-display reserved for the /now ornamental hero. */
+    --text-display: clamp(3.5rem, 9vw, 8.5rem);
+    --text-h1: clamp(2.6rem, 6vw, 4.5rem);
+    --text-h2: clamp(1.7rem, 3vw, 2.4rem);
+    --text-deck: clamp(1rem, 1.4vw, 1.25rem);
+    --text-body: 1rem;
+    --text-caption: 0.8125rem;
+    /* Chrome/micro type is px-valued on purpose: <html> pins the rem basis
+       at 14px (see below), so the original rem values — authored against
+       the browser-default 16px — rendered at 9.625px/8.75px, under the
+       10px legibility floor for tracked uppercase mono. */
+    --text-eyebrow: 11px;
+    --text-data: 11px;        /* HUD / telemetry rows (pairs with --font-data) */
+    --text-micro: 10px;       /* smallest legible chrome labels */
+
+    /* ── z-index ladder ─────────────────────────────────────────────
+       Encodes the invariant: overlay > explode > chrome > content.
+       Promote ad-hoc 0/1/2/10/30/50/9998 literals to these names. */
+    --z-backdrop: 1;
+    --z-grain: 2;
+    --z-content: 10;
+    --z-chrome: 30;
+    --z-explode: 50;
+    --z-overlay: 9998;
 }
 
 * {
@@ -29,6 +92,9 @@ body {
     background-color: var(--color-kindra-bg);
     color: var(--color-kindra-text);
     font-family: var(--font-body);
+    /* 14px on <html> is the rem basis for the whole type scale — so
+       --text-body (1rem) = 14px and the 21px base line-height is exactly
+       1.5× body size. Do not change without re-deriving every clamp. */
     font-size: 14px;
     line-height: 21px;
     -webkit-font-smoothing: antialiased;
@@ -59,4 +125,182 @@ a:hover {
 
 .margin-auto {
     margin: auto;
+}
+
+/* Custom cursor: hide the native cursor on desktop (pointer-capable) devices.
+   The Pixi CursorLayer (src/pixi/layers/CursorLayer.ts) toggles
+   `.custom-cursor-active` on <body> when it mounts. Touch devices and
+   reduced-motion users keep their native cursor. */
+@media (hover: hover) and (min-width: 768px) {
+    body.custom-cursor-active,
+    body.custom-cursor-active * {
+        cursor: none !important;
+    }
+}
+
+/* Keyboard focus — visible for keyboard users (desktop hides native cursor) */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+details:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid var(--color-kindra-yellow);
+    outline-offset: 2px;
+    outline-style: solid;
+    border-radius: 0;
+}
+
+/* When custom cursor is active (desktop ≥768px), keyboard focus gets stronger emphasis
+   since there's no native cursor to visually anchor the user */
+body.custom-cursor-active :focus-visible {
+    outline-offset: 3px;
+}
+
+/* Marquee — horizontal token scroll used on /skills hero */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.animate-marquee {
+    animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
+/* ── SSR-visible entrance ────────────────────────────────────────────
+   Hero copy used to mount behind framer-motion `initial="hidden"` — the
+   SSR HTML shipped at opacity:0 until the pixi-heavy bundle hydrated, so
+   deep links stared at a black void (LCP = hydration time). This is the
+   pure-CSS counterpart with the SAME choreography as lib/motion.ts
+   stagger+fadeUp (y 24px → 0, 0.62s, --ease-smooth, 80ms stagger via the
+   --enter-i custom property — pair with `enterAt(i)` from lib/motion.ts):
+   it starts the moment styles paint, no JavaScript required. */
+.enter-rise {
+    animation: enter-rise 0.62s var(--ease-smooth) both;
+    animation-delay: calc(var(--enter-i, 0) * 80ms);
+}
+
+@keyframes enter-rise {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Grain drift — very slow so grain feels alive without being distracting */
+@keyframes grain-drift {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(-2%, 1%);
+    }
+    50% {
+        transform: translate(1%, -2%);
+    }
+    75% {
+        transform: translate(-1%, 2%);
+    }
+}
+.animate-grain {
+    animation: grain-drift 18s ease-in-out infinite;
+}
+
+/* Yellow shimmer — slow horizontal light pass for key accents */
+@keyframes shimmer-pass {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+.shimmer-yellow {
+    background: linear-gradient(
+        90deg,
+        currentColor 0%,
+        currentColor 40%,
+        rgba(255, 255, 255, 0.35) 50%,
+        currentColor 60%,
+        currentColor 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer-pass 6s ease-in-out infinite;
+}
+
+/* Neutral shimmer — scoped to /now's ornamental ampersand.
+   Uses meta-mid as base with a soft white flash. Yellow shimmer remains
+   reserved for the home hero. */
+.shimmer-neutral {
+    background: linear-gradient(
+        90deg,
+        var(--color-kindra-meta-mid) 0%,
+        var(--color-kindra-meta-mid) 40%,
+        rgba(255, 255, 255, 0.55) 50%,
+        var(--color-kindra-meta-mid) 60%,
+        var(--color-kindra-meta-mid) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer-pass 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* Content appears instantly — no rise, no fade-wait. */
+    .enter-rise {
+        animation: none;
+    }
+    .animate-marquee {
+        animation: none;
+    }
+    .animate-grain {
+        animation: none;
+    }
+    .shimmer-yellow {
+        animation: none;
+        background: none;
+        color: inherit;
+    }
+    .shimmer-neutral {
+        animation: none;
+        background: none;
+        color: var(--color-kindra-meta-mid);
+    }
+    .animate-pulse {
+        animation: none !important;
+    }
+    .animate-ping {
+        animation: none !important;
+    }
+}
+
+/* Home hero off-axis subtitle — reduce rotation on narrow viewports
+   so the cantilever doesn't push the text past the container edge.
+   Pure CSS (no JS) to avoid SSR hydration mismatch. */
+.subtitle-offaxis {
+    transform: rotate(-1deg) translateX(-0.125rem);
+}
+@media (min-width: 640px) {
+    .subtitle-offaxis {
+        transform: rotate(-2deg) translateX(-0.25rem);
+    }
 }

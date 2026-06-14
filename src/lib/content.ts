@@ -1,15 +1,57 @@
+import type { ThemeColor } from '@/lib/colors'
+
+// ──────────────────────────────────────────────────────────────────────
+// Honest-by-construction dates. Nothing below is hand-edited: the "last
+// updated" stamp is injected at build time from the last git commit that
+// touched THIS file (see next.config.ts), and the age is computed from a
+// birthdate instead of a number that silently rots.
+// ──────────────────────────────────────────────────────────────────────
+
+/** Mirrors the fallback in next.config.ts — used only when git history is unavailable. */
+const CONTENT_UPDATED_FALLBACK_ISO = '2026-04-17'
+
+/** Date-only ISO stamp (YYYY-MM-DD) of the last content commit. */
+const contentUpdatedIso = (
+  process.env.NEXT_PUBLIC_CONTENT_UPDATED_AT ?? CONTENT_UPDATED_FALLBACK_ISO
+).slice(0, 10)
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
+
+function formatMonthYear(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`)
+  return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
+}
+
+/**
+ * Only the birth YEAR is load-bearing: the site published "29" in feb 2026,
+ * which pins the year to 1996; the day is a placeholder the owner can correct.
+ * Computing from a date means the number can never go stale again.
+ */
+export const BIRTHDATE = new Date('1996-07-01T00:00:00Z')
+
+export function computeAge(birthdate: Date, today: Date = new Date()): number {
+  let age = today.getUTCFullYear() - birthdate.getUTCFullYear()
+  const monthDelta = today.getUTCMonth() - birthdate.getUTCMonth()
+  if (monthDelta < 0 || (monthDelta === 0 && today.getUTCDate() < birthdate.getUTCDate())) {
+    age -= 1
+  }
+  return age
+}
+
 export const profile = {
   name: 'Matheus Kindrazki',
   nickname: 'Kindra',
-  age: 29,
-  title: 'Principal Engineer',
-  company: 'Arco Educacao',
+  age: computeAge(BIRTHDATE),
+  title: 'Co-founder & Builder',
+  company: 'MokLabs Venture Studio',
+  secondaryRole: 'Founding team at Lugui.ai',
   email: 'matheus@kindrazki.dev',
-  location: 'Curitiba, PR',
-  bio: 'Ahh, meu nome e Matheus, mas pode me chamar de Kindra =)',
-  headline: 'Construo plataformas que escalam para milhoes de alunos.',
+  location: 'Curitiba, Brazil',
+  bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
+  headline: 'Building ventures where bold ideas meet careful engineering.',
   description:
-    '5 anos arquitetando micro frontends, design systems e developer experience na maior empresa de educacao do Brasil. Agora expandindo para AI aplicada, RAG e produtos proprios.',
+    'Co-founder at MokLabs Venture Studio and part of the founding team at Lugui.ai. Engineering since 2017, architecting platforms used by millions of students — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
+  calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
     linkedin: 'https://linkedin.com/in/matheuskindrazki',
@@ -18,37 +60,194 @@ export const profile = {
   },
 }
 
-export const projects = [
+/**
+ * Site-wide rot-prone strings, kept in ONE place so the version/date stamp in
+ * the chrome, the home footer, and the /now page never disagree. Both date
+ * fields derive from the build-time git stamp — never edit them by hand.
+ */
+export const site = {
+  version: 'v3.0',
+  year: '2026',
+  /** e.g. 'jun 2026' */
+  lastUpdated: formatMonthYear(contentUpdatedIso),
+  /** YYYY-MM-DD */
+  lastUpdatedIso: contentUpdatedIso,
+}
+
+export type ProjectStatus = 'current' | 'past' | 'side'
+
+/** Maturity chip shown on /now's Building column. */
+export type NowStatus = 'building' | 'alpha' | 'beta' | 'in-progress' | 'in-production'
+
+export interface Project {
+  title: string
+  description: string
+  tags: string[]
+  color: ThemeColor
+  link?: string
+  /** Atlas/ledger metadata — co-located so the constellation scales with the list. */
+  year: string
+  status: ProjectStatus
+  signal: string
+  role: string
+  coordinate: string
+  /** Short "what's on the desk" copy for /now. Falls back to `description`. */
+  nowNote?: string
+  /** /now maturity chip. Defaults to 'building'. */
+  nowStatus?: NowStatus
+}
+
+export const projects: Project[] = [
   {
-    title: 'Arco Educacao Platform',
-    description: 'Microfrontend ecosystem with Module Federation, enabling independent squad velocity while maintaining system coherence. Iris Design System integration and governance across product surfaces.',
-    tags: ['React', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design System'],
-    color: 'green' as const,
+    title: 'Jarvis — Personal AI Operating System',
+    description:
+      'My personal knowledge graph + AI agent. Connects memory, entities, tasks, and decisions across every project I touch. A living second brain built on MCP servers, vector search, and a growing taxonomy of what I know. This very page has a live Jarvis instance — ask it anything about me.',
+    tags: ['MCP', 'RAG', 'Vector DB', 'Personal AI', 'Knowledge Graph', 'Claude'],
+    color: 'yellow',
+    year: '2024-2026',
+    status: 'current',
+    signal: 'memory',
+    role: 'personal ai os',
+    coordinate: 'rag/mcp',
+    nowNote:
+      'My personal knowledge graph + AI agent — the live instance answers questions right here on this site.',
+    nowStatus: 'in-production',
   },
   {
-    title: 'AI Education Tools',
-    description: 'RAG systems over 10k+ document bases, automated essay correction with OCR/HTR pipelines, semantic search infrastructure for educational content.',
-    tags: ['LangChain', 'RAG', 'OCR', 'Python', 'Vector DB'],
-    color: 'blue' as const,
+    title: 'MokLabs Venture Studio',
+    description:
+      'Co-founded AI venture studio turning sharp ideas into shipped products. Shared platform engineering, design systems, and AI infrastructure power a portfolio of ventures — each new product reuses the scaffolding instead of rebuilding it.',
+    tags: ['Venture Studio', 'Platform', 'Design Systems', 'AI Agents', 'Founder'],
+    color: 'yellow',
+    year: '2024-2026',
+    status: 'current',
+    signal: 'venture',
+    role: 'co-founder',
+    coordinate: 'studio/platform',
+    nowNote:
+      'Co-founding a studio that ships ambitious products with careful engineering.',
+    nowStatus: 'building',
+  },
+  {
+    title: 'Lugui.ai',
+    description:
+      'Founding team member building AI-native educational intelligence from day zero — tutoring systems that actually understand what a student just missed. Architecting the frontend, RAG pipelines, and the developer experience that lets a small team ship like a large one.',
+    tags: ['AI', 'RAG', 'Next.js', 'LangChain', 'Founding Team'],
+    color: 'blue',
+    year: '2025-2026',
+    status: 'current',
+    signal: 'ai-native',
+    role: 'founding team',
+    coordinate: 'product/rag',
+    nowNote:
+      'Tutoring systems that actually understand what a student just missed — frontend, RAG pipelines, and the DX that keeps a small team fast.',
+    nowStatus: 'alpha',
+  },
+  {
+    title: 'Synk',
+    description:
+      'A real code editor for the iPad with on-device AI. Native SwiftUI + Runestone with TreeSitter syntax, cloud AI (Anthropic) plus an opt-in local model via MLC-LLM, and three modes: AI-assisted editing, a browser-based playground, and a remote workspace. The iPad becomes a first-class dev machine.',
+    tags: ['SwiftUI', 'iOS', 'On-device AI', 'MLC-LLM', 'Runestone', 'Anthropic'],
+    color: 'blue',
+    year: '2026',
+    status: 'current',
+    signal: 'edge-ai',
+    role: 'solo founder',
+    coordinate: 'ipad/native',
+    nowNote:
+      'A real code editor for the iPad with on-device AI — native SwiftUI, cloud and local models.',
+    nowStatus: 'in-progress',
+  },
+  {
+    title: 'Argus',
+    description:
+      'Privacy-first, camera-agnostic security platform with AI vision. Connects to any ONVIF/RTSP camera or webcam and analyzes frames through Gemini/OpenRouter for motion and event detection — open-source and low-cost, with local SQLite persistence and an optional Tauri desktop build. No rip-and-replace.',
+    tags: ['Next.js', 'React', 'AI Vision', 'ONVIF/RTSP', 'SQLite', 'Tauri'],
+    color: 'green',
+    year: '2026',
+    status: 'current',
+    signal: 'vision',
+    role: 'architect',
+    coordinate: 'moklabs/edge',
+    nowNote:
+      'Privacy-first AI vision for any ONVIF/RTSP camera — open-source, low-cost, no rip-and-replace.',
+    nowStatus: 'in-progress',
+  },
+  {
+    title: 'Kindraw',
+    description:
+      'A warm, playful workspace built on top of Excalidraw — authenticated boards, a folder tree, markdown docs with Mermaid, and real-time collaboration. Coral-forward identity (Fraunces + Bricolage Grotesque) on a Cloudflare-first stack: Workers, D1, R2, GitHub login.',
+    tags: ['React', 'Excalidraw', 'Cloudflare Workers', 'D1', 'R2', 'Realtime'],
+    color: 'red',
+    year: '2026',
+    status: 'current',
+    signal: 'canvas',
+    role: 'solo founder',
+    coordinate: 'draw/docs',
+    nowNote:
+      'A warm, playful workspace on top of Excalidraw — boards, docs, and real-time collaboration.',
+    nowStatus: 'in-progress',
   },
   {
     title: 'Remindr.AI',
-    description: 'Privacy-first desktop app for intelligent transcription, diarization, and daily memory. Built for people who think while they talk.',
-    tags: ['Tauri', 'TypeScript', 'Whisper', 'AI'],
-    color: 'yellow' as const,
+    description:
+      'Privacy-first desktop app for intelligent transcription, diarization, and daily memory. Built for people who think while they talk — local-first capture (Tauri + Rust + Whisper) with a cloud knowledge layer on pgvector.',
+    tags: ['Tauri', 'Rust', 'Whisper', 'pgvector', 'AI'],
+    color: 'yellow',
     link: 'https://remindr.ai',
+    year: '2024-2026',
+    status: 'side',
+    signal: 'memory',
+    role: 'desktop ai',
+    coordinate: 'tauri/whisper',
   },
   {
     title: 'Lofiever',
-    description: 'Ambient productivity environment combining lo-fi aesthetics with focused work sessions.',
-    tags: ['React', 'Audio API', 'Creative Coding'],
-    color: 'red' as const,
+    description:
+      'A 24/7 lo-fi streaming app with an AI DJ that curates the playlist and talks back in chat. Next.js 15 + a custom Socket.IO server stream music continuously, with an Expo tvOS client for the living-room build — ambient focus, on tap.',
+    tags: ['Next.js', 'Socket.IO', 'AI DJ', 'Audio Streaming', 'Expo tvOS'],
+    color: 'red',
+    year: '2025-2026',
+    status: 'side',
+    signal: 'ambient',
+    role: 'creative build',
+    coordinate: 'audio/focus',
   },
   {
-    title: 'Cafe com Codigo',
-    description: 'Recurring engineering community ritual for knowledge sharing and technical culture building at Arco.',
+    title: 'Arco Educação Platform',
+    description:
+      'Architected the microfrontend ecosystem at Arco Educação with Module Federation, enabling independent squad velocity while maintaining system coherence. Led design-system integration and governance across product surfaces reaching millions of students.',
+    tags: ['React', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design System'],
+    color: 'green',
+    year: '2020-2024',
+    status: 'past',
+    signal: 'scale',
+    role: 'principal engineer',
+    coordinate: 'millions/students',
+  },
+  {
+    title: 'AI Education Tools',
+    description:
+      'RAG systems over 10k+ document bases, automated essay correction with OCR/HTR pipelines, and semantic search infrastructure for educational content.',
+    tags: ['LangChain', 'RAG', 'OCR', 'Python', 'Vector DB'],
+    color: 'blue',
+    year: '2023-2024',
+    status: 'past',
+    signal: 'retrieval',
+    role: 'architecture',
+    coordinate: '10k+ docs',
+  },
+  {
+    title: 'Café com Código',
+    description:
+      'Recurring engineering community ritual for knowledge sharing and technical culture building, originally seeded at Arco.',
     tags: ['Community', 'Tech Talks', 'Engineering Culture'],
-    color: 'green' as const,
+    color: 'green',
+    year: '2021',
+    status: 'side',
+    signal: 'culture',
+    role: 'community ritual',
+    coordinate: 'talks/teams',
   },
 ]
 
@@ -59,24 +258,24 @@ export const skillCategories = [
     skills: ['React', 'Next.js', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design Systems', 'Monorepo', 'Component Libraries', 'Build Optimization', 'Runtime Performance'],
   },
   {
+    title: 'Applied AI & Agents',
+    color: 'yellow' as const,
+    skills: ['LangChain', 'LangGraph', 'RAG Orchestration', 'MCP Servers', 'Vector DBs', 'On-device AI', 'OCR/HTR', 'Langfuse', 'Semantic Search', 'Dataset Engineering'],
+  },
+  {
     title: 'Developer Experience',
     color: 'green' as const,
     skills: ['CI/CD Pipelines', 'Tooling & Automation', 'RFC/ADR/DCP', 'WikiJS', 'Quality Gates', 'Standardization'],
   },
   {
-    title: 'Applied AI & Data',
-    color: 'yellow' as const,
-    skills: ['LangChain', 'LangGraph', 'RAG Orchestration', 'Vector DBs', 'OCR/HTR', 'Langfuse', 'Semantic Search', 'Dataset Engineering'],
-  },
-  {
-    title: 'Full-Stack Engineering',
+    title: 'Full-Stack & Native',
     color: 'red' as const,
-    skills: ['Node.js', 'Python', 'PHP', 'GraphQL', 'REST APIs', 'PostgreSQL', 'Angular'],
+    skills: ['Node.js', 'Python', 'PHP', 'Rust', 'SwiftUI', 'Tauri', 'GraphQL', 'REST APIs', 'PostgreSQL'],
   },
   {
     title: 'Cloud & Infrastructure',
     color: 'blue' as const,
-    skills: ['AWS', 'Azure', 'Docker', 'Coolify', 'Supabase', 'Edge Functions', 'n8n', 'Observability'],
+    skills: ['AWS', 'Azure', 'Cloudflare', 'Docker', 'Coolify', 'Supabase', 'Edge Functions', 'n8n', 'Observability'],
   },
 ]
 
@@ -90,17 +289,88 @@ export const philosophy = [
 ]
 
 export const timeline = [
-  { year: '2017', title: 'Inicio com PHP Back-end', description: 'Primeiros passos como desenvolvedor back-end.' },
-  { year: '2018', title: 'Transicao para Front-end', description: 'Descobri a paixao por interfaces e experiencia do usuario.' },
-  { year: '2020', title: 'Arco Educacao', description: 'Entrei como desenvolvedor frontend na maior empresa de educacao do Brasil.' },
-  { year: '2022', title: 'Tech Lead', description: 'Lideranca tecnica de times, arquitetura de micro frontends.' },
-  { year: '2024', title: 'Principal Engineer', description: 'Arquitetura em escala, governanca, DX e iniciativas de AI.' },
-  { year: '2025', title: 'AI & Beyond', description: 'Expandindo para AI aplicada, RAG orchestration e produtos proprios.' },
+  { year: '2017', title: 'Started as a Backend Developer', description: 'First steps as a backend developer with PHP.' },
+  { year: '2018', title: 'Transitioned to Frontend', description: 'Discovered a passion for interfaces and user experience.' },
+  { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a frontend engineer at the largest education company in Brazil.' },
+  { year: '2022', title: 'Tech Lead', description: 'Technical leadership of teams, microfrontend architecture.' },
+  { year: '2024', title: 'Principal Engineer', description: 'Architecture at scale, governance, DX, and AI initiatives.' },
+  { year: '2025', title: 'Founder Era', description: 'Co-founded MokLabs Venture Studio. Joined the founding team at Lugui.ai. Adventuring at the edges of technology.' },
 ]
 
 export const navLinks = [
-  { href: '/projetos', label: 'Projetos', color: 'green' as const },
+  { href: '/projetos', label: 'Projects', color: 'green' as const },
   { href: '/skills', label: 'Skills', color: 'blue' as const },
-  { href: '/sobre', label: 'Sobre', color: 'yellow' as const },
-  { href: '/contato', label: 'Contato', color: 'red' as const },
+  { href: '/sobre', label: 'About', color: 'yellow' as const },
+  { href: '/contato', label: 'Contact', color: 'red' as const },
+]
+
+// ──────────────────────────────────────────────────────────────────────
+// /now data. The Building column is DERIVED from `projects` so it cannot
+// drift from the atlas: every project marked status 'current' shows up,
+// using its `nowNote` (or canonical description) and `nowStatus`.
+// ──────────────────────────────────────────────────────────────────────
+
+export interface NowItem {
+  name: string
+  description: string
+}
+
+export interface NowBuildingItem extends NowItem {
+  status: NowStatus
+}
+
+export const nowBuilding: NowBuildingItem[] = projects
+  .filter((project) => project.status === 'current')
+  .map((project) => ({
+    // 'Jarvis — Personal AI Operating System' → 'Jarvis'
+    name: project.title.split(' — ')[0],
+    description: project.nowNote ?? project.description,
+    status: project.nowStatus ?? 'building',
+  }))
+
+export const nowLearning: NowItem[] = [
+  {
+    name: 'LangGraph',
+    description: 'Orchestrating multi-agent workflows with real state machines, not vibes.',
+  },
+  {
+    name: 'Rust fundamentals',
+    description: 'Slow & steady; reading the book and building small CLIs on the side.',
+  },
+  {
+    name: 'Venture operations',
+    description: 'How small studios stay focused across multiple products without losing their soul.',
+  },
+]
+
+export const nowReading: NowItem[] = [
+  {
+    name: 'The Hard Thing About Hard Things',
+    description: 'Ben Horowitz. Re-read for the 3rd time — it gets sharper every pass.',
+  },
+  {
+    name: 'High Output Management',
+    description: 'Andy Grove. Classic, still sharp, still the operating manual.',
+  },
+  {
+    name: 'Working Backwards',
+    description: "Colin Bryar. Amazon's operating system — how PR/FAQ actually works in practice.",
+  },
+  {
+    name: 'The Mom Test',
+    description: "Rob Fitzpatrick. Short, brutal, essential when you're talking to early users.",
+  },
+]
+
+export const nowThinking: string[] = [
+  'How small teams ship with disproportionate impact.',
+  'Where AI genuinely removes toil vs. where it just performs productivity.',
+  'The difference between craftsmanship and craftsmanship-theater.',
+  'Why most “platforms” are just products that refuse to admit it.',
+]
+
+export const nowNotDoing: { name: string; status: string }[] = [
+  { name: 'Consulting side gigs', status: 'archived' },
+  { name: 'New social platforms', status: 'archived' },
+  { name: 'Conference speaking', status: 'paused since q3 2025' },
 ]

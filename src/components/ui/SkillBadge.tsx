@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { getColorValue, getColorWithAlpha, type ThemeColor } from '@/lib/colors'
 
 interface SkillBadgeProps {
@@ -6,13 +9,23 @@ interface SkillBadgeProps {
 }
 
 export default function SkillBadge({ name, color }: SkillBadgeProps) {
+  const [hover, setHover] = useState(false)
+  const accent = getColorValue(color)
+
   return (
     <span
-      className="inline-block text-sm px-3 py-1.5 rounded-md transition-all duration-500 hover:scale-105"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="inline-flex items-center rounded-md px-3 py-1.5 text-xs transition-all duration-700"
       style={{
-        color: getColorValue(color),
-        backgroundColor: getColorWithAlpha(color, 0.08),
-        border: `1px solid ${getColorWithAlpha(color, 0.15)}`,
+        color: accent,
+        backgroundColor: hover
+          ? getColorWithAlpha(color, 0.1)
+          : 'transparent',
+        border: `1px solid ${getColorWithAlpha(color, hover ? 0.35 : 0.18)}`,
+        transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+        fontFamily: 'var(--font-body)',
+        letterSpacing: '0.02em',
       }}
     >
       {name}

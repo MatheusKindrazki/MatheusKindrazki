@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import AnimatedLink from "@/components/ui/AnimatedLink";
 import { navLinks } from "@/lib/content";
 
@@ -18,6 +18,15 @@ const slideUp = {
   },
 };
 
+// Reduced-motion variant: fade only, no Y translation, shorter duration.
+const slideUpReduced = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { duration: 0.25, ease: [0.19, 1, 0.22, 1] },
+  },
+};
+
 interface PageNavProps {
   /** Current page href to exclude from nav (e.g. "/projetos") */
   current: string;
@@ -26,6 +35,7 @@ interface PageNavProps {
 
 export default function PageNav({ current, onClick }: PageNavProps) {
   const links = navLinks.filter((l) => l.href !== current);
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.div
@@ -36,7 +46,10 @@ export default function PageNav({ current, onClick }: PageNavProps) {
       viewport={{ once: true }}
     >
       {links.map((link) => (
-        <motion.div key={link.href} variants={slideUp}>
+        <motion.div
+          key={link.href}
+          variants={reduceMotion ? slideUpReduced : slideUp}
+        >
           <AnimatedLink
             href={link.href}
             color={link.color}

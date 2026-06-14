@@ -1,261 +1,381 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
-import { motion } from "framer-motion";
-import BackArrow from "@/components/ui/BackArrow";
+import { useEffect, useRef, type CSSProperties } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Mark from "@/components/ui/Mark";
 import PageNav from "@/components/ui/PageNav";
 import SkillBadge from "@/components/ui/SkillBadge";
 import BlackHole from "@/components/ui/BlackHole";
+import Eyebrow from "@/components/ui/Eyebrow";
+import MetaRow from "@/components/ui/MetaRow";
+import PageShell, { useShellNav } from "@/components/layout/PageShell";
+import ScrollStage from "@/components/layout/ScrollStage";
+import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
 import { skillCategories } from "@/lib/content";
-import { getColorValue } from "@/lib/colors";
+import { getColorValue, getColorWithAlpha } from "@/lib/colors";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
 
 const BH_OFFSET_X = 200;
+const GRAVITY_SELECTOR = "[data-gravity-item]";
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
-};
+// Flat list of standout skill tokens for the hero marquee.
+const MARQUEE_TOKENS: string[] = skillCategories.flatMap((c) => c.skills);
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.19, 1, 0.22, 1] },
-  },
-};
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function resetGravityStyles(root: ParentNode): void {
+  root.querySelectorAll<HTMLElement>(GRAVITY_SELECTOR).forEach((item) => {
+    item.style.transform = "";
+    item.style.filter = "";
+    item.style.opacity = "";
+    item.style.willChange = "";
+  });
+}
 
 export default function SkillsPage() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const sectionsRef = useRef<(HTMLElement | null)[]>([]);
-  const [gravityActive, setGravityActive] = useState(false);
-  const gravityIntensityRef = useRef(0); // 0→1 ramp-up after formation
-
-  const handleFormationComplete = useCallback(() => {
-    setGravityActive(true);
-  }, []);
-
-  // Gravitational distortion on scroll - only after black hole explodes
-  useEffect(() => {
-    const scrollEl = scrollRef.current;
-    if (!scrollEl || !gravityActive) return;
-
-    let rafId: number;
-    const startTime = performance.now();
-    const RAMP_DURATION = 1500; // 1.5s to reach full gravity
-
-    const update = () => {
-      const now = performance.now();
-      // Smoothly ramp up gravity intensity after activation
-      gravityIntensityRef.current = Math.min(
-        1,
-        (now - startTime) / RAMP_DURATION,
-      );
-      const intensity = gravityIntensityRef.current;
-
-      const vh = window.innerHeight;
-      const scrollTop = scrollEl.scrollTop;
-
-      sectionsRef.current.forEach((el, i) => {
-        if (!el) return;
-
-        // Section center Y in viewport coords
-        const sectionTop = i * vh - scrollTop;
-        const sectionCenterY = sectionTop + vh / 2;
-
-        // Distance from black hole center
-        const bhY = vh / 2;
-        const dy = sectionCenterY - bhY;
-        const distance = Math.abs(dy);
-        const maxRange = vh * 1.3;
-
-        if (distance > maxRange) {
-          el.style.transform = "";
-          return;
-        }
-
-        // Proximity: 0 (far) → 1 (at black hole center)
-        const raw = 1 - distance / maxRange;
-        const proximity = raw * raw * intensity; // Quadratic + intensity ramp
-
-        // Direction: sections above BH get pulled down, below get pulled up
-        const sign = dy > 0 ? -1 : 1;
-
-        // Gravitational effects
-        const pullX = proximity * 45;
-        const pullY = sign * proximity * 25;
-        const skewY = sign * proximity * 5;
-        const skewX = proximity * 2;
-        const rotateZ = sign * proximity * 1.5;
-        const scaleX = 1 + proximity * 0.04;
-        const scaleY = 1 - proximity * 0.02;
-
-        el.style.transform = [
-          `perspective(600px)`,
-          `translate(${pullX}px, ${pullY}px)`,
-          `skew(${skewX}deg, ${skewY}deg)`,
-          `rotate(${rotateZ}deg)`,
-          `scale(${scaleX}, ${scaleY})`,
-        ].join(" ");
-        el.style.transformOrigin = "left center";
-        el.style.transition = "transform 0.08s linear";
-      });
-
-      // Keep running rAF during ramp-up even without scroll
-      if (intensity < 1) {
-        rafId = requestAnimationFrame(update);
-      }
-    };
-
-    const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(update);
-    };
-
-    scrollEl.addEventListener("scroll", onScroll, { passive: true });
-    // Start ramp-up animation
-    rafId = requestAnimationFrame(update);
-
-    return () => {
-      scrollEl.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(rafId);
-    };
-  }, [gravityActive]);
-
-  const setSectionRef = useCallback(
-    (index: number) => (el: HTMLElement | null) => {
-      sectionsRef.current[index] = el;
-    },
-    [],
-  );
-
-  // Total sections: 1 hero + N categories + 1 curiosidade
-  const totalSections = 1 + skillCategories.length + 1;
+  const accent = getColorValue("blue");
+  const shellStyle = {
+    "--project-accent": accent,
+  } as CSSProperties;
 
   return (
+    <PageShell
+      hudRole="online · thinking"
+      stripText="◈ MK · capability stacks · idx.03"
+      style={shellStyle}
+      persistentBackground
+      background={() => <SkillsBackground />}
+    >
+      <SkillsContent />
+    </PageShell>
+  );
+}
+
+/**
+ * The black hole is a full-viewport Pixi scene (registers via context, renders
+ * null) — it persists across navigation and has no navigation-tied dissolve
+ * like ParticlePhoto. `persistentBackground` on the shell above tells the nav
+ * machine so: it runs the fade-band slew (veil + push at mid-flight) itself
+ * instead of waiting for an explode that never visually happens. Completing
+ * the explode synchronously here (the old approach) made every navigation
+ * leaving /skills an unmasked hard cut under a still-playing band.
+ */
+function SkillsBackground() {
+  return (
     <>
-      {/* Black hole - full viewport, never clipped */}
-      <BlackHole
-        src="/images/kindra-skills.mp4"
-        alt="Kindra DJ"
-        offsetX={BH_OFFSET_X}
-        onFormationComplete={handleFormationComplete}
-      />
+      <BlackHole src="/images/kindra-skills.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
+      {/* Black hole + DJ photo sit right-of-center; darken the left so the
+          left-anchored text column stays legible over it. */}
+      <ContentScrim side="left" intensity="strong" />
+    </>
+  );
+}
 
-    <div className="margin-auto relative w-full max-w-[1280px] h-screen min-h-[500px] max-h-[800px] overflow-hidden cursor-grab active:cursor-grabbing">
-      {/* Back nav - absolute, always visible */}
-      <div className="absolute top-[49px] z-20 w-full">
-        <div className="w-[90%] max-w-[650px] mx-auto">
-          <BackArrow />
-        </div>
-      </div>
+function SkillsContent() {
+  const { onNavClick } = useShellNav();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const totalSkills = skillCategories.reduce(
+    (acc, cat) => acc + cat.skills.length,
+    0,
+  );
 
-      {/* Scrollable snap container */}
-      <div
-        ref={scrollRef}
-        className="relative z-10 h-full overflow-y-auto snap-y snap-mandatory"
-      >
-        {/* Section 1 - Hero */}
-        <section
-          ref={setSectionRef(0)}
-          className="min-h-full snap-start flex items-center"
-        >
-          <div className="w-[90%] max-w-[650px] mx-auto">
-            <h1
-              className="text-[48px] leading-[63px] font-bold text-white mb-4"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Skills & <Mark color="blue">Tecnologias</Mark>
-            </h1>
+  useEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
 
-            <p className="text-[#aaa] text-sm max-w-[600px]">
-              Ferramentas e tecnologias que uso para construir sistemas
-              coerentes em escala.
-            </p>
-            <PageNav current="/skills" />
+    if (reduceMotion) {
+      resetGravityStyles(scrollEl);
+      return;
+    }
+
+    const startedAt = performance.now();
+    let frame = 0;
+
+    const update = (now: number) => {
+      const bhX = window.innerWidth / 2 + BH_OFFSET_X;
+      const bhY = window.innerHeight / 2;
+      const range = Math.min(980, Math.max(560, window.innerWidth * 0.72));
+      const ramp = clamp01((now - startedAt) / 2600);
+
+      scrollEl
+        .querySelectorAll<HTMLElement>(GRAVITY_SELECTOR)
+        .forEach((item, index) => {
+          const rect = item.getBoundingClientRect();
+          const itemX = rect.left + rect.width * 0.5;
+          const itemY = rect.top + rect.height * 0.5;
+          const dx = bhX - itemX;
+          const dy = bhY - itemY;
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+          const proximity = clamp01(1 - Math.max(0, distance - 90) / range);
+          // Damp the warp so text stays readable: the gravitational pull is a
+          // signature touch, not a legibility tax. 0.62 keeps the motion felt
+          // without smearing the pull-quote into the black hole.
+          const strength = proximity * proximity * ramp * 0.62;
+
+          if (strength < 0.006) {
+            item.style.transform = "";
+            item.style.filter = "";
+            item.style.opacity = "";
+            return;
+          }
+
+          const nx = dx / distance;
+          const ny = dy / distance;
+          const tidal = Math.sin(now * 0.0012 + index * 1.7) * strength;
+          const pullX = nx * (34 + strength * 56) * strength;
+          const pullY = ny * (18 + strength * 38) * strength;
+          const rotate = (ny * 2.8 + tidal * 1.6) * strength;
+          const skewX = -nx * 5.5 * strength;
+          const skewY = ny * 3.4 * strength;
+          const scaleX = 1 + strength * 0.055;
+          const scaleY = 1 - strength * 0.022;
+          // Only the closest items blur, and gently — never enough to make the
+          // reading text fuzzy.
+          const blur = Math.max(0, strength - 0.5) * 0.45;
+
+          item.style.willChange = "transform, filter, opacity";
+          item.style.transformOrigin = `${nx > 0 ? "right" : "left"} center`;
+          item.style.transform = [
+            `translate3d(${pullX.toFixed(2)}px, ${pullY.toFixed(2)}px, 0)`,
+            `rotate(${rotate.toFixed(3)}deg)`,
+            `skew(${skewX.toFixed(3)}deg, ${skewY.toFixed(3)}deg)`,
+            `scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})`,
+          ].join(" ");
+          item.style.filter = blur > 0 ? `blur(${blur.toFixed(3)}px)` : "";
+          item.style.opacity = String(1 - strength * 0.08);
+        });
+
+      frame = requestAnimationFrame(update);
+    };
+
+    frame = requestAnimationFrame(update);
+    return () => {
+      cancelAnimationFrame(frame);
+      resetGravityStyles(scrollEl);
+    };
+  }, [reduceMotion]);
+
+  return (
+    <ScrollStage ref={scrollRef}>
+      {/* Section 1 — Hero. Enters via the CSS `.enter-rise` idiom
+          (globals.css), not framer `initial="hidden"` — the SSR HTML must
+          paint the h1 before the pixi-heavy bundle hydrates (deep-link LCP). */}
+      <Section data-gravity-item align="left">
+        <div>
+          <div className="enter-rise" style={enterAt(0)}>
+            <Eyebrow index="03" label="what i do" />
           </div>
-        </section>
 
-        {/* Each skill category as its own snap section */}
-        {skillCategories.map((category, i) => (
-          <section
-            key={i}
-            ref={setSectionRef(i + 1)}
-            className="min-h-full snap-start flex items-center"
+          <h1
+            className="enter-rise mb-4 font-bold tracking-[-0.02em]"
+            style={{
+              ...enterAt(1),
+              fontFamily: "var(--font-heading)",
+              color: "var(--color-kindra-text-white)",
+            }}
           >
-            <div className="w-[90%] max-w-[650px] mx-auto">
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                className="bg-[#111]/90 backdrop-blur-md border border-[#222] rounded-lg p-6"
+            <span
+              className="flex flex-wrap items-baseline gap-x-5 gap-y-1"
+              style={{ fontSize: "var(--text-h1)", lineHeight: 1.1 }}
+            >
+              <Mark color="blue">Skills</Mark>
+              <span
+                className="italic font-normal"
+                style={{
+                  color: "var(--color-kindra-meta-low)",
+                  fontSize: "var(--text-h2)",
+                }}
               >
-                <motion.h2
-                  variants={fadeUp}
-                  className="text-lg font-bold mb-4"
+                — tools i reach for daily
+              </span>
+            </span>
+          </h1>
+
+          <p
+            className="enter-rise max-w-[560px] font-normal"
+            style={{
+              ...enterAt(2),
+              fontFamily: "var(--font-body)",
+              fontSize: "var(--text-body)",
+              lineHeight: "24px",
+              color: "var(--color-kindra-meta-high)",
+            }}
+          >
+            Technologies I use to ship coherent systems at scale — from platform
+            work to applied AI.
+          </p>
+
+          <PageNav current="/skills" onClick={onNavClick} />
+
+          {/* Continuous horizontal marquee of skill tokens */}
+          <div
+            className="enter-rise mt-10 overflow-hidden opacity-70 select-none"
+            style={{
+              ...enterAt(3),
+              maskImage:
+                "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+            }}
+          >
+            <div
+              className="flex w-max gap-6 animate-marquee whitespace-nowrap"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
+              {[...MARQUEE_TOKENS, ...MARQUEE_TOKENS].map((t, i) => (
+                <span
+                  key={`${t}-${i}`}
+                  className="tracking-[0.2em] uppercase"
                   style={{
-                    color: getColorValue(category.color),
-                    fontFamily: "var(--font-heading)",
+                    fontSize: "var(--text-eyebrow)",
+                    color: "var(--color-kindra-meta-low)",
                   }}
                 >
-                  {category.title}
-                </motion.h2>
-                <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-                  {category.skills.map((skill) => (
-                    <SkillBadge
-                      key={skill}
-                      name={skill}
-                      color={category.color}
-                    />
-                  ))}
-                </motion.div>
-              </motion.div>
+                  <span
+                    className="mr-2"
+                    style={{ color: "var(--color-kindra-rule-strong)" }}
+                  >
+                    /
+                  </span>
+                  {t}
+                </span>
+              ))}
             </div>
-          </section>
-        ))}
-
-        {/* Curiosidade - DJ */}
-        <section
-          ref={setSectionRef(totalSections - 1)}
-          className="min-h-full snap-start flex items-center"
-        >
-          <div className="w-[90%] max-w-[650px] mx-auto">
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={stagger}
-              className="bg-[#111]/90 backdrop-blur-md border border-[#222] rounded-lg p-6"
-            >
-              <motion.p
-                variants={fadeUp}
-                className="text-xs uppercase tracking-widest text-[#666] mb-3"
-              >
-                Curiosidade
-              </motion.p>
-              <motion.h2
-                variants={fadeUp}
-                className="text-lg font-bold text-white mb-3"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Nas horas vagas, sou <Mark color="blue">musico</Mark> e{" "}
-                <Mark color="yellow">DJ</Mark>
-              </motion.h2>
-              <motion.p
-                variants={fadeUp}
-                className="text-[#aaa] text-sm leading-relaxed"
-              >
-                Quando nao estou debugando produção ou desenhando arquiteturas,
-                provavelmente estou mixando tracks ou produzindo beats. A
-                criatividade nao para no codigo.
-              </motion.p>
-            </motion.div>
           </div>
-        </section>
-      </div>
-    </div>
-    </>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.5 }}
+            className="mt-10 flex items-center gap-3 uppercase tracking-[0.35em]"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "9px",
+              color: "var(--color-kindra-meta-low)",
+            }}
+          >
+            <span
+              className="inline-block h-px w-8"
+              style={{ background: "var(--color-kindra-rule)" }}
+            />
+            <span>scroll · {skillCategories.length} capability stacks</span>
+            <span
+              aria-hidden
+              className="animate-bounce"
+              style={{ fontSize: "12px", color: "var(--color-kindra-blue)" }}
+            >
+              ↓
+            </span>
+          </motion.div>
+        </div>
+      </Section>
+
+      {/* Section 2 — Categories grid. One column always: the right column used
+          to land on top of the right-side black hole / DJ video and become
+          illegible. Stacked vertically and clamped narrower than the standard
+          measure so even the widest chip row stays clear of the video circle
+          (centered at innerWidth/2 + BH_OFFSET_X, ~160px radius) across
+          1280–1920px. */}
+      <Section align="left" measure="narrow" innerClassName="!max-w-[520px]">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 gap-y-9"
+        >
+          {skillCategories.map((category) => {
+            const categoryAccent = getColorValue(category.color);
+            return (
+              <div key={category.title} data-gravity-item>
+                <motion.div variants={fadeUp} className="group/cat">
+                  <h2
+                    className="font-bold uppercase tracking-[0.22em]"
+                    style={{
+                      color: categoryAccent,
+                      fontFamily: "var(--font-body)",
+                      fontSize: "var(--text-eyebrow)",
+                    }}
+                  >
+                    {category.title}
+                  </h2>
+                  <div
+                    className="mt-2 mb-4 h-px w-full transition-opacity duration-700"
+                    style={{
+                      backgroundColor: getColorWithAlpha(category.color, 0.25),
+                    }}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {category.skills.map((skill) => (
+                      <SkillBadge
+                        key={skill}
+                        name={skill}
+                        color={category.color}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })}
+        </motion.div>
+      </Section>
+
+      {/* Section 3 — Fun fact as pull-quote */}
+      <Section data-gravity-item align="left">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          <Eyebrow label="fun fact" />
+
+          <motion.blockquote
+            variants={fadeUp}
+            className="max-w-[600px] italic font-normal"
+            style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "var(--text-h2)",
+              lineHeight: 1.35,
+              color: "color-mix(in srgb, var(--color-kindra-text-white) 90%, transparent)",
+            }}
+          >
+            &ldquo;Off the clock, I&apos;m a <Mark color="blue">musician</Mark>{" "}
+            and <Mark color="yellow">DJ</Mark>. Creativity doesn&apos;t stop at
+            the code.&rdquo;
+          </motion.blockquote>
+
+          <motion.p
+            variants={fadeUp}
+            className="mt-6 uppercase tracking-[0.3em]"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "var(--text-eyebrow)",
+              color: "var(--color-kindra-meta-low)",
+            }}
+          >
+            <span
+              className="mr-2"
+              style={{ color: "var(--color-kindra-rule)" }}
+            >
+              —
+            </span>{" "}
+            mixing tracks between deploys
+          </motion.p>
+
+          {/* Footer meta row */}
+          <motion.div variants={fadeUp} className="mt-12">
+            <MetaRow
+              items={["idx.03", `${totalSkills} capabilities`, "still learning"]}
+            />
+          </motion.div>
+        </motion.div>
+      </Section>
+    </ScrollStage>
   );
 }

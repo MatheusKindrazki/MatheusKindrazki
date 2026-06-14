@@ -1,0 +1,572 @@
+/* ──────────────────────────────────────────────────────────────────
+   Home (root) page-SPECIFIC styling. The shell, scroll, snap, section
+   measure, and bracketed eyebrow now come from the shared primitives
+   (shell.module.css + <Section>/<PageNav>). What remains here is the
+   full-viewport particle background, the left-side reading vignette, the
+   signature brutalist hero typography, and the home footer lane — the
+   bits unique to the root route.
+   ─────────────────────────────────────────────────────────────────── */
+
+.photoStage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-backdrop);
+  pointer-events: none;
+}
+
+/* ── SSR-visible entrance ────────────────────────────────────────────
+   The hero rise lives in globals.css as the shared `.enter-rise` utility
+   (promoted from here so projetos/sobre/contato/skills get the same
+   LCP-safe treatment). Only the footer's pure fade remains page-local —
+   it mirrors lib/motion.ts fadeIn (1.4s, 0.7s delay). */
+.footerEnter {
+  animation: hero-fade 1.4s ease 0.7s both;
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Boot / acquisition sequence ─────────────────────────────────────
+   First-visit-per-session narration of the real asset wait (the portrait
+   decode the particle field needs anyway). DOM-only — zero Pixi — so it
+   paints long before the WebGL stage hydrates. Speaks in the chrome's
+   mono HUD voice (shell.module.css .chromeHud idiom). */
+.boot {
+  position: absolute;
+  left: var(--shell-pad-x);
+  bottom: 112px;
+  z-index: var(--z-chrome);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  color: var(--color-kindra-meta-mid);
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 360ms var(--ease-smooth);
+}
+
+.bootFading {
+  opacity: 0;
+}
+
+.bootLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  animation: boot-line 0.3s var(--ease-smooth) both;
+}
+
+@keyframes boot-line {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bootIndex {
+  color: var(--color-kindra-yellow);
+}
+
+.bootCursor {
+  align-self: center;
+  width: 6px;
+  height: 11px;
+  background: var(--color-kindra-yellow);
+  animation: boot-blink 0.9s steps(2, jump-none) infinite;
+}
+
+@keyframes boot-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.photoStageExploding {
+  z-index: var(--z-explode);
+}
+
+/* Left-side vignette — darkens the text column so the photo reads as an
+   accent on the right edge. */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-backdrop);
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.55) 30%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0) 85%
+  );
+}
+
+/* ── Hero typography ─────────────────────────────────────────────── */
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.greetingRule {
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--color-kindra-rule);
+}
+
+.greetingName {
+  color: var(--color-kindra-text-white);
+  font-weight: 700;
+}
+
+.title {
+  position: relative;
+  margin: 0 0 32px;
+  margin-left: -1vw;
+  color: var(--color-kindra-text-white);
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.titleLine {
+  display: block;
+  font-size: clamp(2.5rem, 6.2vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 640px) {
+  .titleLine {
+    white-space: nowrap;
+  }
+}
+
+.titleWord {
+  display: inline-block;
+  vertical-align: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.titleWordWhite {
+  display: inline-block;
+  vertical-align: baseline;
+  color: var(--color-kindra-text-white);
+}
+
+/* The ornamental, off-axis ampersand — a true Fraunces italic cut
+   (the italic style is loaded; nothing here is browser-synthesized). */
+.ampersand {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  margin-left: 0.08em;
+  margin-right: 0.04em;
+  color: var(--color-kindra-yellow);
+  font-family: var(--font-heading);
+  font-size: 1.3em;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  transform: rotate(-5deg) translateY(0.08em);
+}
+
+/* Line 2 — cantilevered, off-axis subtitle. Rotation lives in the shared
+   .subtitle-offaxis class in globals.css (kept intentionally). */
+.subtitle {
+  position: relative;
+  display: block;
+  margin-top: 12px;
+  transform-origin: left;
+  color: var(--color-kindra-meta-mid);
+  font-family: var(--font-heading);
+  font-size: clamp(1.1rem, 2.1vw, 1.85rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.subtitleDash {
+  margin-right: 8px;
+  color: var(--color-kindra-rule-strong);
+  font-style: normal;
+}
+
+.subtitleMarker {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 12px;
+  background-color: var(--color-kindra-yellow);
+  font-style: normal;
+  vertical-align: middle;
+  transform: translateY(-0.05em);
+}
+
+.subtitleAt {
+  font-style: italic;
+}
+
+.subtitleCompany {
+  color: var(--color-kindra-meta-high);
+  font-style: normal;
+}
+
+/* ── Copy blocks ─────────────────────────────────────────────────── */
+
+.headline {
+  max-width: 560px;
+  margin: 0 0 20px;
+  color: var(--color-kindra-meta-high);
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 400; /* body face loads 400–700; 300 was a phantom request */
+  line-height: 30px;
+}
+
+.description {
+  max-width: 520px;
+  margin: 0 0 20px;
+  color: var(--color-kindra-meta-mid);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  line-height: 22px;
+}
+
+/* ── Ask Jarvis CTA ──────────────────────────────────────────────── */
+
+.jarvisRow {
+  margin: 0 0 28px;
+  font-family: var(--font-body);
+}
+
+.jarvisButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  margin: -8px 0;
+  color: var(--color-kindra-meta-low);
+  font-size: var(--text-caption);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.jarvisButton:hover,
+.jarvisButton:focus-visible {
+  color: var(--color-kindra-yellow);
+  outline: none;
+}
+
+.jarvisLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jarvisUnderlineWrap {
+  position: relative;
+}
+
+.jarvisUnderline {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--color-kindra-yellow);
+  transition: transform 500ms var(--ease-smooth);
+}
+
+.jarvisButton:hover .jarvisUnderline,
+.jarvisButton:focus-visible .jarvisUnderline {
+  transform: scaleX(1);
+}
+
+.jarvisArrow {
+  display: inline-block;
+  transition: transform 500ms var(--ease-smooth);
+}
+
+.jarvisButton:hover .jarvisArrow,
+.jarvisButton:focus-visible .jarvisArrow {
+  transform: translateX(4px);
+}
+
+/* ── Keywords ────────────────────────────────────────────────────── */
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  max-width: 600px;
+  margin: 0 0 40px;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.keyword {
+  color: var(--color-kindra-meta-low);
+  font-size: var(--text-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: default;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.keyword:hover {
+  color: var(--color-kindra-yellow);
+}
+
+.keywordSlash {
+  margin-right: 4px;
+  color: var(--color-kindra-rule);
+}
+
+.navWrap {
+  margin-top: 8px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+
+.footer {
+  position: absolute;
+  bottom: 42px;
+  left: 0;
+  right: 0;
+  z-index: var(--z-content);
+  padding-inline: var(--shell-pad-x);
+}
+
+.footerGrid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .footerGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+@media (min-width: 768px) {
+  .socials {
+    justify-content: flex-start;
+  }
+}
+
+.social {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  margin: -8px;
+  color: var(--color-kindra-meta-low);
+  font-size: var(--text-data);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.social:hover,
+.social:focus-visible {
+  color: var(--color-kindra-text-white);
+  outline: none;
+}
+
+.socialIcon {
+  font-size: 13px;
+  transition: transform 500ms var(--ease-smooth);
+}
+
+.social:hover .socialIcon {
+  transform: translateY(-1px);
+}
+
+.socialLabel {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .socialLabel {
+    display: inline;
+  }
+}
+
+.socialArrow {
+  font-size: 10px;
+  transform: translateX(-4px);
+  opacity: 0;
+  transition: transform 500ms var(--ease-smooth), opacity 500ms var(--ease-smooth);
+}
+
+.social:hover .socialArrow {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.nowLane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .nowLane {
+    align-items: flex-end;
+  }
+}
+
+.nowLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  margin: -8px 0;
+  color: var(--color-kindra-text-white);
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.nowLink:focus-visible {
+  outline: none;
+}
+
+.nowUnderlineWrap {
+  position: relative;
+}
+
+.nowUnderline {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--color-kindra-yellow);
+  transition: transform 500ms var(--ease-smooth);
+}
+
+.nowLink:hover .nowUnderline,
+.nowLink:focus-visible .nowUnderline {
+  transform: scaleX(1);
+}
+
+/* Stamp + jarvis status: one flex row with a gap so the two can never
+   overlap at any viewport width (wraps into a stack when cramped). */
+.metaLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 4px;
+}
+
+@media (min-width: 768px) {
+  .metaLine {
+    justify-content: flex-end;
+  }
+}
+
+.lastUpdate {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.jarvisStatus {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.jarvisStatus:hover,
+.jarvisStatus:focus-visible {
+  color: var(--color-kindra-text-white);
+  outline: none;
+}
+
+@media (max-width: 560px) {
+  .titleLine {
+    font-size: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jarvisButton,
+  .jarvisUnderline,
+  .jarvisArrow,
+  .social,
+  .socialIcon,
+  .socialArrow,
+  .nowLink,
+  .nowUnderline,
+  .jarvisStatus,
+  .keyword {
+    transition: none;
+  }
+
+  /* Content appears instantly — no rise, no fade-wait. (The boot overlay
+     additionally never mounts under reduced motion; this is the CSS belt
+     to that JS suspender. The hero's `.enter-rise` is disabled in
+     globals.css.) */
+  .footerEnter,
+  .bootLine,
+  .bootCursor {
+    animation: none;
+  }
+}

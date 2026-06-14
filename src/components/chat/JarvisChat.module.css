@@ -1,0 +1,117 @@
+/* ── JarvisChat layout primitives ───────────────────────────────────────
+   WHY this file exists (and why these aren't raw Tailwind utilities):
+
+   globals.css ships an *unlayered* universal reset — `* { margin: 0; padding: 0 }`.
+   In CSS cascade-layer ordering, any unlayered author rule beats EVERY rule that
+   lives inside a layer, regardless of specificity. Tailwind v4 emits its spacing
+   utilities into `@layer utilities`, so `.px-8 { padding-inline: ... }` and every
+   `.mt-*`/`.pt-*`/`.pb-*` margin/padding utility is *silently overridden to 0* by
+   that reset. (`gap-*`, `flex-*`, arbitrary `text-[..]` etc. survive — the reset
+   only zeroes margin/padding/box-sizing.) JarvisChat is the only component that
+   relied on Tailwind `.px-*`/`.pt-*`/`.pb-*`/`.mt-*` for layout-critical spacing,
+   so it was the only one whose chrome collapsed to the screen edges.
+
+   Fix per the design-system idiom (napkin: consume tokens, don't hand-roll
+   fragile Tailwind for critical layout): these classes are CSS-module classes,
+   which are emitted unlayered, so they win the cascade normally. Values are
+   px-based to match the 14px rem basis pinned on <html> in globals.css. */
+
+/* Horizontal inner padding for header / messages / input — the side drawer
+   reads well at ~48px, the full-screen mobile sheet at ~24px. */
+.padX {
+  padding-inline: 24px;
+}
+
+@media (min-width: 640px) {
+  .padX {
+    padding-inline: 48px;
+  }
+}
+
+/* Header vertical rhythm (was pt-10 pb-8). */
+.headerPad {
+  padding-top: 35px;
+  padding-bottom: 28px;
+}
+
+/* Messages scroll area bottom breathing room (was pb-10). */
+.messagesPad {
+  padding-bottom: 35px;
+}
+
+/* Input footer vertical rhythm (was pt-6 pb-8, sm:pb-10). */
+.inputPad {
+  padding-top: 21px;
+  padding-bottom: 28px;
+}
+
+@media (min-width: 640px) {
+  .inputPad {
+    padding-bottom: 35px;
+  }
+}
+
+/* ── Vertical margins between blocks ───────────────────────────────────────
+   Same reset kills these too; restore the original Tailwind spacing values. */
+
+/* Space between consecutive message bubbles / loading bubble (was mt-10). */
+.blockGap {
+  margin-top: 35px;
+}
+
+/* Header rule + label spacings. */
+.headerRule {
+  margin-top: 28px; /* was mt-8 */
+}
+.statusRow {
+  margin-top: 10.5px; /* was mt-3 */
+}
+
+/* Message label dividers (was mb-2 / mb-3). */
+.labelGapSm {
+  margin-bottom: 7px;
+}
+.labelGap {
+  margin-bottom: 10.5px;
+}
+
+/* Assistant message extras. */
+.sourcesGap {
+  margin-top: 17.5px; /* was mt-5 */
+}
+.suggestedGap {
+  margin-top: 21px; /* was mt-6 */
+}
+
+/* "Try asking" block (was mt-12) + its caption (was mb-5). */
+.suggestionsBlock {
+  margin-top: 42px;
+}
+.suggestionsCaption {
+  margin-bottom: 17.5px;
+}
+
+/* Input footer divider (was mb-6) and helper line (was mt-5). */
+.inputDivider {
+  margin-bottom: 21px;
+}
+.helperGap {
+  margin-top: 17.5px;
+}
+
+/* Suggested-reply chip interior padding (was px-4 py-2 — padding, also
+   wiped by the universal reset, so the chip text would glue to its border). */
+.chip {
+  padding: 7px 14px;
+}
+
+/* Optical 3px nudge on the input prompt glyph and send arrow so they sit on
+   the textarea's first baseline (was mt-[3px] — margin, killed by the reset). */
+.inputNudge {
+  margin-top: 3px;
+}
+
+/* Optical alignment of the CLOSE control with the Jarvis title (was mt-1). */
+.closeNudge {
+  margin-top: 3.5px;
+}

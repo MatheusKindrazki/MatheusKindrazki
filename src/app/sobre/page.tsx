@@ -2,167 +2,220 @@
 
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
-import BackArrow from "@/components/ui/BackArrow";
 import Mark from "@/components/ui/Mark";
 import PageNav from "@/components/ui/PageNav";
-import { profile, timeline, philosophy } from "@/lib/content";
+import Eyebrow from "@/components/ui/Eyebrow";
+import MetaRow from "@/components/ui/MetaRow";
+import PageShell, { useShellNav } from "@/components/layout/PageShell";
+import ScrollStage from "@/components/layout/ScrollStage";
+import Section from "@/components/layout/Section";
+import ContentScrim from "@/components/layout/ContentScrim";
+import { timeline, philosophy } from "@/lib/content";
 import { getColorValue } from "@/lib/colors";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
+import styles from "./sobre.module.css";
 
 const ParticlePhoto = dynamic(
   () => import("@/components/canvas/ParticlePhoto"),
   { ssr: false },
 );
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.19, 1, 0.22, 1] },
-  },
-};
-
 export default function SobrePage() {
   return (
-    <div className="margin-auto relative w-full max-w-[1280px] h-screen min-h-[500px] max-h-[800px] overflow-hidden cursor-grab active:cursor-grabbing">
-      {/* Particle background */}
-      <div className="absolute inset-0 z-[1]">
-        <ParticlePhoto imageSrc="/images/kindra-photo.png" />
-      </div>
+    <PageShell
+      hudRole="online · reflecting"
+      stripText="◈ MK · about · idx.04"
+      background={({ exploding, onExplodeComplete }) => (
+        <>
+          <div
+            className={`${styles.photoStage} ${exploding ? styles.photoStageExploding : ""}`}
+          >
+            <ParticlePhoto
+              imageSrc="/images/kindra-projetos.png"
+              maxWidth={760}
+              xOffset={330}
+              particleSize={1.45}
+              edgeFade={0.22}
+              animate
+              explode={exploding}
+              onExplodeComplete={onExplodeComplete}
+            />
+          </div>
+          {/* Photo sits right-of-center; darken the left so the left-anchored
+              text column stays legible over it. */}
+          <ContentScrim side="left" intensity="strong" />
+        </>
+      )}
+    >
+      <SobreContent />
+    </PageShell>
+  );
+}
 
-      {/* Back nav - absolute, always visible */}
-      <div className="absolute top-[49px] z-20 w-full">
-        <div className="w-[90%] max-w-[650px] mx-auto">
-          <BackArrow />
+function SobreContent() {
+  const { onNavClick } = useShellNav();
+  const yellow = getColorValue("yellow");
+
+  return (
+    <ScrollStage>
+      {/* Section 1 — Hero. Enters via the CSS `.enter-rise` idiom
+          (globals.css), not framer `initial="hidden"` — the SSR HTML must
+          paint the h1 before the pixi-heavy bundle hydrates (deep-link LCP). */}
+      <Section align="left">
+        <div>
+          <div className="enter-rise" style={enterAt(0)}>
+            <Eyebrow index="04" label="who i am" accent={yellow} />
+          </div>
+
+          <h1
+            className="enter-rise mt-5 mb-5 font-bold tracking-[-0.02em] text-[var(--color-kindra-text-white)]"
+            style={{ ...enterAt(1), fontFamily: "var(--font-heading)" }}
+          >
+            <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[length:var(--text-h1)] leading-[1.1]">
+              <span>
+                About <Mark color="yellow">me</Mark>
+              </span>
+              <span className="italic font-normal text-[length:var(--text-h2)] text-[var(--color-kindra-meta-mid)]">
+                — co-founder &amp; builder
+              </span>
+            </span>
+          </h1>
+
+          <p
+            className="enter-rise max-w-[540px] font-normal text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
+            style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
+          >
+            Co-founder at <Mark color="yellow">MokLabs Venture Studio</Mark>{" "}
+            and founding team at Lugui.ai. 8 years architecting platforms at
+            Arco Educação — shipping infrastructure that reached millions of
+            students. Now turning that experience into ventures of my own.
+          </p>
+
+          <PageNav current="/sobre" onClick={onNavClick} />
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.5 }}
+            className={styles.scrollHint}
+          >
+            <span className={styles.scrollHintRule} />
+            <span>scroll &middot; journey &middot; philosophy &middot; formation</span>
+            <span aria-hidden className={`animate-bounce ${styles.scrollHintArrow}`}>
+              ↓
+            </span>
+          </motion.div>
         </div>
-      </div>
+      </Section>
 
-      {/* Scrollable snap container */}
-      <div className="relative z-10 h-full overflow-y-auto snap-y snap-mandatory">
-        {/* Section 1 - Hero */}
-        <section className="min-h-full snap-start flex items-center">
-          <div className="w-[90%] max-w-[650px] mx-auto">
-            <h1
-              className="text-[48px] leading-[63px] font-bold text-white mb-4"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Sobre <Mark color="yellow">mim</Mark>
-            </h1>
+      {/* Section 2 — Journey timeline */}
+      <Section align="left">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
+          <motion.div variants={fadeUp}>
+            <Eyebrow label="journey" accent={yellow} />
+          </motion.div>
 
-            <p className="text-[#aaa] text-sm max-w-[600px]">
-              Principal Engineer focado em{" "}
-              <Mark color="blue">frontend architecture at scale</Mark>,
-              microfrontends, design systems e developer experience. Trabalho na
-              Arco Educacao ha 5 anos construindo infraestrutura educacional que
-              impacta milhoes de estudantes pelo Brasil.
-            </p>
-            <PageNav current="/sobre" />
+          <motion.h2 variants={fadeUp} className={`mt-4 ${styles.sectionTitle}`}>
+            From code to{" "}
+            <span className={styles.sectionTitleNote}>co-founder</span>
+          </motion.h2>
+
+          <div className={styles.timeline}>
+            <span aria-hidden className={styles.timelineTrack} />
+
+            {timeline.map((item) => (
+              <motion.div
+                key={item.year + item.title}
+                variants={fadeUp}
+                className={styles.timelineItem}
+              >
+                <span aria-hidden className={styles.timelineDot} />
+                <span className={styles.timelineYear}>{item.year}</span>
+                <h3 className={styles.timelineRole}>{item.title}</h3>
+                <p className={styles.timelineDesc}>{item.description}</p>
+              </motion.div>
+            ))}
           </div>
-        </section>
+        </motion.div>
+      </Section>
 
-        {/* Section 2 - Timeline */}
-        <section className="min-h-full snap-start flex items-center">
-          <div className="w-[90%] max-w-[650px] mx-auto py-16">
-            <h2
-              className="text-2xl font-bold text-white mb-8"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Trajetoria
-            </h2>
+      {/* Section 3 — Philosophy */}
+      <Section align="left">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
+          <motion.div variants={fadeUp}>
+            <Eyebrow label="philosophy" accent={yellow} />
+          </motion.div>
 
-            <motion.div
-              className="relative pl-8 border-l border-[#333]"
-              variants={stagger}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-            >
-              {timeline.map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  className="mb-8 last:mb-0"
-                >
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: getColorValue("yellow") }}
-                  >
-                    {item.year}
-                  </span>
-                  <h3 className="text-white font-bold mt-1">{item.title}</h3>
-                  <p className="text-[#888] text-sm mt-1">{item.description}</p>
-                  <div
-                    className="absolute left-[-5px] w-[10px] h-[10px] rounded-full bg-[#e0a458]"
-                    style={{ marginTop: "-40px" }}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
+          <motion.h2 variants={fadeUp} className={`mt-4 ${styles.sectionTitle}`}>
+            Engineering{" "}
+            <span className={styles.sectionTitleNote}>principles</span>
+          </motion.h2>
 
-        {/* Section 3 - Philosophy */}
-        <section className="min-h-full snap-start flex items-center">
-          <div className="w-[90%] max-w-[650px] mx-auto py-16">
-            <h2
-              className="text-2xl font-bold text-white mb-8"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Filosofia de Engenharia
-            </h2>
+          <motion.div className={styles.philosophyGrid} variants={stagger}>
+            {philosophy.map((item, i) => (
+              <motion.div
+                key={item.title}
+                variants={fadeUp}
+                className={styles.philosophyCard}
+              >
+                <span className={styles.philosophyIndex}>
+                  → {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className={styles.philosophyTitle}>{item.title}</h3>
+                <p className={styles.philosophyDesc}>{item.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </Section>
 
-            <motion.div
-              className="grid grid-cols-1 gap-6"
-              variants={stagger}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-            >
-              {philosophy.map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={fadeUp}
-                  className="border border-[#222] rounded-lg p-6 hover:border-[#e0a458]/30 transition-colors duration-500 bg-[#111]/90 backdrop-blur-md"
-                >
-                  <h3
-                    className="text-white font-bold mb-2"
-                    style={{ color: getColorValue("yellow") }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p className="text-[#888] text-sm">{item.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
+      {/* Section 4 — Formation / closing */}
+      <Section align="left">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
+          <motion.div variants={fadeUp}>
+            <Eyebrow label="formation" accent={yellow} />
+          </motion.div>
 
-        {/* Section 4 - Formacao */}
-        <section className="min-h-full snap-start flex items-center">
-          <div className="w-[90%] max-w-[650px] mx-auto">
-            <h2
-              className="text-2xl font-bold text-white mb-4"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Formacao
-            </h2>
-            <p className="text-[#aaa] text-sm mb-2">
-              <strong className="text-white">Engenharia de Software</strong> —
-              Especializacao em Cloud Computing (AWS, Azure) e DevOps.
-            </p>
-            <p className="text-[#888] text-sm">
-              Neurodivergente (TEA Nivel 1). Pensamento analitico, visual e
-              orientado a sistemas. Valorizo clareza, estrutura e precisao
-              operacional.
-            </p>
-          </div>
-        </section>
-      </div>
-    </div>
+          <motion.p variants={fadeUp} className={`mt-5 ${styles.formationLead}`}>
+            <span className={styles.formationLeadStrong}>
+              Software Engineering
+            </span>{" "}
+            — specialized in <Mark color="yellow">Cloud Computing</Mark> (AWS,
+            Azure) &amp; DevOps.
+          </motion.p>
+
+          <motion.p variants={fadeUp} className={styles.formationBody}>
+            Analytical, visual, systems-oriented thinker. I value clarity,
+            structure, and operational precision.
+          </motion.p>
+
+          <motion.div variants={fadeUp}>
+            <MetaRow
+              className="mt-10"
+              items={["idx.04", "curitiba — BRT", "always curious"]}
+            />
+          </motion.div>
+
+          <motion.div variants={fadeUp}>
+            <PageNav current="/sobre" onClick={onNavClick} />
+          </motion.div>
+        </motion.div>
+      </Section>
+    </ScrollStage>
   );
 }

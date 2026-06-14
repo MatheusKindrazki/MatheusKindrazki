@@ -31,6 +31,7 @@ export default function AnimatedLink({
       <Component
         href={href}
         onClick={onClick}
+        data-cursor="link"
         {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         className={`group relative inline-block text-[11px] leading-[21px] text-[#aaa] transition-all duration-700 ${className}`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
@@ -52,6 +53,7 @@ export default function AnimatedLink({
     <Component
       href={href}
       onClick={onClick}
+      data-cursor="link"
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className={`group relative inline-block font-bold transition-all duration-700 ${className}`}
       style={{
