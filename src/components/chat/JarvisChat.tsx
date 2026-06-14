@@ -18,6 +18,7 @@ import {
   type ChatMessage,
   type SuggestedButton,
 } from '@/hooks/useJarvisChat'
+import styles from './JarvisChat.module.css'
 
 const SUGGESTIONS: string[] = [
   "what's matheus building right now?",
@@ -51,8 +52,8 @@ interface MessageProps {
 function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: MessageProps) {
   if (message.role === 'user') {
     return (
-      <div className={isFirst ? '' : 'mt-10'}>
-        <div className="flex items-baseline gap-3 mb-2">
+      <div className={isFirst ? '' : styles.blockGap}>
+        <div className={`flex items-baseline gap-3 ${styles.labelGapSm}`}>
           <span className="h-px flex-1 bg-[var(--color-kindra-rule)]" />
           <span
             className="text-[9px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
@@ -75,8 +76,8 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
   const hasSuggested = !!message.suggestedButtons && message.suggestedButtons.length > 0
 
   return (
-    <div className={isFirst ? '' : 'mt-10'}>
-      <div className="flex items-baseline gap-3 mb-3">
+    <div className={isFirst ? '' : styles.blockGap}>
+      <div className={`flex items-baseline gap-3 ${styles.labelGap}`}>
         <span
           aria-hidden
           className="inline-block"
@@ -103,7 +104,7 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
       </p>
       {hasSources && (
         <p
-          className="mt-5 text-[10px] tracking-[0.2em] uppercase text-[var(--color-kindra-meta-low)]"
+          className={`${styles.sourcesGap} text-[10px] tracking-[0.2em] uppercase text-[var(--color-kindra-meta-low)]`}
           style={{ fontFamily: 'var(--font-body)' }}
         >
           <span className="text-[var(--color-kindra-rule-strong)]">//</span>{' '}
@@ -111,7 +112,7 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
         </p>
       )}
       {hasSuggested && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className={`${styles.suggestedGap} flex flex-wrap gap-2`}>
           {message.suggestedButtons!.map((b: SuggestedButton, i) => (
             <button
               key={`${b.text}-${i}`}
@@ -119,7 +120,7 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
               data-cursor="link"
               onClick={() => onSuggestedClick(b.text)}
               disabled={disabled}
-              className="rounded-full border border-[var(--color-kindra-rule)] px-4 py-2 text-[11px] tracking-[0.02em] text-[var(--color-kindra-meta-mid)] transition-all duration-300 hover:border-[var(--color-kindra-yellow)] hover:text-white disabled:opacity-40"
+              className={`${styles.chip} rounded-full border border-[var(--color-kindra-rule)] text-[11px] tracking-[0.02em] text-[var(--color-kindra-meta-mid)] transition-all duration-300 hover:border-[var(--color-kindra-yellow)] hover:text-white disabled:opacity-40`}
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {b.text}
@@ -133,8 +134,8 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
 
 function LoadingBubble() {
   return (
-    <div className="mt-10">
-      <div className="flex items-baseline gap-3 mb-3">
+    <div className={styles.blockGap}>
+      <div className={`flex items-baseline gap-3 ${styles.labelGap}`}>
         <span
           aria-hidden
           className="inline-block"
@@ -292,7 +293,7 @@ export default function JarvisChat() {
             className="fixed z-[70] flex flex-col bg-black inset-y-0 right-0 w-full sm:w-[520px] sm:border-l sm:border-[var(--color-kindra-rule)]"
           >
             {/* ── Header ── */}
-            <header className="flex-none px-8 pt-10 pb-8 sm:px-12">
+            <header className={`flex-none ${styles.padX} ${styles.headerPad}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <h2
@@ -302,7 +303,7 @@ export default function JarvisChat() {
                     Jarvis
                   </h2>
                   <p
-                    className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
+                    className={`${styles.statusRow} flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]`}
                     style={{ fontFamily: 'var(--font-body)' }}
                   >
                     <span className="relative inline-flex h-[5px] w-[5px]">
@@ -317,7 +318,7 @@ export default function JarvisChat() {
                   data-cursor="link"
                   onClick={() => setOpen(false)}
                   aria-label="Close Jarvis"
-                  className="mt-1 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] transition-colors duration-500 hover:text-white"
+                  className={`${styles.closeNudge} text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] transition-colors duration-500 hover:text-white`}
                   style={{ fontFamily: 'var(--font-body)' }}
                 >
                   close
@@ -325,14 +326,14 @@ export default function JarvisChat() {
               </div>
               <div
                 aria-hidden
-                className="mt-8 h-px w-full bg-[var(--color-kindra-rule)]"
+                className={`${styles.headerRule} h-px w-full bg-[var(--color-kindra-rule)]`}
               />
             </header>
 
             {/* ── Messages ── */}
             <div
               ref={scrollRef}
-              className="flex-1 overflow-y-auto px-8 pb-10 sm:px-12"
+              className={`flex-1 overflow-y-auto ${styles.padX} ${styles.messagesPad}`}
             >
               {messages.map((m, i) => (
                 <MessageBubble
@@ -347,9 +348,9 @@ export default function JarvisChat() {
               {loading && <LoadingBubble />}
 
               {showSuggestions && (
-                <div className="mt-12">
+                <div className={styles.suggestionsBlock}>
                   <p
-                    className="text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] mb-5"
+                    className={`${styles.suggestionsCaption} text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]`}
                     style={{ fontFamily: 'var(--font-body)' }}
                   >
                     try asking
@@ -377,16 +378,16 @@ export default function JarvisChat() {
             </div>
 
             {/* ── Input ── */}
-            <div className="flex-none px-8 pb-8 pt-6 sm:px-12 sm:pb-10">
+            <div className={`flex-none ${styles.padX} ${styles.inputPad}`}>
               <div
                 aria-hidden
-                className="mb-6 h-px w-full bg-[var(--color-kindra-rule)]"
+                className={`${styles.inputDivider} h-px w-full bg-[var(--color-kindra-rule)]`}
               />
               <form onSubmit={handleSubmit}>
                 <div className="flex items-start gap-4">
                   <span
                     aria-hidden
-                    className="mt-[3px] text-[14px] text-[var(--color-kindra-yellow)] select-none font-bold"
+                    className={`${styles.inputNudge} text-[14px] text-[var(--color-kindra-yellow)] select-none font-bold`}
                     style={{ fontFamily: 'var(--font-heading)' }}
                   >
                     &gt;
@@ -407,7 +408,7 @@ export default function JarvisChat() {
                     data-cursor="link"
                     disabled={loading || !hasInput}
                     aria-label="Send"
-                    className="mt-[3px] text-[14px] transition-colors duration-300 disabled:opacity-20"
+                    className={`${styles.inputNudge} text-[14px] transition-colors duration-300 disabled:opacity-20`}
                     style={{
                       color: hasInput && !loading ? 'var(--color-kindra-yellow)' : 'var(--color-kindra-meta-low)',
                     }}
@@ -417,7 +418,7 @@ export default function JarvisChat() {
                 </div>
               </form>
               <p
-                className="mt-5 text-[9px] uppercase tracking-[0.3em] text-[#333]"
+                className={`${styles.helperGap} text-[9px] uppercase tracking-[0.3em] text-[#333]`}
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 esc to close · enter to send · shift+enter for new line
