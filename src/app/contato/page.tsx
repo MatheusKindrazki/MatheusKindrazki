@@ -69,7 +69,11 @@ export default function ContatoPage() {
             style={{ zIndex: exploding ? "var(--z-explode)" : "var(--z-backdrop)" }}
           >
             <ParticlePhoto
-              imageSrc="/images/kindra-photo.png"
+              imageSrc="/images/kindra-contato.png"
+              maxWidth={460}
+              xOffset={360}
+              particleSize={1.4}
+              edgeFade={0.16}
               animate
               explode={exploding}
               onExplodeComplete={onExplodeComplete}
