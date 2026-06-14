@@ -14,6 +14,92 @@
   pointer-events: none;
 }
 
+/* ── SSR-visible entrance ────────────────────────────────────────────
+   The hero rise lives in globals.css as the shared `.enter-rise` utility
+   (promoted from here so projetos/sobre/contato/skills get the same
+   LCP-safe treatment). Only the footer's pure fade remains page-local —
+   it mirrors lib/motion.ts fadeIn (1.4s, 0.7s delay). */
+.footerEnter {
+  animation: hero-fade 1.4s ease 0.7s both;
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Boot / acquisition sequence ─────────────────────────────────────
+   First-visit-per-session narration of the real asset wait (the portrait
+   decode the particle field needs anyway). DOM-only — zero Pixi — so it
+   paints long before the WebGL stage hydrates. Speaks in the chrome's
+   mono HUD voice (shell.module.css .chromeHud idiom). */
+.boot {
+  position: absolute;
+  left: var(--shell-pad-x);
+  bottom: 112px;
+  z-index: var(--z-chrome);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  color: var(--color-kindra-meta-mid);
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 360ms var(--ease-smooth);
+}
+
+.bootFading {
+  opacity: 0;
+}
+
+.bootLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  animation: boot-line 0.3s var(--ease-smooth) both;
+}
+
+@keyframes boot-line {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bootIndex {
+  color: var(--color-kindra-yellow);
+}
+
+.bootCursor {
+  align-self: center;
+  width: 6px;
+  height: 11px;
+  background: var(--color-kindra-yellow);
+  animation: boot-blink 0.9s steps(2, jump-none) infinite;
+}
+
+@keyframes boot-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 .photoStageExploding {
   z-index: var(--z-explode);
 }
@@ -94,7 +180,8 @@
   color: var(--color-kindra-text-white);
 }
 
-/* The ornamental, off-axis ampersand. */
+/* The ornamental, off-axis ampersand — a true Fraunces italic cut
+   (the italic style is loaded; nothing here is browser-synthesized). */
 .ampersand {
   position: relative;
   display: inline-block;
@@ -159,7 +246,7 @@
   color: var(--color-kindra-meta-high);
   font-family: var(--font-body);
   font-size: 19px;
-  font-weight: 300;
+  font-weight: 400; /* body face loads 400–700; 300 was a phantom request */
   line-height: 30px;
 }
 
@@ -186,7 +273,7 @@
   padding: 8px 0;
   margin: -8px 0;
   color: var(--color-kindra-meta-low);
-  font-size: 12px;
+  font-size: var(--text-caption);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   transition: color 500ms var(--ease-smooth);
@@ -244,13 +331,14 @@
   gap: 8px 20px;
   max-width: 600px;
   margin: 0 0 40px;
-  font-family: var(--font-body);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
 }
 
 .keyword {
   color: var(--color-kindra-meta-low);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: var(--text-data);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: default;
   transition: color 500ms var(--ease-smooth);
@@ -317,7 +405,7 @@
   padding: 8px;
   margin: -8px;
   color: var(--color-kindra-meta-low);
-  font-size: 10.5px;
+  font-size: var(--text-data);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   transition: color 500ms var(--ease-smooth);
@@ -411,13 +499,45 @@
   transform: scaleX(1);
 }
 
-.lastUpdate {
+/* Stamp + jarvis status: one flex row with a gap so the two can never
+   overlap at any viewport width (wraps into a stack when cramped). */
+.metaLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
   margin-top: 4px;
+}
+
+@media (min-width: 768px) {
+  .metaLine {
+    justify-content: flex-end;
+  }
+}
+
+.lastUpdate {
   color: var(--color-kindra-meta-low);
-  font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 0.3em;
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.jarvisStatus {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-smooth);
+}
+
+.jarvisStatus:hover,
+.jarvisStatus:focus-visible {
+  color: var(--color-kindra-text-white);
+  outline: none;
 }
 
 @media (max-width: 560px) {
@@ -435,7 +555,18 @@
   .socialArrow,
   .nowLink,
   .nowUnderline,
+  .jarvisStatus,
   .keyword {
     transition: none;
+  }
+
+  /* Content appears instantly — no rise, no fade-wait. (The boot overlay
+     additionally never mounts under reduced motion; this is the CSS belt
+     to that JS suspender. The hero's `.enter-rise` is disabled in
+     globals.css.) */
+  .footerEnter,
+  .bootLine,
+  .bootCursor {
+    animation: none;
   }
 }

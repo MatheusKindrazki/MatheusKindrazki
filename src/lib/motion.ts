@@ -9,9 +9,20 @@
  * Easing matches the global `--ease-smooth` token: cubic-bezier(0.19,1,0.22,1).
  */
 
+import type { CSSProperties } from 'react'
 import type { Variants } from 'framer-motion'
 
 export const EASE_SMOOTH = [0.19, 1, 0.22, 1] as const
+
+/**
+ * Inline style for the CSS-driven `.enter-rise` entrance (globals.css) —
+ * the SSR-visible counterpart to `stagger`+`fadeUp` for above-the-fold hero
+ * copy. Same choreography (y 24px → 0, 0.62s, --ease-smooth, 80ms stagger),
+ * but pure CSS so the hero paints before hydration instead of shipping at
+ * opacity:0 (LCP = hydration time on deep links).
+ */
+export const enterAt = (i: number): CSSProperties =>
+  ({ '--enter-i': i }) as CSSProperties
 
 /** Parent container — staggers its direct children on enter. */
 export const stagger: Variants = {

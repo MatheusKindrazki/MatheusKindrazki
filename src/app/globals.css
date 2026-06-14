@@ -24,8 +24,12 @@
     /* Near-black for text pressed onto an accent fill (inverted chips/buttons). */
     --color-kindra-on-accent: #020403;
 
-    --font-heading: "Roboto Slab", serif;
-    --font-body: "Montserrat", sans-serif;
+    /* Font tokens — the real (hashed) families + metric fallbacks are set
+       by next/font on <html> under these same names; the values below are
+       last-resort fallbacks if those classes are missing. */
+    --font-heading: "Fraunces", serif;
+    --font-body: "Instrument Sans", sans-serif;
+    --font-data: "IBM Plex Mono", monospace;
 
     --ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
 
@@ -55,9 +59,15 @@
     --text-h1: clamp(2.6rem, 6vw, 4.5rem);
     --text-h2: clamp(1.7rem, 3vw, 2.4rem);
     --text-deck: clamp(1rem, 1.4vw, 1.25rem);
-    --text-body: 0.9375rem;
+    --text-body: 1rem;
     --text-caption: 0.8125rem;
-    --text-eyebrow: 0.6875rem;
+    /* Chrome/micro type is px-valued on purpose: <html> pins the rem basis
+       at 14px (see below), so the original rem values — authored against
+       the browser-default 16px — rendered at 9.625px/8.75px, under the
+       10px legibility floor for tracked uppercase mono. */
+    --text-eyebrow: 11px;
+    --text-data: 11px;        /* HUD / telemetry rows (pairs with --font-data) */
+    --text-micro: 10px;       /* smallest legible chrome labels */
 
     /* ── z-index ladder ─────────────────────────────────────────────
        Encodes the invariant: overlay > explode > chrome > content.
@@ -82,6 +92,9 @@ body {
     background-color: var(--color-kindra-bg);
     color: var(--color-kindra-text);
     font-family: var(--font-body);
+    /* 14px on <html> is the rem basis for the whole type scale — so
+       --text-body (1rem) = 14px and the 21px base line-height is exactly
+       1.5× body size. Do not change without re-deriving every clamp. */
     font-size: 14px;
     line-height: 21px;
     -webkit-font-smoothing: antialiased;
@@ -163,6 +176,30 @@ body.custom-cursor-active :focus-visible {
     animation-play-state: paused;
 }
 
+/* ── SSR-visible entrance ────────────────────────────────────────────
+   Hero copy used to mount behind framer-motion `initial="hidden"` — the
+   SSR HTML shipped at opacity:0 until the pixi-heavy bundle hydrated, so
+   deep links stared at a black void (LCP = hydration time). This is the
+   pure-CSS counterpart with the SAME choreography as lib/motion.ts
+   stagger+fadeUp (y 24px → 0, 0.62s, --ease-smooth, 80ms stagger via the
+   --enter-i custom property — pair with `enterAt(i)` from lib/motion.ts):
+   it starts the moment styles paint, no JavaScript required. */
+.enter-rise {
+    animation: enter-rise 0.62s var(--ease-smooth) both;
+    animation-delay: calc(var(--enter-i, 0) * 80ms);
+}
+
+@keyframes enter-rise {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Grain drift — very slow so grain feels alive without being distracting */
 @keyframes grain-drift {
     0%,
@@ -228,6 +265,10 @@ body.custom-cursor-active :focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    /* Content appears instantly — no rise, no fade-wait. */
+    .enter-rise {
+        animation: none;
+    }
     .animate-marquee {
         animation: none;
     }
