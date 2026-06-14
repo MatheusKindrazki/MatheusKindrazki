@@ -1,6 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import ClientShell from "@/components/layout/ClientShell";
+import JsonLd from "@/components/seo/JsonLd";
+import { profile } from "@/lib/content";
+import {
+  SITE_URL,
+  SITE_NAME,
+  canonicalUrl,
+  websiteSchema,
+  personSchema,
+} from "@/lib/seo";
 import "./globals.css";
 
 /* Display/heading voice — variable Fraunces with true italics. The full
@@ -36,11 +45,73 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+/* Home default title — derived from the profile so it never drifts from the
+   atlas. Per-route layouts override `title` with a bare label (e.g. "projects")
+   and the template below appends the brand; the home `default` is the ONE title
+   that must already carry the brand, so it is excluded from the template (Next
+   never applies a template to `title.default`). */
+const HOME_TITLE = `${SITE_NAME} — ${profile.title}`;
+const HOME_DESCRIPTION = profile.description;
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kindrazki.dev"),
-  title: "Matheus Kindrazki — Co-founder & Builder",
-  description:
-    "Co-founder at MokLabs Venture Studio. Founding team at Lugui.ai. Technology adventurer building ventures at the edges of engineering and AI.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: HOME_TITLE,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: HOME_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: profile.social.linkedin }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  keywords: [
+    profile.name,
+    profile.nickname,
+    profile.title,
+    profile.company,
+    "Lugui.ai",
+    "MokLabs",
+    "venture studio",
+    "AI engineering",
+    "RAG",
+    "founder",
+    "software architect",
+    profile.location,
+  ],
+  alternates: {
+    canonical: canonicalUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    url: canonicalUrl("/"),
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    creator: `@${profile.social.twitter.split("/").filter(Boolean).pop()}`,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+/* themeColor lives on `viewport`, not `metadata` (Next 15 split these). Matches
+   the --bg token (#000000) so the browser chrome blends into the dark site. */
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -58,6 +129,11 @@ export default function RootLayout({
       className={`${fraunces.variable} ${instrumentSans.variable} ${ibmPlexMono.variable}`}
     >
       <body>
+        {/* Structured data (schema.org). Server-rendered into the SSR HTML so
+            crawlers read it on first paint. Both nodes derive from the
+            content.ts profile via @/lib/seo. */}
+        <JsonLd schema={websiteSchema()} />
+        <JsonLd schema={personSchema()} />
         <ClientShell>
           {children}
         </ClientShell>

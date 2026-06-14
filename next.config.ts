@@ -27,7 +27,21 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // trailingSlash:true keeps every *page* URL canonical with a trailing slash —
+  // and seo.ts/sitemap.ts/manifest.ts all emit the slashed form explicitly, so
+  // canonical/og:url/sitemap entries are correct regardless of the redirect.
   trailingSlash: true,
+  // ...but Next's auto-injected metadata IMAGE routes (opengraph-image,
+  // twitter-image, apple-icon, icon) are emitted in <head> WITHOUT a trailing
+  // slash (e.g. og:image=/opengraph-image, apple-touch-icon=/apple-icon). Under
+  // a plain trailingSlash:true those bare paths 308-redirect to the slashed
+  // form, so every share-scraper / Googlebot / Lighthouse apple-touch-icon
+  // fetch eats an extra round-trip — and fetchers that don't follow image
+  // redirects (WhatsApp, older Discord, some unfurlers) fail to load the card.
+  // skipTrailingSlashRedirect stops Next from issuing those 308s, so the exact
+  // URL Next prints in <head> serves a 200 image/png directly. Page URLs are
+  // unaffected: their slashed form is still the only one referenced anywhere.
+  skipTrailingSlashRedirect: true,
 }
 
 export default nextConfig

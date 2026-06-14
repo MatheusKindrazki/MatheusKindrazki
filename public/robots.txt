@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://kindrazki.dev/sitemap.xml
+Sitemap: https://matheuskindrazki.dev/sitemap.xml

@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Matheus Kindrazki">
+  <rect width="64" height="64" rx="14" fill="#1c2023"/>
+  <!-- K monogram: a heavy vertical stem (cream) with two splayed legs.
+       The upper leg is the brand yellow accent; both are generous, single
+       strokes so the mark survives 16px rasterization. -->
+  <rect x="17" y="14" width="8" height="36" rx="2" fill="#ece5d8"/>
+  <path d="M27 32 L43 14 L52 14 L33 35 Z" fill="#e0a458"/>
+  <path d="M33 30 L52 50 L43 50 L27 33 Z" fill="#ece5d8"/>
+</svg>
