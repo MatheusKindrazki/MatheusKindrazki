@@ -152,6 +152,7 @@ const nodePlacements = computeAtlasPlacements(projects);
 function shortTitle(title: string): string {
   return title
     .replace(" — Personal AI Operating System", "")
+    .replace(" — AI Research Fellow", "")
     .replace(" Platform", "")
     .replace(" Venture Studio", "");
 }

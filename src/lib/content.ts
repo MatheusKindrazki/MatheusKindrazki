@@ -322,28 +322,28 @@ export const writing = [
     blurb: 'Context engineering — calibrating the ideal window to cut noise and hallucination.',
     year: '2025',
     topic: 'LLM Engineering',
-    link: 'https://matheuskindrazki.medium.com/',
+    link: 'https://matheuskindrazki.medium.com/contexto-demais-apodrece-o-ponto-otimo-da-janela-nos-llms-ec78b78ea4c2',
   },
   {
     title: 'Criatividade é um Bug: Como a Matemática (e não o Prompt) vai salvar seu SaaS',
     blurb: 'Trading the uncertainty of language for the guarantees of automata to scale AI products.',
     year: '2025',
     topic: 'Applied AI',
-    link: 'https://matheuskindrazki.medium.com/',
+    link: 'https://matheuskindrazki.medium.com/criatividade-%C3%A9-um-bug-como-a-matem%C3%A1tica-e-n%C3%A3o-o-prompt-vai-salvar-seu-saas-bbcacc33ff17',
   },
   {
     title: 'Ainda Não Chegamos Lá: O Hype da IA vs. a Realidade Atual',
     blurb: 'Why AI still fails at complex problems, what the benchmarks really show, and how to adopt strategically.',
     year: '2025',
     topic: 'AI Strategy',
-    link: 'https://matheuskindrazki.medium.com/',
+    link: 'https://matheuskindrazki.medium.com/ia-hype-vs-realidade-benchmarks-racioc%C3%ADnio-e-ado%C3%A7%C3%A3o-madura-842e6cc4daf8',
   },
   {
     title: 'Como gerenciar rotas compartilhadas em aplicações Microfrontends',
     blurb: 'Essential strategies for a consistent, integrated UX across federated microfrontends.',
     year: '2023',
     topic: 'Architecture',
-    link: 'https://matheuskindrazki.medium.com/',
+    link: 'https://blog.arcotech.io/como-gerenciar-rotas-compartilhadas-em-aplica%C3%A7%C3%B5es-microfrontends-1355aeb62a88',
   },
 ]
 
