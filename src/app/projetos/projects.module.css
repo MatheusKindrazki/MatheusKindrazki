@@ -35,7 +35,13 @@
 
 .heroGrid {
   display: grid;
-  grid-template-columns: minmax(390px, 0.9fr) minmax(460px, 1.1fr);
+  /* Softened track floors so the two-column band (1100–1280px, the only
+     viewport range where this grid is two-col) never demands more width than
+     the padded container can give — the old 390/460 floors summed to an 850px
+     hard min that overflowed near the 1100px boundary. At >=1280 the 0.9fr /
+     1.1fr ratios fully determine the column widths (both well above these
+     floors), so the desktop layout is byte-identical. */
+  grid-template-columns: minmax(320px, 0.9fr) minmax(380px, 1.1fr);
   align-items: center;
   gap: clamp(44px, 6vw, 90px);
   width: 100%;
@@ -667,7 +673,12 @@
     gap: 12px 16px;
   }
 
+  /* The index keeps the 54px column; meta, the description/dossier copy, and
+     tags all share the wide second column. Without pinning .ledgerCopy to
+     column 2 it auto-placed into the 54px index column and collapsed the
+     description to ~one word per line on tablet. */
   .ledgerMeta,
+  .ledgerCopy,
   .ledgerTags {
     grid-column: 2;
   }
@@ -718,6 +729,7 @@
   }
 
   .ledgerMeta,
+  .ledgerCopy,
   .ledgerTags {
     grid-column: auto;
   }

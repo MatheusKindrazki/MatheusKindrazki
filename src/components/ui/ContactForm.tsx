@@ -33,9 +33,17 @@ function FloatingField({ id, label, type = 'text', name, required, rows = 4 }: F
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setHasValue(e.target.value.length > 0),
     className:
-      'peer w-full bg-transparent text-[var(--color-kindra-text-white)] text-[14px] leading-[22px] pt-5 pb-2 outline-none resize-none',
+      'peer w-full bg-transparent text-[var(--color-kindra-text-white)] text-[14px] leading-[22px] outline-none resize-none',
+    // Vertical padding via inline style, not Tailwind: globals.css has an
+    // unlayered `* { padding: 0 }` reset that beats @layer utilities, so
+    // `pt-5 pb-2` would render as 0 (collapsing the field under the floating
+    // label). Inline styles are unlayered too → they win. The 20px top pad
+    // also makes room for the floated label (top:0, ~9.5px) above the text,
+    // and keeps single-line inputs at a >=44px tap target (20+22+8).
     style: {
       fontFamily: 'var(--font-body)',
+      paddingTop: '20px',
+      paddingBottom: '8px',
     } as React.CSSProperties,
   }
 
@@ -137,7 +145,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="group/submit relative mt-2 inline-flex w-fit items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] transition-all duration-700"
+        className="touch-target group/submit relative mt-2 inline-flex w-fit items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] transition-all duration-700"
         style={{
           color: status === 'sent' ? green : red,
           transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',

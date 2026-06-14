@@ -54,6 +54,7 @@ export default function PageNav({ current, onClick }: PageNavProps) {
             href={link.href}
             color={link.color}
             onClick={onClick?.(link.href)}
+            className="touch-target"
           >
             {link.label}
           </AnimatedLink>

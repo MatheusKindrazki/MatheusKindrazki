@@ -43,6 +43,18 @@ import {
 
 /** Per-particle assembly stagger (fraction of the progress range). */
 const ASSEMBLY_STAGGER = 0.18;
+/**
+ * Responsive portrait offset contract. The per-page `xOffset` (250 home /
+ * 330 sobre) is baked into each seed's relX so the cloud sits right-of-center
+ * on the desktop spread. On narrow viewports that pushes the face off the
+ * right edge, so the layer cancels a fraction of the baked offset at runtime
+ * by shifting the draw center left — desktop (>= this width) keeps the full
+ * offset, the release point zeroes it so the portrait centers behind the
+ * now-centered text, and it lerps linearly between.
+ */
+const PORTRAIT_OFFSET_FULL_W = 1280;
+/** Matches the shell's 820px mobile-flow release: at/below this the offset is 0. */
+const PORTRAIT_OFFSET_ZERO_W = 820;
 /** Hard cap for the CPU fallback path — the GPU path has no such limit. */
 const CPU_FALLBACK_MAX_PARTICLES = 30000;
 const MOUSE_RADIUS = 130;
@@ -445,6 +457,31 @@ export class PortraitParticlesLayer implements PixiLayer {
     this.buildCpu(this.seeds, divisor);
   }
 
+  /**
+   * Live draw-center X, with the responsive portrait offset applied. The full
+   * per-page xOffset is baked into the seeds (relX) and drawn relative to
+   * width/2; on narrow viewports we cancel a fraction of it by shifting the
+   * center left so the face is not pushed off the right edge. Desktop
+   * (>= PORTRAIT_OFFSET_FULL_W) is unchanged; at/below PORTRAIT_OFFSET_ZERO_W
+   * the portrait centers behind the (now-centered) text.
+   */
+  private centerX(): number {
+    const cx = this.width / 2;
+    const baked = this.config?.xOffset ?? 250;
+    if (baked === 0 || typeof window === "undefined") return cx;
+    const vw = window.innerWidth || this.width;
+    let offsetScale: number;
+    if (vw >= PORTRAIT_OFFSET_FULL_W) offsetScale = 1;
+    else if (vw <= PORTRAIT_OFFSET_ZERO_W) offsetScale = 0;
+    else {
+      offsetScale =
+        (vw - PORTRAIT_OFFSET_ZERO_W) /
+        (PORTRAIT_OFFSET_FULL_W - PORTRAIT_OFFSET_ZERO_W);
+    }
+    // Cancel the un-wanted portion of the baked offset.
+    return cx - baked * (1 - offsetScale);
+  }
+
   /** Halve density on small viewports and again on very dense displays. */
   private environmentDivisor(): number {
     if (typeof window === "undefined") return 1;
@@ -582,7 +619,7 @@ export class PortraitParticlesLayer implements PixiLayer {
    */
   private updateGpuUniforms(): void {
     if (!this.uniforms || !this.config) return;
-    const cx = this.width / 2;
+    const cx = this.centerX();
     const cy = this.height / 2;
     const pointSize = this.config.particleSize ?? 1.8;
     const uploaded = this.uploaded;
@@ -638,7 +675,7 @@ export class PortraitParticlesLayer implements PixiLayer {
   private updateCpuParticles(): void {
     if (!this.config) return;
     const t = easeInOutCubic(clamp(this.progress));
-    const cx = this.width / 2;
+    const cx = this.centerX();
     const cy = this.height / 2;
     const size = this.config.particleSize ?? 1.8;
     const baseScale = size / 32;

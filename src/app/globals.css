@@ -107,6 +107,27 @@ body {
     justify-content: center;
 }
 
+/* Below the 820px shell release the shell is height:auto and can be taller
+   than the viewport. The desktop body centers its single child (the fixed
+   100vh shell) vertically — but on a taller-than-viewport released shell that
+   centering pushes the top of the page ABOVE the viewport (negative offset)
+   and, because html/body are locked to height:100%, the document cannot scroll
+   to reach it (the /contato P0: "Contact" h1 clipped at top, bottom cut,
+   maxScroll:0). Anchor the shell to the top and let the document grow + scroll
+   so every released route (contato/now/skills/…) flows naturally. Desktop
+   (>=820px) keeps the exact centering above — untouched. */
+@media (max-width: 820px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100svh;
+    }
+    body {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+}
+
 ::selection {
     background-color: rgba(224, 164, 88, 0.3);
     color: #fff;
@@ -158,6 +179,36 @@ details:focus-visible,
    since there's no native cursor to visually anchor the user */
 body.custom-cursor-active :focus-visible {
     outline-offset: 3px;
+}
+
+/* ── Touch tap-target expansion ──────────────────────────────────────
+   Many chrome links are small text (nav links ~21px, the "back"/"now"
+   links, social icons, the jarvis trigger). On a coarse pointer that is
+   below the 44px minimum hit target. This expands the clickable region
+   to >=44px WITHOUT changing the visual text size or shifting layout: an
+   absolutely-centered ::after overlays a 44px-tall (and at least as wide)
+   transparent hit surface on top of the element. It is gated to
+   `pointer: coarse` so desktop hover/underline aesthetics are untouched,
+   and only kicks in where the box would otherwise be too small (the
+   pseudo never shrinks a target that is already >=44px). The host must be
+   `position: relative` (most of these are inline-block/inline-flex and we
+   add relative where needed). */
+@media (pointer: coarse) {
+    .touch-target {
+        position: relative;
+    }
+    .touch-target::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        min-width: 44px;
+        width: 100%;
+        height: 44px;
+        /* keep it strictly a hit surface — invisible, no paint */
+        pointer-events: auto;
+    }
 }
 
 /* Marquee — horizontal token scroll used on /skills hero */

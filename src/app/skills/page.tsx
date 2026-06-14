@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Mark from "@/components/ui/Mark";
 import PageNav from "@/components/ui/PageNav";
@@ -15,9 +15,21 @@ import ContentScrim from "@/components/layout/ContentScrim";
 import { skillCategories } from "@/lib/content";
 import { getColorValue, getColorWithAlpha } from "@/lib/colors";
 import { stagger, fadeUp, enterAt } from "@/lib/motion";
+import styles from "./skills.module.css";
 
 const BH_OFFSET_X = 200;
 const GRAVITY_SELECTOR = "[data-gravity-item]";
+
+/**
+ * The gravity rAF assumes a tall, wide desktop viewport: it warps every
+ * `data-gravity-item` toward the black-hole center at innerWidth/2 + offset,
+ * innerHeight/2. On the released mobile-flow shell (<=820px) and on short
+ * landscape viewports (the 1024×768 P0, where the black-hole center lands
+ * right on the reading column) that pull shoves the categories off-screen /
+ * out of reach. Disable the warp there so the text simply stacks and scrolls.
+ * Desktop (>=1280px, tall) keeps the signature pull untouched.
+ */
+const SHORT_VIEWPORT_QUERY = "(max-width: 820px), (max-height: 760px)";
 
 // Flat list of standout skill tokens for the hero marquee.
 const MARQUEE_TOKENS: string[] = skillCategories.flatMap((c) => c.skills);
@@ -74,6 +86,10 @@ function SkillsBackground() {
       {/* Black hole + DJ photo sit right-of-center; darken the left so the
           left-anchored text column stays legible over it. */}
       <ContentScrim side="left" intensity="strong" />
+      {/* Narrow-only: under the released shell the column re-centers over the
+          black hole — this route-local scrim recedes the bright DJ video so
+          the stacked category chips stay readable (no-op >=821px). */}
+      <div aria-hidden className={styles.legibility} />
     </>
   );
 }
@@ -82,16 +98,28 @@ function SkillsContent() {
   const { onNavClick } = useShellNav();
   const scrollRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  // True when the released shell or a short landscape viewport is active —
+  // the gravity warp is disabled there so categories stack and scroll
+  // normally. SSR-safe (false on first paint, matching the desktop default).
+  const [warpDisabled, setWarpDisabled] = useState(false);
   const totalSkills = skillCategories.reduce(
     (acc, cat) => acc + cat.skills.length,
     0,
   );
 
   useEffect(() => {
+    const mql = window.matchMedia(SHORT_VIEWPORT_QUERY);
+    const update = () => setWarpDisabled(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
     const scrollEl = scrollRef.current;
     if (!scrollEl) return;
 
-    if (reduceMotion) {
+    if (reduceMotion || warpDisabled) {
       resetGravityStyles(scrollEl);
       return;
     }
@@ -161,14 +189,14 @@ function SkillsContent() {
       cancelAnimationFrame(frame);
       resetGravityStyles(scrollEl);
     };
-  }, [reduceMotion]);
+  }, [reduceMotion, warpDisabled]);
 
   return (
     <ScrollStage ref={scrollRef}>
       {/* Section 1 — Hero. Enters via the CSS `.enter-rise` idiom
           (globals.css), not framer `initial="hidden"` — the SSR HTML must
           paint the h1 before the pixi-heavy bundle hydrates (deep-link LCP). */}
-      <Section data-gravity-item align="left">
+      <Section data-gravity-item align="left" className={styles.section}>
         <div>
           <div className="enter-rise" style={enterAt(0)}>
             <Eyebrow index="03" label="what i do" />
@@ -284,7 +312,12 @@ function SkillsContent() {
           measure so even the widest chip row stays clear of the video circle
           (centered at innerWidth/2 + BH_OFFSET_X, ~160px radius) across
           1280–1920px. */}
-      <Section align="left" measure="narrow" innerClassName="!max-w-[520px]">
+      <Section
+        align="left"
+        measure="narrow"
+        innerClassName="!max-w-[520px]"
+        className={styles.section}
+      >
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -330,7 +363,7 @@ function SkillsContent() {
       </Section>
 
       {/* Section 3 — Fun fact as pull-quote */}
-      <Section data-gravity-item align="left">
+      <Section data-gravity-item align="left" className={styles.section}>
         <motion.div
           initial="hidden"
           whileInView="show"

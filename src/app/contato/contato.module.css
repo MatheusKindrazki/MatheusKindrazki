@@ -1,0 +1,58 @@
+/* ──────────────────────────────────────────────────────────────────
+   /contato — mobile-flow spacing.
+
+   The route stacks two <Section>s (hero+socials, then the form). On desktop
+   each is its own 100vh snap panel so the shared .section padding-block-lg
+   reads as breathing room. Below the 820px shell release the sections become
+   normal in-flow blocks (min-height:auto) and that large padding stacks —
+   Section 1's bottom pad + Section 2's top pad — leaving a dead vertical gap
+   between the socials and the form. Collapse the seam between them on mobile
+   while keeping the page's outer top/bottom rhythm. Desktop (>=820px) is
+   untouched — these rules live entirely inside the 820px media query.
+
+   Selectors are scoped under .stage (the ScrollStage wrapper) and target the
+   real <section> elements, so they out-specify the shared .section rule from
+   shell.module.css regardless of CSS-module load order.
+   ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  /* The seam between the two stacked panels: drop the first section's bottom
+     pad and tighten the second's top pad so they meet on one calm seam instead
+     of summing two section-pad-lg blocks. The outer top/bottom rhythm of the
+     page (first section's top, last section's bottom) is left intact. */
+  .stage > section:first-child {
+    padding-bottom: 0;
+  }
+  .stage > section:last-child {
+    padding-top: var(--section-pad-sm);
+  }
+}
+
+/* Touch UX — reveal the hover-only affordances (the email copy chip, the
+   "book a chat" arrow) on devices that cannot hover, so they are visible and
+   usable instead of permanently invisible. Scoped under .stage to out-specify
+   the Tailwind opacity-0 / -translate-x utilities; only applies where there is
+   no hover, so pointer/desktop is unchanged. */
+@media (hover: none) {
+  .stage .touchReveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Touch tap targets — the social rows author their vertical rhythm with
+   Tailwind `py-3` and the calendar link is a plain text line, but the
+   unlayered `* { padding: 0 }` reset in globals.css zeroes Tailwind padding
+   utilities, so on touch these collapse to a ~21px line — under the 44px
+   minimum. CSS modules emit unlayered → these win. Give each a real >=44px
+   hit area (and restore the social rows' intended vertical padding) on coarse
+   pointers only, so the desktop hover layout/aesthetic is unchanged. */
+@media (pointer: coarse) {
+  .socialRow {
+    min-height: 44px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .calLink {
+    min-height: 44px;
+  }
+}
