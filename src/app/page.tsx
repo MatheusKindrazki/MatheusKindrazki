@@ -12,6 +12,7 @@ import {
   FiTwitter,
   FiArrowUpRight,
 } from "react-icons/fi";
+import { FaMedium } from "react-icons/fa";
 import PageNav from "@/components/ui/PageNav";
 import JarvisTrigger from "@/components/chat/JarvisTrigger";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
@@ -35,6 +36,7 @@ const HOME_PORTRAIT_SRC = "/images/kindra-home.png";
 const socialLinks = [
   { href: profile.social.github, label: "GitHub", Icon: FiGithub },
   { href: profile.social.linkedin, label: "LinkedIn", Icon: FiLinkedin },
+  { href: profile.social.medium, label: "Medium", Icon: FaMedium },
   { href: profile.social.instagram, label: "Instagram", Icon: FiInstagram },
   { href: profile.social.twitter, label: "X/Twitter", Icon: FiTwitter },
 ];

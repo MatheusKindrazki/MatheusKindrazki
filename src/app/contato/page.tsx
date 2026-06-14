@@ -13,7 +13,7 @@ import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
 import { profile } from "@/lib/content";
-import { FaGithub, FaLinkedinIn, FaInstagram } from "react-icons/fa";
+import { FaGithub, FaLinkedinIn, FaInstagram, FaMedium } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FiCopy, FiCheck, FiCalendar, FiArrowUpRight } from "react-icons/fi";
 import { getColorValue } from "@/lib/colors";
@@ -38,10 +38,16 @@ const socialLinks = [
     fragment: "/in/matheuskindrazki",
   },
   {
+    href: profile.social.medium,
+    icon: FaMedium,
+    label: "Medium",
+    fragment: "@matheuskindrazki",
+  },
+  {
     href: profile.social.instagram,
     icon: FaInstagram,
     label: "Instagram",
-    fragment: "@kindrazki",
+    fragment: "@matheuskindrazki",
   },
   {
     href: profile.social.twitter,

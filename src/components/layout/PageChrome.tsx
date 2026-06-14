@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Identity from "@/components/ui/Identity";
 import { useLiveTime } from "@/hooks/useLiveTime";
-import { site } from "@/lib/content";
 import shell from "./shell.module.css";
 
 interface PageChromeProps {
@@ -93,9 +92,6 @@ export default function PageChrome({
           </div>
           <div className={`mt-2 ${shell.chromeClock}`}>{time}</div>
           <div className="mt-0.5">Curitiba · BRT · -25.42° -49.27°</div>
-          <div>
-            portfolio · {site.version} · {site.year}
-          </div>
         </div>
       </motion.div>
 
