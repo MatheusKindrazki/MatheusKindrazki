@@ -9,97 +9,21 @@ import MetaRow from "@/components/ui/MetaRow";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
-import { site } from "@/lib/content";
+import {
+  nowBuilding,
+  nowLearning,
+  nowNotDoing,
+  nowReading,
+  nowThinking,
+  site,
+  type NowStatus,
+} from "@/lib/content";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 
-type Status = "building" | "alpha" | "in-progress" | "beta" | "in-production";
-
-interface BuildingItem {
-  name: string;
-  description: string;
-  status: Status;
-}
-
-interface ListItem {
-  name: string;
-  description: string;
-}
-
-const buildingItems: BuildingItem[] = [
-  {
-    name: "MokLabs Venture Studio",
-    description:
-      "Co-founding a studio that ships ambitious products with careful engineering.",
-    status: "building",
-  },
-  {
-    name: "Lugui.ai",
-    description:
-      "Part of the founding team; AI infrastructure for educational intelligence — tutoring systems that actually understand what a student just missed.",
-    status: "alpha",
-  },
-  {
-    name: "Remindr.AI",
-    description:
-      "Privacy-first desktop transcription + daily memory. Built for people who think while they talk.",
-    status: "in-progress",
-  },
-];
-
-const learningItems: ListItem[] = [
-  {
-    name: "LangGraph",
-    description:
-      "Orchestrating multi-agent workflows with real state machines, not vibes.",
-  },
-  {
-    name: "Rust fundamentals",
-    description:
-      "Slow & steady; reading the book and building small CLIs on the side.",
-  },
-  {
-    name: "Venture operations",
-    description:
-      "How small studios stay focused across multiple products without losing their soul.",
-  },
-];
-
-const readingItems: ListItem[] = [
-  {
-    name: "The Hard Thing About Hard Things",
-    description:
-      "Ben Horowitz. Re-read for the 3rd time — it gets sharper every pass.",
-  },
-  {
-    name: "High Output Management",
-    description: "Andy Grove. Classic, still sharp, still the operating manual.",
-  },
-  {
-    name: "Working Backwards",
-    description:
-      "Colin Bryar. Amazon's operating system — how PR/FAQ actually works in practice.",
-  },
-  {
-    name: "The Mom Test",
-    description:
-      "Rob Fitzpatrick. Short, brutal, essential when you're talking to early users.",
-  },
-];
-
-const thinkingAbout = [
-  "How small teams ship with disproportionate impact.",
-  "Where AI genuinely removes toil vs. where it just performs productivity.",
-  "The difference between craftsmanship and craftsmanship-theater.",
-  "Why most “platforms” are just products that refuse to admit it.",
-];
-
-const notDoing: { name: string; status: string }[] = [
-  { name: "Consulting side gigs", status: "archived" },
-  { name: "New social platforms", status: "archived" },
-  { name: "Conference speaking", status: "paused q3" },
-];
-
-const statusTone: Record<Status, string> = {
+// Presentation only — all /now data lives in src/lib/content.ts, where the
+// Building column is derived from `projects` (status === 'current') so the
+// two pages can never disagree.
+const statusTone: Record<NowStatus, string> = {
   building: "var(--color-kindra-yellow)",
   alpha: "var(--color-kindra-blue)",
   beta: "var(--color-kindra-blue)",
@@ -107,17 +31,29 @@ const statusTone: Record<Status, string> = {
   "in-production": "var(--color-kindra-green)",
 };
 
+const statusOrder: NowStatus[] = [
+  "building",
+  "alpha",
+  "beta",
+  "in-progress",
+  "in-production",
+];
+
 // ──────────────────────────────────────────────────────────────────────
 // Instrument cluster — the dashboard signature of /now. Preserved.
-// Counters derive from the real buildingItems array; the "days ago" stamp
-// reads the single site.lastUpdatedIso source of truth.
+// Counters derive from the real nowBuilding array (itself derived from
+// `projects`); the "days ago" stamp reads site.lastUpdatedIso, which is
+// injected at build time from the last git commit touching content.ts.
 // ──────────────────────────────────────────────────────────────────────
 function InstrumentCluster() {
   const reduceMotion = usePrefersReducedMotion();
 
-  const buildingCount = buildingItems.filter((i) => i.status === "building").length;
-  const alphaCount = buildingItems.filter((i) => i.status === "alpha").length;
-  const inProgressCount = buildingItems.filter((i) => i.status === "in-progress").length;
+  const statusCounts = statusOrder
+    .map((status) => ({
+      status,
+      count: nowBuilding.filter((i) => i.status === status).length,
+    }))
+    .filter(({ count }) => count > 0);
 
   const lastUpdated = new Date(site.lastUpdatedIso + "T00:00:00Z");
   const now = new Date();
@@ -129,13 +65,9 @@ function InstrumentCluster() {
     <aside
       role="status"
       aria-label="Current activity summary"
-      className="mt-4"
-      style={{
-        fontFamily: "var(--font-body)",
-        fontVariantNumeric: "tabular-nums",
-      }}
+      className="mt-4 font-data tabular-nums"
     >
-      <div className="flex flex-col gap-3 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] md:flex-row md:items-baseline md:justify-between md:gap-8">
+      <div className="flex flex-col gap-3 text-data uppercase tracking-[0.1em] text-[var(--color-kindra-meta-low)] md:flex-row md:items-baseline md:justify-between md:gap-8">
         <span className="inline-flex items-baseline gap-3">
           <span
             aria-hidden="true"
@@ -152,20 +84,17 @@ function InstrumentCluster() {
             ◆
           </span>
           <span>
-            <span className="text-[var(--color-kindra-meta-mid)]">
-              {buildingCount}
-            </span>{" "}
-            building
-            <span className="mx-2 text-[var(--color-kindra-rule)]">·</span>
-            <span className="text-[var(--color-kindra-meta-mid)]">
-              {alphaCount}
-            </span>{" "}
-            alpha
-            <span className="mx-2 text-[var(--color-kindra-rule)]">·</span>
-            <span className="text-[var(--color-kindra-meta-mid)]">
-              {inProgressCount}
-            </span>{" "}
-            in-progress
+            {statusCounts.map(({ status, count }, i) => (
+              <span key={status}>
+                {i > 0 && (
+                  <span className="mx-2 text-[var(--color-kindra-rule)]">·</span>
+                )}
+                <span className="text-[var(--color-kindra-meta-mid)]">
+                  {count}
+                </span>{" "}
+                {status}
+              </span>
+            ))}
           </span>
         </span>
 
@@ -177,13 +106,6 @@ function InstrumentCluster() {
               {paddedDays}
             </span>{" "}
             days ago
-          </span>
-          <span>
-            <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
-            next refresh ~{" "}
-            <span className="text-[var(--color-kindra-meta-mid)]">
-              {site.nextRefresh}
-            </span>
           </span>
         </span>
       </div>
@@ -271,13 +193,7 @@ interface ColumnProps {
 function Column({ index, title, italic, color, children }: ColumnProps) {
   return (
     <div className="flex flex-col">
-      <div
-        className="flex items-baseline gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
-        style={{
-          fontFamily: "var(--font-body)",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
+      <div className="flex items-baseline gap-2 font-data text-data tabular-nums tracking-[0.1em] uppercase text-[var(--color-kindra-meta-low)]">
         <span>/ {index}</span>
       </div>
       <h2
@@ -386,7 +302,7 @@ function NowContent() {
 
             {/* Lede */}
             <p
-              className="mt-8 max-w-[640px] text-[var(--color-kindra-text)] font-light"
+              className="mt-8 max-w-[640px] text-[var(--color-kindra-text)] font-normal"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-deck)",
@@ -394,8 +310,8 @@ function NowContent() {
               }}
             >
               A snapshot of what&apos;s on my desk, in my head, and on my
-              calendar. This page is short on purpose. Updated every few
-              weeks.
+              calendar. This page is short on purpose — the timestamp below
+              comes straight from the last content commit, not a promise.
             </p>
 
             {/* Instrument cluster */}
@@ -420,7 +336,7 @@ function NowContent() {
               italic="— on my desk"
               color="var(--color-kindra-yellow)"
             >
-              {buildingItems.map((item) => (
+              {nowBuilding.map((item) => (
                 <div key={item.name}>
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span
@@ -457,7 +373,7 @@ function NowContent() {
               italic="— slow & deliberate"
               color="var(--color-kindra-blue)"
             >
-              {learningItems.map((item) => (
+              {nowLearning.map((item) => (
                 <div key={item.name}>
                   <h3
                     className="text-[17px] font-bold text-[var(--color-kindra-text-white)] tracking-[-0.01em] leading-[1.25]"
@@ -485,7 +401,7 @@ function NowContent() {
               italic="— on the nightstand"
               color="var(--color-kindra-green)"
             >
-              {readingItems.map((item) => (
+              {nowReading.map((item) => (
                 <div key={item.name}>
                   <h3
                     className="text-[16px] font-bold italic text-[var(--color-kindra-text-white)] tracking-[-0.01em] leading-[1.3]"
@@ -513,7 +429,7 @@ function NowContent() {
               italic="— unresolved"
               color="var(--color-kindra-red)"
             >
-              {thinkingAbout.map((line) => (
+              {nowThinking.map((line) => (
                 <p
                   key={line}
                   className="italic text-[var(--color-kindra-meta-high)] tracking-[-0.01em]"
@@ -553,13 +469,7 @@ function NowContent() {
           className="mb-3 h-px w-16 bg-[var(--color-kindra-rule-strong)]"
         />
         {/* Label with signature square marker */}
-        <p
-          className="mb-6 flex items-center gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-meta-low)]"
-          style={{
-            fontFamily: "var(--font-body)",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
+        <p className="mb-6 flex items-center gap-2 font-data text-data tabular-nums tracking-[0.1em] uppercase text-[var(--color-kindra-meta-low)]">
           <span
             aria-hidden="true"
             className="inline-block"
@@ -592,13 +502,7 @@ function NowContent() {
         <div className="mx-auto flex w-[90%] flex-col" style={{ maxWidth: "var(--measure-ledger)" }}>
           {/* Spacer to push Not Doing to the center */}
           <div className="flex flex-col items-center justify-center text-center">
-            <p
-              className="mb-10 flex items-center gap-2 text-[length:var(--text-eyebrow)] tracking-[0.3em] uppercase text-[var(--color-kindra-red)]"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
+            <p className="mb-10 flex items-center gap-2 font-data text-data tabular-nums tracking-[0.1em] uppercase text-[var(--color-kindra-red)]">
               <span
                 aria-hidden="true"
                 className="inline-block"
@@ -612,7 +516,7 @@ function NowContent() {
             </p>
 
             <div className="flex flex-col gap-6">
-              {notDoing.map((item) => (
+              {nowNotDoing.map((item) => (
                 <div
                   key={item.name}
                   className="flex flex-col sm:flex-row items-center justify-center gap-3"
@@ -623,13 +527,7 @@ function NowContent() {
                   >
                     {item.name}
                   </span>
-                  <span
-                    className="text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
+                  <span className="font-data text-data tabular-nums uppercase tracking-[0.1em] text-[var(--color-kindra-meta-low)]">
                     <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
                     {item.status}
                   </span>

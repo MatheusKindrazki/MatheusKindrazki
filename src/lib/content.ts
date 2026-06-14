@@ -1,9 +1,47 @@
 import type { ThemeColor } from '@/lib/colors'
 
+// ──────────────────────────────────────────────────────────────────────
+// Honest-by-construction dates. Nothing below is hand-edited: the "last
+// updated" stamp is injected at build time from the last git commit that
+// touched THIS file (see next.config.ts), and the age is computed from a
+// birthdate instead of a number that silently rots.
+// ──────────────────────────────────────────────────────────────────────
+
+/** Mirrors the fallback in next.config.ts — used only when git history is unavailable. */
+const CONTENT_UPDATED_FALLBACK_ISO = '2026-04-17'
+
+/** Date-only ISO stamp (YYYY-MM-DD) of the last content commit. */
+const contentUpdatedIso = (
+  process.env.NEXT_PUBLIC_CONTENT_UPDATED_AT ?? CONTENT_UPDATED_FALLBACK_ISO
+).slice(0, 10)
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
+
+function formatMonthYear(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`)
+  return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
+}
+
+/**
+ * Only the birth YEAR is load-bearing: the site published "29" in feb 2026,
+ * which pins the year to 1996; the day is a placeholder the owner can correct.
+ * Computing from a date means the number can never go stale again.
+ */
+export const BIRTHDATE = new Date('1996-07-01T00:00:00Z')
+
+export function computeAge(birthdate: Date, today: Date = new Date()): number {
+  let age = today.getUTCFullYear() - birthdate.getUTCFullYear()
+  const monthDelta = today.getUTCMonth() - birthdate.getUTCMonth()
+  if (monthDelta < 0 || (monthDelta === 0 && today.getUTCDate() < birthdate.getUTCDate())) {
+    age -= 1
+  }
+  return age
+}
+
 export const profile = {
   name: 'Matheus Kindrazki',
   nickname: 'Kindra',
-  age: 29,
+  age: computeAge(BIRTHDATE),
   title: 'Co-founder & Builder',
   company: 'MokLabs Venture Studio',
   secondaryRole: 'Founding team at Lugui.ai',
@@ -12,7 +50,7 @@ export const profile = {
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
   headline: 'Building ventures where bold ideas meet careful engineering.',
   description:
-    'Co-founder at MokLabs Venture Studio and part of the founding team at Lugui.ai. 8+ years architecting platforms used by millions of students — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
+    'Co-founder at MokLabs Venture Studio and part of the founding team at Lugui.ai. Engineering since 2017, architecting platforms used by millions of students — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
@@ -24,17 +62,22 @@ export const profile = {
 
 /**
  * Site-wide rot-prone strings, kept in ONE place so the version/date stamp in
- * the chrome, the home footer, and the /now page never disagree.
+ * the chrome, the home footer, and the /now page never disagree. Both date
+ * fields derive from the build-time git stamp — never edit them by hand.
  */
 export const site = {
   version: 'v3.0',
   year: '2026',
-  lastUpdated: 'apr 2026',
-  lastUpdatedIso: '2026-04-17',
-  nextRefresh: 'may 2026',
+  /** e.g. 'jun 2026' */
+  lastUpdated: formatMonthYear(contentUpdatedIso),
+  /** YYYY-MM-DD */
+  lastUpdatedIso: contentUpdatedIso,
 }
 
 export type ProjectStatus = 'current' | 'past' | 'side'
+
+/** Maturity chip shown on /now's Building column. */
+export type NowStatus = 'building' | 'alpha' | 'beta' | 'in-progress' | 'in-production'
 
 export interface Project {
   title: string
@@ -48,6 +91,10 @@ export interface Project {
   signal: string
   role: string
   coordinate: string
+  /** Short "what's on the desk" copy for /now. Falls back to `description`. */
+  nowNote?: string
+  /** /now maturity chip. Defaults to 'building'. */
+  nowStatus?: NowStatus
 }
 
 export const projects: Project[] = [
@@ -62,6 +109,9 @@ export const projects: Project[] = [
     signal: 'memory',
     role: 'personal ai os',
     coordinate: 'rag/mcp',
+    nowNote:
+      'My personal knowledge graph + AI agent — the live instance answers questions right here on this site.',
+    nowStatus: 'in-production',
   },
   {
     title: 'MokLabs Venture Studio',
@@ -74,11 +124,14 @@ export const projects: Project[] = [
     signal: 'venture',
     role: 'co-founder',
     coordinate: 'studio/platform',
+    nowNote:
+      'Co-founding a studio that ships ambitious products with careful engineering.',
+    nowStatus: 'building',
   },
   {
     title: 'Lugui.ai',
     description:
-      'Founding team member building an AI-native product from day zero. Architecting the frontend, RAG pipelines, and the developer experience that lets a small team ship like a large one.',
+      'Founding team member building AI-native educational intelligence from day zero — tutoring systems that actually understand what a student just missed. Architecting the frontend, RAG pipelines, and the developer experience that lets a small team ship like a large one.',
     tags: ['AI', 'RAG', 'Next.js', 'LangChain', 'Founding Team'],
     color: 'blue',
     year: '2025-2026',
@@ -86,6 +139,9 @@ export const projects: Project[] = [
     signal: 'ai-native',
     role: 'founding team',
     coordinate: 'product/rag',
+    nowNote:
+      'Tutoring systems that actually understand what a student just missed — frontend, RAG pipelines, and the DX that keeps a small team fast.',
+    nowStatus: 'alpha',
   },
   {
     title: 'Synk',
@@ -98,6 +154,9 @@ export const projects: Project[] = [
     signal: 'edge-ai',
     role: 'solo founder',
     coordinate: 'ipad/native',
+    nowNote:
+      'A real code editor for the iPad with on-device AI — native SwiftUI, cloud and local models.',
+    nowStatus: 'in-progress',
   },
   {
     title: 'Argus',
@@ -110,6 +169,9 @@ export const projects: Project[] = [
     signal: 'vision',
     role: 'architect',
     coordinate: 'moklabs/edge',
+    nowNote:
+      'Privacy-first AI vision for any ONVIF/RTSP camera — open-source, low-cost, no rip-and-replace.',
+    nowStatus: 'in-progress',
   },
   {
     title: 'Kindraw',
@@ -122,6 +184,9 @@ export const projects: Project[] = [
     signal: 'canvas',
     role: 'solo founder',
     coordinate: 'draw/docs',
+    nowNote:
+      'A warm, playful workspace on top of Excalidraw — boards, docs, and real-time collaboration.',
+    nowStatus: 'in-progress',
   },
   {
     title: 'Remindr.AI',
@@ -237,4 +302,75 @@ export const navLinks = [
   { href: '/skills', label: 'Skills', color: 'blue' as const },
   { href: '/sobre', label: 'About', color: 'yellow' as const },
   { href: '/contato', label: 'Contact', color: 'red' as const },
+]
+
+// ──────────────────────────────────────────────────────────────────────
+// /now data. The Building column is DERIVED from `projects` so it cannot
+// drift from the atlas: every project marked status 'current' shows up,
+// using its `nowNote` (or canonical description) and `nowStatus`.
+// ──────────────────────────────────────────────────────────────────────
+
+export interface NowItem {
+  name: string
+  description: string
+}
+
+export interface NowBuildingItem extends NowItem {
+  status: NowStatus
+}
+
+export const nowBuilding: NowBuildingItem[] = projects
+  .filter((project) => project.status === 'current')
+  .map((project) => ({
+    // 'Jarvis — Personal AI Operating System' → 'Jarvis'
+    name: project.title.split(' — ')[0],
+    description: project.nowNote ?? project.description,
+    status: project.nowStatus ?? 'building',
+  }))
+
+export const nowLearning: NowItem[] = [
+  {
+    name: 'LangGraph',
+    description: 'Orchestrating multi-agent workflows with real state machines, not vibes.',
+  },
+  {
+    name: 'Rust fundamentals',
+    description: 'Slow & steady; reading the book and building small CLIs on the side.',
+  },
+  {
+    name: 'Venture operations',
+    description: 'How small studios stay focused across multiple products without losing their soul.',
+  },
+]
+
+export const nowReading: NowItem[] = [
+  {
+    name: 'The Hard Thing About Hard Things',
+    description: 'Ben Horowitz. Re-read for the 3rd time — it gets sharper every pass.',
+  },
+  {
+    name: 'High Output Management',
+    description: 'Andy Grove. Classic, still sharp, still the operating manual.',
+  },
+  {
+    name: 'Working Backwards',
+    description: "Colin Bryar. Amazon's operating system — how PR/FAQ actually works in practice.",
+  },
+  {
+    name: 'The Mom Test',
+    description: "Rob Fitzpatrick. Short, brutal, essential when you're talking to early users.",
+  },
+]
+
+export const nowThinking: string[] = [
+  'How small teams ship with disproportionate impact.',
+  'Where AI genuinely removes toil vs. where it just performs productivity.',
+  'The difference between craftsmanship and craftsmanship-theater.',
+  'Why most “platforms” are just products that refuse to admit it.',
+]
+
+export const nowNotDoing: { name: string; status: string }[] = [
+  { name: 'Consulting side gigs', status: 'archived' },
+  { name: 'New social platforms', status: 'archived' },
+  { name: 'Conference speaking', status: 'paused since q3 2025' },
 ]
