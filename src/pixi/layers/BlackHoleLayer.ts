@@ -146,7 +146,15 @@ export class BlackHoleLayer implements PixiLayer {
     const maxDist = Math.sqrt(width * width + height * height) / 2;
 
     this.drawGlobalEffects(phase.name, phase.progress, cx, cy);
-    this.updateParticles(phase.name, phase.progress, cx, cy, maxDist, ticker.lastTime);
+    this.updateParticles(
+      phase.name,
+      phase.progress,
+      cx,
+      cy,
+      maxDist,
+      ticker.lastTime,
+      Math.min(0.05, ticker.deltaMS / 1000),
+    );
     this.drawRings(phase.name, phase.progress, cx, cy, maxDist);
     this.updateMedia(phase.name, phase.progress, cx, cy);
   }
@@ -300,8 +308,8 @@ export class BlackHoleLayer implements PixiLayer {
     cy: number,
     maxDist: number,
     now: number,
+    dt: number,
   ): void {
-    const dt = 0.016;
     this.trails.clear();
 
     for (const star of this.stars) {
@@ -491,9 +499,52 @@ export class BlackHoleLayer implements PixiLayer {
       this.mediaSprite.height = 320;
       this.mediaSprite.mask = this.mediaMask;
       this.root.addChild(this.mediaSprite);
+      if (isVideo) this.ensureVideoPlaying(texture);
     }).catch(() => {
       if (loadId === this.mediaLoadId) this.mediaLoading = false;
     });
+  }
+
+  /**
+   * Pixi v8's `autoPlay` is unreliable — the underlying HTMLVideoElement is
+   * created paused and `.play()` is never explicitly called once it can play,
+   * so the DJ clip sits on a frozen first frame. Reach the element off the
+   * texture source (`texture.source.resource` on a VideoSource) and call
+   * `.play()` defensively. If autoplay policy rejects the first attempt, retry
+   * once on the first user gesture.
+   */
+  private ensureVideoPlaying(texture: Texture): void {
+    const source = texture.source as unknown as {
+      resource?: HTMLVideoElement;
+    } | null;
+    const video = source?.resource;
+    if (!video || typeof video.play !== "function") return;
+
+    video.muted = true;
+    video.playsInline = true;
+    video.loop = true;
+
+    const attempt = () => {
+      const result = video.play();
+      if (result && typeof result.catch === "function") {
+        result.catch(() => {
+          /* blocked by autoplay policy — wait for a user gesture */
+        });
+      }
+    };
+
+    const promise = video.play();
+    if (promise && typeof promise.then === "function") {
+      promise.catch(() => {
+        const retry = () => {
+          attempt();
+          document.removeEventListener("pointerdown", retry);
+          document.removeEventListener("keydown", retry);
+        };
+        document.addEventListener("pointerdown", retry, { once: true });
+        document.addEventListener("keydown", retry, { once: true });
+      });
+    }
   }
 
   private updateMedia(

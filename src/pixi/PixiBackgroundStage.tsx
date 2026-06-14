@@ -6,6 +6,7 @@ import { usePixiScene } from "@/pixi/PixiSceneContext";
 import { BlackHoleLayer } from "@/pixi/layers/BlackHoleLayer";
 import { PortraitParticlesLayer } from "@/pixi/layers/PortraitParticlesLayer";
 import { StarfieldLayer } from "@/pixi/layers/StarfieldLayer";
+import { qualityGovernor } from "@/pixi/qualityGovernor";
 
 interface BackgroundLayers {
   app: Application;
@@ -19,14 +20,15 @@ interface BackgroundLayers {
 export default function PixiBackgroundStage() {
   const hostRef = useRef<HTMLDivElement>(null);
   const layersRef = useRef<BackgroundLayers | null>(null);
-  const { portrait, blackHole } = usePixiScene();
-  const sceneRef = useRef({ portrait, blackHole });
+  const { portrait, blackHole, slew } = usePixiScene();
+  const sceneRef = useRef({ portrait, blackHole, slew });
 
-  sceneRef.current = { portrait, blackHole };
+  sceneRef.current = { portrait, blackHole, slew };
 
   useEffect(() => {
     let cancelled = false;
     let layers: BackgroundLayers | null = null;
+    let unsubscribeTier: (() => void) | null = null;
 
     async function boot() {
       if (!hostRef.current) return;
@@ -37,7 +39,10 @@ export default function PixiBackgroundStage() {
         backgroundAlpha: 0,
         antialias: true,
         autoDensity: true,
-        resolution: Math.min(window.devicePixelRatio || 1, 2),
+        resolution: Math.min(
+          window.devicePixelRatio || 1,
+          qualityGovernor.resolutionCap,
+        ),
         preference: "webgl",
       });
 
@@ -56,12 +61,26 @@ export default function PixiBackgroundStage() {
       const portraitLayer = new PortraitParticlesLayer();
       const blackHoleLayer = new BlackHoleLayer();
 
+      portraitLayer.setRenderer(app.renderer);
       app.stage.addChild(root);
       starfield.mount(root);
       portraitLayer.mount(root);
       blackHoleLayer.mount(root);
 
+      // Adaptive quality: the governor watches real frame times and steps
+      // the renderer resolution down (layers react to density on their own).
+      unsubscribeTier = qualityGovernor.subscribe(() => {
+        const next = Math.min(
+          window.devicePixelRatio || 1,
+          qualityGovernor.resolutionCap,
+        );
+        if (app.renderer.resolution !== next) {
+          app.renderer.resize(app.screen.width, app.screen.height, next);
+        }
+      });
+
       const tick = (ticker: Ticker) => {
+        qualityGovernor.sample(ticker.deltaMS);
         const { width, height } = app.screen;
         starfield.resize(width, height);
         portraitLayer.resize(width, height);
@@ -81,6 +100,7 @@ export default function PixiBackgroundStage() {
         tick,
       };
       layersRef.current = layers;
+      portraitLayer.setSlew(sceneRef.current.slew);
       portraitLayer.setConfig(sceneRef.current.portrait);
       blackHoleLayer.setConfig(sceneRef.current.blackHole);
     }
@@ -89,6 +109,8 @@ export default function PixiBackgroundStage() {
 
     return () => {
       cancelled = true;
+      unsubscribeTier?.();
+      unsubscribeTier = null;
       if (layers) {
         layers.app.ticker.remove(layers.tick);
         layers.starfield.destroy();
@@ -100,6 +122,13 @@ export default function PixiBackgroundStage() {
       layersRef.current = null;
     };
   }, []);
+
+  // Slew first: when a navigation begins, the direction/rate must be known
+  // by the time the explode flag lands (both arrive in the same commit, and
+  // the layer also applies a late slew to an in-flight explode).
+  useEffect(() => {
+    layersRef.current?.portrait.setSlew(slew);
+  }, [slew]);
 
   useEffect(() => {
     layersRef.current?.portrait.setConfig(portrait);
