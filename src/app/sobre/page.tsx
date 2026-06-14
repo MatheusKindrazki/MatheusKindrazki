@@ -10,7 +10,7 @@ import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
-import { timeline, philosophy } from "@/lib/content";
+import { timeline, philosophy, writing } from "@/lib/content";
 import { getColorValue } from "@/lib/colors";
 import { stagger, fadeUp, enterAt } from "@/lib/motion";
 import styles from "./sobre.module.css";
@@ -85,10 +85,12 @@ function SobreContent() {
             className="enter-rise max-w-[540px] font-normal text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
             style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
           >
-            Co-founder at <Mark color="yellow">MokLabs Venture Studio</Mark>{" "}
-            and founding team at Lugui.ai. 8 years architecting platforms at
-            Arco Educação — shipping infrastructure that reached millions of
-            students. Now turning that experience into ventures of my own.
+            Co-founder at <Mark color="yellow">MokLabs Venture Studio</Mark>,
+            founding team at Lugui.ai, and{" "}
+            <Mark color="yellow">AI Research Fellow at CEIA (UFG)</Mark>. Nearly
+            a decade architecting platforms at Arco Educação — shipping
+            infrastructure that reached millions of students. Now turning that
+            experience into ventures of my own.
           </p>
 
           <PageNav current="/sobre" onClick={onNavClick} />
@@ -100,7 +102,7 @@ function SobreContent() {
             className={styles.scrollHint}
           >
             <span className={styles.scrollHintRule} />
-            <span>scroll &middot; journey &middot; philosophy &middot; formation</span>
+            <span>scroll &middot; journey &middot; philosophy &middot; writing</span>
             <span aria-hidden className={`animate-bounce ${styles.scrollHintArrow}`}>
               ↓
             </span>
@@ -179,7 +181,53 @@ function SobreContent() {
         </motion.div>
       </Section>
 
-      {/* Section 4 — Formation / closing */}
+      {/* Section 4 — Writing */}
+      <Section align="left" measure="wide">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
+          <motion.div variants={fadeUp}>
+            <Eyebrow label="writing" accent={yellow} />
+          </motion.div>
+
+          <motion.h2 variants={fadeUp} className={`mt-4 ${styles.sectionTitle}`}>
+            Thinking{" "}
+            <span className={styles.sectionTitleNote}>out loud</span>
+          </motion.h2>
+
+          <div className={styles.writingList}>
+            {writing.map((article) => (
+              <motion.a
+                key={article.title}
+                variants={fadeUp}
+                href={article.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor="link"
+                className={styles.writingItem}
+              >
+                <span className={styles.writingMeta}>
+                  {article.year} · {article.topic}
+                </span>
+                <h3 className={styles.writingTitle}>{article.title}</h3>
+                <p className={styles.writingBlurb}>{article.blurb}</p>
+              </motion.a>
+            ))}
+          </div>
+
+          <motion.div variants={fadeUp}>
+            <MetaRow
+              className="mt-10"
+              items={["medium", "matheuskindrazki.medium.com", "more on the feed →"]}
+            />
+          </motion.div>
+        </motion.div>
+      </Section>
+
+      {/* Section 5 — Formation / closing */}
       <Section align="left">
         <motion.div
           variants={stagger}
@@ -195,8 +243,8 @@ function SobreContent() {
             <span className={styles.formationLeadStrong}>
               Software Engineering
             </span>{" "}
-            — specialized in <Mark color="yellow">Cloud Computing</Mark> (AWS,
-            Azure) &amp; DevOps.
+            — PUC-PR (2019–2024), specialized in{" "}
+            <Mark color="yellow">Cloud Computing</Mark> (AWS) &amp; DevOps.
           </motion.p>
 
           <motion.p variants={fadeUp} className={styles.formationBody}>

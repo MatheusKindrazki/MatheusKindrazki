@@ -45,29 +45,29 @@ export const profile = {
   title: 'Co-founder & Builder',
   company: 'MokLabs Venture Studio',
   secondaryRole: 'Founding team at Lugui.ai',
+  fellowship: 'AI Research Fellow · CEIA (UFG)',
   email: 'matheus@kindrazki.dev',
   location: 'Curitiba, Brazil',
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
   headline: 'Building ventures where bold ideas meet careful engineering.',
   description:
-    'Co-founder at MokLabs Venture Studio and part of the founding team at Lugui.ai. Engineering since 2017, architecting platforms used by millions of students — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
+    'Co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). A decade architecting platforms used by millions of students at Arco Educação — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
     linkedin: 'https://linkedin.com/in/matheuskindrazki',
-    instagram: 'https://instagram.com/kindrazki',
+    medium: 'https://matheuskindrazki.medium.com',
+    instagram: 'https://instagram.com/matheuskindrazki',
     twitter: 'https://x.com/kindraScript',
   },
 }
 
 /**
- * Site-wide rot-prone strings, kept in ONE place so the version/date stamp in
- * the chrome, the home footer, and the /now page never disagree. Both date
- * fields derive from the build-time git stamp — never edit them by hand.
+ * Site-wide rot-prone strings, kept in ONE place so the date stamp in the home
+ * footer and the /now page never disagree. Both date fields derive from the
+ * build-time git stamp — never edit them by hand.
  */
 export const site = {
-  version: 'v3.0',
-  year: '2026',
   /** e.g. 'jun 2026' */
   lastUpdated: formatMonthYear(contentUpdatedIso),
   /** YYYY-MM-DD */
@@ -142,6 +142,21 @@ export const projects: Project[] = [
     nowNote:
       'Tutoring systems that actually understand what a student just missed — frontend, RAG pipelines, and the DX that keeps a small team fast.',
     nowStatus: 'alpha',
+  },
+  {
+    title: 'CEIA — AI Research Fellow',
+    description:
+      'AI Research Fellow at the Centro de Excelência em Inteligência Artificial (CEIA / UFG) — applied research at the frontier of LLMs and intelligent systems, bridging academic rigor and shipped products.',
+    tags: ['Applied Research', 'LLMs', 'Intelligent Systems', 'CEIA', 'UFG'],
+    color: 'green',
+    year: '2026',
+    status: 'current',
+    signal: 'research',
+    role: 'research fellow',
+    coordinate: 'frontier/llm',
+    nowNote:
+      'Applied AI research at CEIA (UFG) — frontier LLM work bridging academic rigor and shipped products.',
+    nowStatus: 'in-progress',
   },
   {
     title: 'Synk',
@@ -289,12 +304,47 @@ export const philosophy = [
 ]
 
 export const timeline = [
-  { year: '2017', title: 'Started as a Backend Developer', description: 'First steps as a backend developer with PHP.' },
-  { year: '2018', title: 'Transitioned to Frontend', description: 'Discovered a passion for interfaces and user experience.' },
-  { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a frontend engineer at the largest education company in Brazil.' },
-  { year: '2022', title: 'Tech Lead', description: 'Technical leadership of teams, microfrontend architecture.' },
-  { year: '2024', title: 'Principal Engineer', description: 'Architecture at scale, governance, DX, and AI initiatives.' },
-  { year: '2025', title: 'Founder Era', description: 'Co-founded MokLabs Venture Studio. Joined the founding team at Lugui.ai. Adventuring at the edges of technology.' },
+  { year: '2017', title: 'First lines shipped', description: 'Mobile and web internships (UFPR, Corpo de Bombeiros PR) then agency work — PHP, WordPress, Node.js, React Native for real clients.' },
+  { year: '2019', title: 'Engineering Manager', description: 'Led a small team at Mentores Digital: custom client platforms, APIs (Express/Adonis), React & React Native apps, ERP integrations.' },
+  { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a Software Engineer at one of Brazil’s largest edtechs — frontend platform work across pedagogical products.' },
+  { year: '2021', title: 'Staff Engineer', description: 'Stepped up to Staff: microfrontend architecture with Module Federation, design-system governance, and DX across squads.' },
+  { year: '2025', title: 'Principal Engineer — Applied AI', description: 'Led the Applied AI & AI Platform front: RAG over large document bases, automated essay correction (OCR/HTR), and AI infra reaching millions of students.' },
+  { year: '2026', title: 'Founder & Research Fellow', description: 'Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG). Turning a decade of platform work into ventures of my own.' },
+]
+
+/**
+ * Selected technical writing (Medium: matheuskindrazki.medium.com). Curated —
+ * the strongest pieces on LLM engineering and architecture, not the full feed.
+ */
+export const writing = [
+  {
+    title: 'Contexto Demais Apodrece: o Ponto Ótimo da Janela nos LLMs',
+    blurb: 'Context engineering — calibrating the ideal window to cut noise and hallucination.',
+    year: '2025',
+    topic: 'LLM Engineering',
+    link: 'https://matheuskindrazki.medium.com/',
+  },
+  {
+    title: 'Criatividade é um Bug: Como a Matemática (e não o Prompt) vai salvar seu SaaS',
+    blurb: 'Trading the uncertainty of language for the guarantees of automata to scale AI products.',
+    year: '2025',
+    topic: 'Applied AI',
+    link: 'https://matheuskindrazki.medium.com/',
+  },
+  {
+    title: 'Ainda Não Chegamos Lá: O Hype da IA vs. a Realidade Atual',
+    blurb: 'Why AI still fails at complex problems, what the benchmarks really show, and how to adopt strategically.',
+    year: '2025',
+    topic: 'AI Strategy',
+    link: 'https://matheuskindrazki.medium.com/',
+  },
+  {
+    title: 'Como gerenciar rotas compartilhadas em aplicações Microfrontends',
+    blurb: 'Essential strategies for a consistent, integrated UX across federated microfrontends.',
+    year: '2023',
+    topic: 'Architecture',
+    link: 'https://matheuskindrazki.medium.com/',
+  },
 ]
 
 export const navLinks = [
