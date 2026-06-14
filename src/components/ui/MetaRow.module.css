@@ -3,9 +3,11 @@
   align-items: center;
   gap: 12px;
   color: var(--color-kindra-meta-low);
-  font-family: var(--font-body);
-  font-size: var(--text-eyebrow);
-  letter-spacing: 0.3em;
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  /* Mono carries its own rhythm — far less tracking than the old sans. */
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 

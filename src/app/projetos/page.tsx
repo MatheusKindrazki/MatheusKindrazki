@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
-import dynamic from "next/dynamic";
+import { useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { FiArrowUpRight } from "react-icons/fi";
 import Mark from "@/components/ui/Mark";
@@ -12,13 +11,8 @@ import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import { projects, type Project, type ProjectStatus } from "@/lib/content";
 import { getColorValue, getColorWithAlpha } from "@/lib/colors";
-import { stagger, fadeUp, swapUp } from "@/lib/motion";
+import { stagger, fadeUp, swapUp, enterAt } from "@/lib/motion";
 import styles from "./projects.module.css";
-
-const ParticlePhoto = dynamic(
-  () => import("@/components/canvas/ParticlePhoto"),
-  { ssr: false },
-);
 
 const statusCopy: Record<ProjectStatus, string> = {
   current: "shipping",
@@ -27,66 +21,133 @@ const statusCopy: Record<ProjectStatus, string> = {
 };
 
 /**
- * Distribute N nodes evenly around the orbital atlas using polar coordinates
- * on 2-3 concentric rings, converted to viewBox %. Deterministic (index-based
- * angles only — no randomness) so the constellation scales to any project
- * count without nodes overlapping. The PATH_POINTS polyline is derived from
- * the same generated positions.
+ * Semantic atlas placement — the geometry encodes the data instead of the
+ * array order:
+ *
+ *   radius = distance from "now"   status 'current' sits on the inner ring
+ *            near the core, 'side' on a mid eccentric (slightly inclined)
+ *            ring, 'past' on the outer ring decaying with years since the
+ *            work ended.
+ *   angle  = time                  each ring maps its start-year span across
+ *            a fixed arc, so same-era projects cluster chronologically.
+ *
+ * Fully deterministic (data-driven only — no randomness). A min-separation
+ * post-pass pushes same-year nodes apart, then compresses the chain back
+ * into the arc so labels never collide regardless of project count.
  */
-function generateNodePositions(
-  count: number,
-): { x: number; y: number }[] {
-  if (count <= 0) return [];
 
-  // Spread across 2 rings up to 8 nodes, 3 rings beyond that.
-  const ringCount = count > 8 ? 3 : 2;
-  const radii = ringCount === 3 ? [22, 35, 47] : [26, 45];
+interface YearRange {
+  start: number;
+  end: number;
+}
 
-  // Balance how many nodes land on each ring (outer rings hold more).
-  const ringWeights = ringCount === 3 ? [2, 3, 4] : [2, 3];
-  const weightTotal = ringWeights.reduce((a, b) => a + b, 0);
+function parseYearRange(year: string): YearRange {
+  const matches = year.match(/\d{4}/g);
+  if (!matches || matches.length === 0) return { start: 0, end: 0 };
+  return {
+    start: parseInt(matches[0], 10),
+    end: parseInt(matches[matches.length - 1], 10),
+  };
+}
 
-  const ringCapacities = ringWeights.map((w) =>
-    Math.max(1, Math.round((w / weightTotal) * count)),
-  );
-  // Reconcile rounding so capacities sum to exactly `count`.
-  let assigned = ringCapacities.reduce((a, b) => a + b, 0);
-  let r = ringCount - 1;
-  while (assigned > count && r >= 0) {
-    if (ringCapacities[r] > 1) {
-      ringCapacities[r] -= 1;
-      assigned -= 1;
-    } else {
-      r -= 1;
+/** Per-ring arc in degrees — 0° points right, sweeping clockwise on screen. */
+const RING_ARCS: Record<ProjectStatus, { start: number; span: number }> = {
+  current: { start: -90, span: 300 },
+  side: { start: -15, span: 120 },
+  past: { start: 130, span: 175 },
+};
+
+/** Minimum angular gap between neighbors on the same ring (degrees). */
+const MIN_ANGLE_SEPARATION = 56;
+
+function computeAtlasPlacements(list: Project[]): { x: number; y: number }[] {
+  const placements: { x: number; y: number }[] = new Array(list.length);
+  // "Now" is anchored to the data, not the wall clock.
+  const epochNow = Math.max(...list.map((p) => parseYearRange(p.year).end));
+
+  (Object.keys(RING_ARCS) as ProjectStatus[]).forEach((status) => {
+    const members = list
+      .map((project, index) => ({ index, year: parseYearRange(project.year) }))
+      .filter(({ index }) => list[index].status === status)
+      .sort((a, b) => a.year.start - b.year.start || a.index - b.index);
+    if (members.length === 0) return;
+
+    const arc = RING_ARCS[status];
+    const minYear = members[0].year.start;
+    const maxYear = members[members.length - 1].year.start;
+    const yearSpan = Math.max(1, maxYear - minYear);
+
+    // Angle from year: map each start year across the ring's arc.
+    const angles = members.map(
+      ({ year }) => arc.start + ((year.start - minYear) / yearSpan) * arc.span,
+    );
+
+    // Same-year cohorts land on the same angle — push collisions forward…
+    const minSep = Math.min(
+      MIN_ANGLE_SEPARATION,
+      arc.span / Math.max(1, members.length - 1),
+    );
+    for (let i = 1; i < angles.length; i++) {
+      angles[i] = Math.max(angles[i], angles[i - 1] + minSep);
     }
-  }
-  r = ringCount - 1;
-  while (assigned < count) {
-    ringCapacities[r] += 1;
-    assigned += 1;
-    r = r > 0 ? r - 1 : ringCount - 1;
-  }
+    // …then compress proportionally so the chain still fits the arc.
+    const overflow = angles[angles.length - 1] - (arc.start + arc.span);
+    if (overflow > 0) {
+      const scale = arc.span / (arc.span + overflow);
+      for (let i = 0; i < angles.length; i++) {
+        angles[i] = arc.start + (angles[i] - arc.start) * scale;
+      }
+    }
 
-  const positions: { x: number; y: number }[] = [];
-  let placed = 0;
-  for (let ring = 0; ring < ringCount && placed < count; ring++) {
-    const onRing = Math.min(ringCapacities[ring], count - placed);
-    const radius = radii[ring];
-    // Stagger each ring's starting angle so adjacent rings don't align.
-    const offset = (ring * Math.PI) / ringCount;
-    for (let i = 0; i < onRing; i++) {
-      const angle = offset + (i / onRing) * Math.PI * 2;
-      const x = 50 + radius * Math.cos(angle);
-      const y = 50 + radius * Math.sin(angle);
-      positions.push({
+    let yearRun = 0;
+    members.forEach((member, i) => {
+      // Alternate shells within a same-year cohort so labels breathe.
+      yearRun =
+        i > 0 && members[i - 1].year.start === member.year.start
+          ? yearRun + 1
+          : 0;
+      const theta = (angles[i] * Math.PI) / 180;
+      let x: number;
+      let y: number;
+
+      if (status === "current") {
+        // Inner ring: the longer a venture has been live, the deeper it
+        // has spiralled toward the core.
+        const radius = Math.min(
+          28,
+          22 + (member.year.start - minYear) * 2 + (yearRun % 2) * 2,
+        );
+        x = 50 + radius * Math.cos(theta);
+        y = 50 + radius * Math.sin(theta);
+      } else if (status === "side") {
+        // Mid ring: eccentric, slightly inclined ellipse — side signals
+        // ride a tilted orbit instead of a perfect circle.
+        const inclination = (-8 * Math.PI) / 180;
+        const px = 39 * Math.cos(theta);
+        const py = 34 * Math.sin(theta);
+        x = 50 + px * Math.cos(inclination) - py * Math.sin(inclination);
+        y = 50 + px * Math.sin(inclination) + py * Math.cos(inclination);
+      } else {
+        // Outer ring: deployed work decays outward with years since it ended.
+        const radius = Math.min(50, 46 + (epochNow - member.year.end));
+        x = 50 + radius * Math.cos(theta);
+        y = 50 + radius * Math.sin(theta);
+      }
+
+      placements[member.index] = {
         x: Math.round(x * 100) / 100,
         y: Math.round(y * 100) / 100,
-      });
-      placed++;
-    }
-  }
-  return positions;
+      };
+    });
+  });
+
+  return placements;
 }
+
+// Note: the old connecting polyline was retired on purpose. Redrawn in
+// chronological order it zigzagged across the core and fought the ring
+// semantics — the orbits themselves are the worldline now.
+const nodePlacements = computeAtlasPlacements(projects);
 
 function shortTitle(title: string): string {
   return title
@@ -116,25 +177,8 @@ export default function ProjetosPage() {
       stripText="◈ MK · project atlas · idx.02"
       className={styles.projectShell}
       style={shellStyle}
-      background={({ exploding, onExplodeComplete }) => (
-        <>
-          <div
-            className={`${styles.photoStage} ${exploding ? styles.photoStageExploding : ""}`}
-          >
-            <ParticlePhoto
-              imageSrc="/images/kindra-projetos.png"
-              maxWidth={760}
-              xOffset={330}
-              particleSize={1.45}
-              edgeFade={0.22}
-              animate
-              explode={exploding}
-              onExplodeComplete={onExplodeComplete}
-            />
-          </div>
-          <div aria-hidden className={styles.backdrop} />
-        </>
-      )}
+      persistentBackground
+      background={() => <div aria-hidden className={styles.backdrop} />}
     >
       <ProjetosContent
         activeIndex={activeIndex}
@@ -159,25 +203,14 @@ function ProjetosContent({
   const { onNavClick } = useShellNav();
   const activeAccent = getColorValue(activeProject.color);
 
-  const nodePositions = useMemo(
-    () => generateNodePositions(projects.length),
-    [],
-  );
-  const pathPoints = useMemo(
-    () => nodePositions.map(({ x, y }) => `${x},${y}`).join(" "),
-    [nodePositions],
-  );
-
   return (
     <ScrollStage>
         <Section bare>
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            animate="show"
-            className={styles.heroGrid}
-          >
-            <motion.div variants={fadeUp} className={styles.copyColumn}>
+          {/* Hero enters via the CSS `.enter-rise` idiom (globals.css), not
+              framer `initial="hidden"` — the SSR HTML must paint the h1
+              before the pixi-heavy bundle hydrates (deep-link LCP). */}
+          <div className={styles.heroGrid}>
+            <div className={`${styles.copyColumn} enter-rise`} style={enterAt(0)}>
               <Eyebrow index="02" label="project atlas" accent={activeAccent} />
 
               <h1 className={styles.title}>
@@ -211,34 +244,22 @@ function ProjetosContent({
                   />
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div variants={fadeUp} className={styles.atlas}>
+            <div className={`${styles.atlas} enter-rise`} style={enterAt(1)}>
               <div aria-hidden className={`${styles.orbit} ${styles.orbitOuter}`} />
               <div aria-hidden className={`${styles.orbit} ${styles.orbitMiddle}`} />
               <div aria-hidden className={`${styles.orbit} ${styles.orbitInner}`} />
-
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                className={styles.pathMap}
-              >
-                <polyline
-                  points={pathPoints}
-                  fill="none"
-                  stroke="color-mix(in srgb, var(--project-accent) 20%, transparent)"
-                  strokeWidth="0.42"
-                  strokeDasharray="2 2.6"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
 
               <div className={styles.atlasCore} aria-hidden="true">
                 <span>selected</span>
                 <strong>{String(activeIndex + 1).padStart(2, "0")}</strong>
                 <small>{activeProject.signal}</small>
               </div>
+
+              <span aria-hidden="true" className={styles.atlasLegend}>
+                órbitas = distância do agora
+              </span>
 
               {projects.map((project, index) => (
                 <ProjectNode
@@ -249,12 +270,12 @@ function ProjetosContent({
                   isActive={index === activeIndex}
                   signal={project.signal}
                   status={project.status}
-                  position={nodePositions[index]}
+                  position={nodePlacements[index]}
                   onSelect={() => onSelect(index)}
                 />
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </Section>
 
         <Section bare>
@@ -296,7 +317,8 @@ interface ProjectDossierProps {
 }
 
 function ProjectDossier({ project, index }: ProjectDossierProps) {
-  const { title, description, tags, color, link, year, role } = project;
+  const { title, description, tags, color, link, year, role, status, signal, coordinate } =
+    project;
   const accent = getColorValue(color);
   const tagStyle = (alpha: number) =>
     ({
@@ -305,15 +327,21 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
       "--tag-border": getColorWithAlpha(color, 0.28),
     }) as CSSProperties;
 
+  const ephemeris: [label: string, value: string][] = [
+    ["epoch", year],
+    ["status", statusCopy[status]],
+    ["signal", signal],
+    ["coord", coordinate],
+    ["role", role],
+  ];
+
   return (
     <div className={styles.dossier}>
       <div className={styles.dossierMeta}>
         <span style={{ color: accent }}>
           {String(index + 1).padStart(2, "0")}
         </span>
-        <span>{year}</span>
-        <span>/</span>
-        <span>{role}</span>
+        <span>ephemeris</span>
       </div>
 
       <motion.div
@@ -323,6 +351,18 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
         transition={swapUp.transition}
       >
         <h2 className={styles.dossierTitle}>{title}</h2>
+
+        <dl className={styles.ephemeris}>
+          {ephemeris.map(([label, value]) => (
+            <div key={label} className={styles.ephemerisItem}>
+              <dt>{label}</dt>
+              <dd className={label === "status" ? styles.ephemerisStatus : undefined}>
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
         <p className={styles.dossierDescription}>{description}</p>
 
         <div className={styles.tags}>
@@ -399,6 +439,12 @@ interface ProjectNodeProps {
   onSelect: () => void;
 }
 
+const nodeStatusClass: Record<ProjectStatus, string> = {
+  current: styles.nodeCurrent,
+  side: styles.nodeSide,
+  past: styles.nodePast,
+};
+
 function ProjectNode({
   title,
   color,
@@ -416,7 +462,7 @@ function ProjectNode({
       aria-pressed={isActive}
       onClick={onSelect}
       onMouseEnter={onSelect}
-      className={styles.node}
+      className={`${styles.node} ${nodeStatusClass[status]}`}
       style={
         {
           "--node-x": `${position.x}%`,

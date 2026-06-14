@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { preload } from "react-dom";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { motion, useReducedMotion } from "framer-motion";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 import {
   FiGithub,
@@ -13,19 +13,24 @@ import {
   FiArrowUpRight,
 } from "react-icons/fi";
 import PageNav from "@/components/ui/PageNav";
+import JarvisTrigger from "@/components/chat/JarvisTrigger";
 import PageShell, { useShellNav } from "@/components/layout/PageShell";
 import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
 import { useJarvis } from "@/components/chat/JarvisProvider";
 import { profile, site } from "@/lib/content";
-import { stagger, fadeUp, fadeIn } from "@/lib/motion";
+import { enterAt } from "@/lib/motion";
 import styles from "./home.module.css";
 
 const ParticlePhoto = dynamic(
   () => import("@/components/canvas/ParticlePhoto"),
   { ssr: false },
 );
+
+/** The portrait the particle field decodes — preloaded by Home() below and
+    narrated by the boot sequence. One URL, one fetch. */
+const HOME_PORTRAIT_SRC = "/images/kindra-home.png";
 
 const socialLinks = [
   { href: profile.social.github, label: "GitHub", Icon: FiGithub },
@@ -36,13 +41,9 @@ const socialLinks = [
 
 const keywords = ["ventures", "AI-products", "RAG", "platform", "builder", "DX"];
 
-// Reduced-motion variant — fade only, no Y translation, shorter duration.
-const fadeUpReduced = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.3 } },
-};
-
-const GLYPHS = "!<>-_\\/[]{}—=+*^?#░▒▓█";
+// Telemetry glyph set — hex digits + signal punctuation, so the decode
+// reads as signal acquisition rather than generic terminal noise.
+const GLYPHS = "0123456789ABCDEF·−+°./";
 
 function useScramble(text: string, duration = 900, startDelay = 400) {
   // Initialize with the plain text so SSR and client first render match.
@@ -95,7 +96,130 @@ function useScramble(text: string, duration = 900, startDelay = 400) {
   return output;
 }
 
+/** sessionStorage flag — the boot plays once per browsing session. */
+const BOOT_FLAG = "kindra-boot-done";
+/** Hard cap: the boot narrates the real asset wait, it never extends it. */
+const BOOT_MAX_MS = 1600;
+/** Fade-out duration — matches the CSS transition on `.boot`. */
+const BOOT_FADE_MS = 360;
+
+interface BootLine {
+  id: string;
+  text: string;
+}
+
+/**
+ * Boot / acquisition sequence — a DOM-only overlay (zero Pixi dependency)
+ * that narrates the one real wait the page has: the portrait decode the
+ * particle field needs anyway. Driven by actual events (the image load —
+ * same URL as the layer's fetch, so the browser coalesces the requests),
+ * hard-capped at BOOT_MAX_MS, dismissible by any click/keypress, and
+ * skipped entirely on return visits and under prefers-reduced-motion.
+ * The hero behind it is SSR-visible the whole time; this never gates content.
+ */
+function BootSequence() {
+  const [lines, setLines] = useState<BootLine[]>([]);
+  const [phase, setPhase] = useState<"idle" | "active" | "fading">("idle");
+
+  useEffect(() => {
+    // Instant-skip paths: reduced motion, and any repeat visit this session.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let storage: Storage | null = null;
+    try {
+      storage = window.sessionStorage;
+      if (storage.getItem(BOOT_FLAG)) return;
+    } catch {
+      // Storage blocked (private mode) — treat as a return visit, skip.
+      return;
+    }
+
+    let finished = false;
+    let portraitSeen = false;
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) =>
+      timers.push(window.setTimeout(fn, ms));
+    const push = (id: string, text: string) => {
+      if (finished) return;
+      setLines((prev) =>
+        prev.some((l) => l.id === id) ? prev : [...prev, { id, text }],
+      );
+    };
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      try {
+        storage?.setItem(BOOT_FLAG, "1");
+      } catch {
+        /* non-fatal — worst case the boot replays next load */
+      }
+      setPhase("fading");
+      at(BOOT_FADE_MS, () => setPhase("idle"));
+    };
+
+    setPhase("active");
+    push("init", "init k-2542 · curitiba -25.42° -49.27°");
+    at(180, () => push("sensor", "sensor array online"));
+
+    // Real event: completion of the portrait fetch the particle layer (and
+    // the layout preload) already started. Same URL — zero extra bytes.
+    const onPortrait = () => {
+      if (portraitSeen || finished) return;
+      portraitSeen = true;
+      // A cache hit can outrun the 180ms timer above — keep the narrative
+      // order regardless (push dedupes by id, so this is a no-op otherwise).
+      push("sensor", "sensor array online");
+      push("field", "particle field decoded");
+      at(240, () => push("target", "target acquired"));
+      at(560, finish);
+    };
+    const img = new Image();
+    img.onload = onPortrait;
+    img.onerror = onPortrait; // a 404 must never hold the boot hostage
+    img.src = HOME_PORTRAIT_SRC;
+    if (img.complete) onPortrait();
+
+    // Hard cap + manual dismissal.
+    at(BOOT_MAX_MS, finish);
+    window.addEventListener("pointerdown", finish);
+    window.addEventListener("keydown", finish);
+
+    return () => {
+      for (const t of timers) window.clearTimeout(t);
+      window.removeEventListener("pointerdown", finish);
+      window.removeEventListener("keydown", finish);
+    };
+  }, []);
+
+  if (phase === "idle") return null;
+
+  return (
+    <div
+      aria-hidden
+      className={`${styles.boot} ${phase === "fading" ? styles.bootFading : ""}`}
+    >
+      {lines.map((line, i) => (
+        <div key={line.id} className={styles.bootLine}>
+          <span className={styles.bootIndex}>
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <span>{line.text}</span>
+          {i === lines.length - 1 && <span className={styles.bootCursor} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Home() {
+  /* Start fetching the home portrait from the initial HTML — the particle
+     field is the page's whole visual and otherwise only begins loading after
+     the pixi bundle hydrates. Emitted (during SSR too) as
+     <link rel="preload" as="image">. Scoped HERE, not in the root layout:
+     the layout wraps all six routes, and preloading 600KB of home portrait
+     on a direct /projetos or /sobre visit starved that page's own image. */
+  preload(HOME_PORTRAIT_SRC, { as: "image" });
+
   return (
     <PageShell
       hudRole="online · building"
@@ -106,7 +230,7 @@ export default function Home() {
             className={`${styles.photoStage} ${exploding ? styles.photoStageExploding : ""}`}
           >
             <ParticlePhoto
-              imageSrc="/images/kindra-home.png"
+              imageSrc={HOME_PORTRAIT_SRC}
               animate
               explode={exploding}
               onExplodeComplete={onExplodeComplete}
@@ -118,6 +242,7 @@ export default function Home() {
         </>
       )}
     >
+      <BootSequence />
       <HomeContent />
     </PageShell>
   );
@@ -127,28 +252,36 @@ function HomeContent() {
   const { onNavClick } = useShellNav();
   const { setOpen: setJarvisOpen } = useJarvis();
   const cofounderScramble = useScramble("Co-founder", 900, 350);
-  const reduceMotion = useReducedMotion();
-  const fadeUpVariant = reduceMotion ? fadeUpReduced : fadeUp;
 
   return (
     <>
       <ScrollStage>
         <Section measure="wide" align="left">
-          <motion.main variants={stagger} initial="hidden" animate="show">
+          <main>
             {/* Greeting */}
-            <motion.p variants={fadeUpVariant} className={styles.greeting}>
+            <p
+              className={`${styles.greeting} enter-rise`}
+              style={enterAt(0)}
+            >
               <span className={styles.greetingRule} />
               <span>
                 hey · i&apos;m{" "}
                 <span className={styles.greetingName}>{profile.nickname}</span>
               </span>
-            </motion.p>
+            </p>
 
-            {/* Title — brutalist typographic composition */}
-            <motion.h1 variants={fadeUpVariant} className={styles.title}>
+            {/* Title — brutalist typographic composition. The real text lives
+                in aria-label; the scrambling span is decorative for AT. */}
+            <h1
+              className={`${styles.title} enter-rise`}
+              style={enterAt(1)}
+              aria-label={`Co-founder & Builder — at ${profile.company}`}
+            >
               {/* Line 1 — Co-founder & Builder */}
               <span className={styles.titleLine}>
-                <span className={styles.titleWord}>{cofounderScramble}</span>
+                <span aria-hidden className={styles.titleWord}>
+                  {cofounderScramble}
+                </span>
                 {/* The ornamental ampersand */}
                 <span aria-hidden className={`shimmer-yellow ${styles.ampersand}`}>
                   &amp;
@@ -164,20 +297,29 @@ function HomeContent() {
                 <span className={styles.subtitleAt}>at</span>{" "}
                 <span className={styles.subtitleCompany}>{profile.company}</span>
               </span>
-            </motion.h1>
+            </h1>
 
             {/* Headline */}
-            <motion.p variants={fadeUpVariant} className={styles.headline}>
+            <p
+              className={`${styles.headline} enter-rise`}
+              style={enterAt(2)}
+            >
               {profile.headline}
-            </motion.p>
+            </p>
 
             {/* Description */}
-            <motion.p variants={fadeUpVariant} className={styles.description}>
+            <p
+              className={`${styles.description} enter-rise`}
+              style={enterAt(3)}
+            >
               {profile.description}
-            </motion.p>
+            </p>
 
             {/* Ask Jarvis — inline CTA */}
-            <motion.p variants={fadeUpVariant} className={styles.jarvisRow}>
+            <p
+              className={`${styles.jarvisRow} enter-rise`}
+              style={enterAt(4)}
+            >
               <button
                 type="button"
                 data-cursor="link"
@@ -195,33 +337,34 @@ function HomeContent() {
                   </span>
                 </span>
               </button>
-            </motion.p>
+            </p>
 
             {/* Keywords */}
-            <motion.ul variants={fadeUpVariant} className={styles.keywords}>
+            <ul
+              className={`${styles.keywords} enter-rise`}
+              style={enterAt(5)}
+            >
               {keywords.map((kw) => (
                 <li key={kw} className={styles.keyword}>
                   <span className={styles.keywordSlash}>/</span>
                   {kw}
                 </li>
               ))}
-            </motion.ul>
+            </ul>
 
             {/* Nav */}
-            <motion.div variants={fadeUpVariant} className={styles.navWrap}>
+            <div
+              className={`${styles.navWrap} enter-rise`}
+              style={enterAt(6)}
+            >
               <PageNav current="/" onClick={onNavClick} />
-            </motion.div>
-          </motion.main>
+            </div>
+          </main>
         </Section>
       </ScrollStage>
 
       {/* Footer */}
-      <motion.footer
-        variants={fadeIn}
-        initial="hidden"
-        animate="show"
-        className={styles.footer}
-      >
+      <footer className={`${styles.footer} ${styles.footerEnter}`}>
         <div className={styles.footerGrid}>
           {/* Left lane — social icons */}
           <div className={styles.socials}>
@@ -256,12 +399,17 @@ function HomeContent() {
                 <span aria-hidden className={styles.nowUnderline} />
               </span>
             </Link>
-            <div className={styles.lastUpdate}>
-              last update &middot; {site.lastUpdated}
+            {/* Stamp + jarvis status share one row (gap, never overlap) —
+                the global floating badge yields on "/" in favor of this. */}
+            <div className={styles.metaLine}>
+              <div className={styles.lastUpdate}>
+                last update &middot; {site.lastUpdated}
+              </div>
+              <JarvisTrigger variant="inline" className={styles.jarvisStatus} />
             </div>
           </div>
         </div>
-      </motion.footer>
+      </footer>
     </>
   );
 }

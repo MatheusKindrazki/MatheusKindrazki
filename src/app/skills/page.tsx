@@ -14,7 +14,7 @@ import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
 import { skillCategories } from "@/lib/content";
 import { getColorValue, getColorWithAlpha } from "@/lib/colors";
-import { stagger, fadeUp } from "@/lib/motion";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
 
 const BH_OFFSET_X = 200;
 const GRAVITY_SELECTOR = "[data-gravity-item]";
@@ -46,35 +46,24 @@ export default function SkillsPage() {
       hudRole="online · thinking"
       stripText="◈ MK · capability stacks · idx.03"
       style={shellStyle}
-      background={({ exploding, onExplodeComplete }) => (
-        <SkillsBackground
-          exploding={exploding}
-          onExplodeComplete={onExplodeComplete}
-        />
-      )}
+      persistentBackground
+      background={() => <SkillsBackground />}
     >
       <SkillsContent />
     </PageShell>
   );
 }
 
-interface SkillsBackgroundProps {
-  exploding: boolean;
-  onExplodeComplete: () => void;
-}
-
 /**
  * The black hole is a full-viewport Pixi scene (registers via context, renders
- * null) — it has no navigation-tied dissolve like ParticlePhoto. So when the
- * shell's explode→navigate machine fires, we complete the transition straight
- * away so inter-page links still navigate. Keeps skills' signature visual while
- * sharing the one nav machine that PageShell owns.
+ * null) — it persists across navigation and has no navigation-tied dissolve
+ * like ParticlePhoto. `persistentBackground` on the shell above tells the nav
+ * machine so: it runs the fade-band slew (veil + push at mid-flight) itself
+ * instead of waiting for an explode that never visually happens. Completing
+ * the explode synchronously here (the old approach) made every navigation
+ * leaving /skills an unmasked hard cut under a still-playing band.
  */
-function SkillsBackground({ exploding, onExplodeComplete }: SkillsBackgroundProps) {
-  useEffect(() => {
-    if (exploding) onExplodeComplete();
-  }, [exploding, onExplodeComplete]);
-
+function SkillsBackground() {
   return (
     <>
       <BlackHole src="/images/kindra-skills.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
@@ -172,15 +161,19 @@ function SkillsContent() {
 
   return (
     <ScrollStage ref={scrollRef}>
-      {/* Section 1 — Hero */}
+      {/* Section 1 — Hero. Enters via the CSS `.enter-rise` idiom
+          (globals.css), not framer `initial="hidden"` — the SSR HTML must
+          paint the h1 before the pixi-heavy bundle hydrates (deep-link LCP). */}
       <Section data-gravity-item align="left">
-        <motion.div variants={stagger} initial="hidden" animate="show">
-          <Eyebrow index="03" label="what i do" />
+        <div>
+          <div className="enter-rise" style={enterAt(0)}>
+            <Eyebrow index="03" label="what i do" />
+          </div>
 
-          <motion.h1
-            variants={fadeUp}
-            className="mb-4 font-bold tracking-[-0.02em]"
+          <h1
+            className="enter-rise mb-4 font-bold tracking-[-0.02em]"
             style={{
+              ...enterAt(1),
               fontFamily: "var(--font-heading)",
               color: "var(--color-kindra-text-white)",
             }}
@@ -200,12 +193,12 @@ function SkillsContent() {
                 — tools i reach for daily
               </span>
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="max-w-[560px] font-light"
+          <p
+            className="enter-rise max-w-[560px] font-normal"
             style={{
+              ...enterAt(2),
               fontFamily: "var(--font-body)",
               fontSize: "var(--text-body)",
               lineHeight: "24px",
@@ -214,15 +207,15 @@ function SkillsContent() {
           >
             Technologies I use to ship coherent systems at scale — from platform
             work to applied AI.
-          </motion.p>
+          </p>
 
           <PageNav current="/skills" onClick={onNavClick} />
 
           {/* Continuous horizontal marquee of skill tokens */}
-          <motion.div
-            variants={fadeUp}
-            className="mt-10 overflow-hidden opacity-70 select-none"
+          <div
+            className="enter-rise mt-10 overflow-hidden opacity-70 select-none"
             style={{
+              ...enterAt(3),
               maskImage:
                 "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
               WebkitMaskImage:
@@ -252,10 +245,9 @@ function SkillsContent() {
                 </span>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           <motion.div
-            variants={fadeUp}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.5 }}
@@ -279,17 +271,22 @@ function SkillsContent() {
               ↓
             </span>
           </motion.div>
-        </motion.div>
+        </div>
       </Section>
 
-      {/* Section 2 — Categories grid */}
-      <Section align="left" measure="wide">
+      {/* Section 2 — Categories grid. One column always: the right column used
+          to land on top of the right-side black hole / DJ video and become
+          illegible. Stacked vertically and clamped narrower than the standard
+          measure so even the widest chip row stays clear of the video circle
+          (centered at innerWidth/2 + BH_OFFSET_X, ~160px radius) across
+          1280–1920px. */}
+      <Section align="left" measure="narrow" innerClassName="!max-w-[520px]">
         <motion.div
           variants={stagger}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="grid grid-cols-1 gap-x-8 gap-y-9 md:grid-cols-2"
+          className="grid grid-cols-1 gap-y-9"
         >
           {skillCategories.map((category) => {
             const categoryAccent = getColorValue(category.color);

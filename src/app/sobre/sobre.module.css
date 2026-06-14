@@ -126,10 +126,13 @@
 .timelineYear {
   display: block;
   color: var(--color-kindra-yellow);
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 700;
+  /* Build-ledger numerals — the data face, sized down since mono digits
+     carry more visual mass than Fraunces at the same px. */
+  font-family: var(--font-data);
+  font-size: 18px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
 }
 
 .timelineRole {
@@ -173,9 +176,9 @@
   display: block;
   margin-bottom: 8px;
   color: var(--color-kindra-meta-low);
-  font-family: var(--font-body);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }

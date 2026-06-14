@@ -64,6 +64,48 @@
   }
 }
 
+/* ── Page chrome / HUD voice ───────────────────────────────────────
+   The instrument cluster around every page: wordmark, live HUD, and
+   the vertical brand strip (consumed by PageChrome.tsx). All of it
+   speaks in the mono data face with tabular numerals; mono carries
+   its own rhythm, so tracking drops to 0.08–0.2em from the 0.22–0.4em
+   the old tracked sans needed. */
+.chromeWordmark {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chromeHud {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* The live clock — one step up from the HUD rows, near-white. */
+.chromeClock {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: var(--text-caption);
+  letter-spacing: 0.08em;
+}
+
+.chromeStrip {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
 /* ── Mobile / narrow fallback ──────────────────────────────────────
    Below 820px: stop trapping the user in a 100vh snap box. Let the
    shell grow with content and disable mandatory snap so every section

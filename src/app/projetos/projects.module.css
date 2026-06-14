@@ -14,17 +14,6 @@
   --project-accent: var(--color-kindra-green);
 }
 
-.photoStage {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-backdrop);
-  pointer-events: none;
-}
-
-.photoStageExploding {
-  z-index: var(--z-explode);
-}
-
 .backdrop {
   position: fixed;
   inset: 0;
@@ -112,11 +101,12 @@
   flex-wrap: wrap;
   gap: 8px 14px;
   color: var(--color-kindra-meta-low);
-  font-family: var(--font-body);
-  font-size: 10px;
+  font-family: var(--font-data);
+  font-size: var(--text-data);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   line-height: 1.4;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -128,6 +118,52 @@
   font-weight: 800;
   line-height: 1.12;
   text-wrap: balance;
+}
+
+/* Ephemeris — the dossier's instrument readout. Real content.ts fields
+   (epoch/status/signal/coord/role) rule-separated in the MetaRow spirit. */
+.ephemeris {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 0;
+  margin: 14px 0 0;
+}
+
+.ephemerisItem {
+  min-width: 0;
+  border-left: 1px solid var(--color-kindra-rule);
+  padding: 0 14px;
+}
+
+.ephemerisItem:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.ephemerisItem dt {
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ephemerisItem dd {
+  margin: 5px 0 0;
+  color: var(--color-kindra-meta-high);
+  font-family: var(--font-data);
+  font-size: var(--text-data);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ephemerisItem dd.ephemerisStatus {
+  color: var(--project-accent);
 }
 
 .dossierDescription {
@@ -159,11 +195,12 @@
   background: var(--tag-bg);
   padding: 4px 7px;
   color: var(--tag-color);
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: 700;
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-weight: 500; /* data face loads 400/500 — 700 was a phantom request */
+  font-variant-numeric: tabular-nums;
   line-height: 1;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -329,17 +366,6 @@
   border-color: color-mix(in srgb, var(--project-accent) 26%, transparent);
 }
 
-.pathMap {
-  position: absolute;
-  inset: 7%;
-  z-index: 1;
-  width: 86%;
-  height: 86%;
-  overflow: visible;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
 .atlasCore {
   position: absolute;
   top: 50%;
@@ -371,6 +397,24 @@
   color: var(--project-accent);
   font-size: 16px;
   letter-spacing: 0.14em;
+}
+
+/* The one load-bearing caption: the rings are a unit of meaning, not décor.
+   Sits just under the core like engraved instrument labeling. */
+.atlasLegend {
+  position: absolute;
+  top: calc(50% + 86px);
+  left: 50%;
+  z-index: 2;
+  color: var(--color-kindra-meta-low);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .node {
@@ -414,6 +458,15 @@
   filter: drop-shadow(0 0 18px color-mix(in srgb, var(--node-accent) 30%, transparent));
 }
 
+/* Node size tracks orbit semantics: current > side > past (subtle). */
+.nodeSide {
+  width: clamp(106px, 8vw, 136px);
+}
+
+.nodePast {
+  width: clamp(96px, 7vw, 120px);
+}
+
 .nodeIndex {
   display: inline-flex;
   width: 36px;
@@ -427,6 +480,17 @@
   font-weight: 800;
   letter-spacing: 0.13em;
   font-variant-numeric: tabular-nums;
+}
+
+.nodeSide .nodeIndex {
+  width: 32px;
+  height: 32px;
+}
+
+.nodePast .nodeIndex {
+  width: 28px;
+  height: 28px;
+  font-size: 9px;
 }
 
 .node[aria-pressed="true"] .nodeIndex {
@@ -444,6 +508,12 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   overflow-wrap: anywhere;
+}
+
+.nodeSide .nodeLabel,
+.nodePast .nodeLabel {
+  font-size: 9px;
+  letter-spacing: 0.14em;
 }
 
 .node[aria-pressed="true"] .nodeLabel {
@@ -524,22 +594,22 @@
 
 .ledgerIndex,
 .ledgerMeta {
-  font-family: var(--font-body);
-  font-weight: 800;
-  letter-spacing: 0.2em;
+  font-family: var(--font-data);
+  font-weight: 500; /* data face loads 400/500 — 800 was a phantom request */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .ledgerIndex {
   color: var(--node-accent);
-  font-size: 11px;
+  font-size: var(--text-caption);
   line-height: 1;
-  font-variant-numeric: tabular-nums;
 }
 
 .ledgerMeta {
   color: var(--color-kindra-meta-low);
-  font-size: 9px;
+  font-size: var(--text-data);
   line-height: 1.7;
 }
 

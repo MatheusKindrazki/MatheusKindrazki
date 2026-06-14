@@ -12,7 +12,7 @@ import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
 import { timeline, philosophy } from "@/lib/content";
 import { getColorValue } from "@/lib/colors";
-import { stagger, fadeUp } from "@/lib/motion";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
 import styles from "./sobre.module.css";
 
 const ParticlePhoto = dynamic(
@@ -58,17 +58,18 @@ function SobreContent() {
 
   return (
     <ScrollStage>
-      {/* Section 1 — Hero */}
+      {/* Section 1 — Hero. Enters via the CSS `.enter-rise` idiom
+          (globals.css), not framer `initial="hidden"` — the SSR HTML must
+          paint the h1 before the pixi-heavy bundle hydrates (deep-link LCP). */}
       <Section align="left">
-        <motion.div variants={stagger} initial="hidden" animate="show">
-          <motion.div variants={fadeUp}>
+        <div>
+          <div className="enter-rise" style={enterAt(0)}>
             <Eyebrow index="04" label="who i am" accent={yellow} />
-          </motion.div>
+          </div>
 
-          <motion.h1
-            variants={fadeUp}
-            className="mt-5 mb-5 font-bold tracking-[-0.02em] text-[var(--color-kindra-text-white)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+          <h1
+            className="enter-rise mt-5 mb-5 font-bold tracking-[-0.02em] text-[var(--color-kindra-text-white)]"
+            style={{ ...enterAt(1), fontFamily: "var(--font-heading)" }}
           >
             <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[length:var(--text-h1)] leading-[1.1]">
               <span>
@@ -78,18 +79,17 @@ function SobreContent() {
                 — co-founder &amp; builder
               </span>
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="max-w-[540px] font-light text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
-            style={{ fontFamily: "var(--font-body)" }}
+          <p
+            className="enter-rise max-w-[540px] font-normal text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
+            style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
           >
             Co-founder at <Mark color="yellow">MokLabs Venture Studio</Mark>{" "}
             and founding team at Lugui.ai. 8 years architecting platforms at
             Arco Educação — shipping infrastructure that reached millions of
             students. Now turning that experience into ventures of my own.
-          </motion.p>
+          </p>
 
           <PageNav current="/sobre" onClick={onNavClick} />
 
@@ -105,7 +105,7 @@ function SobreContent() {
               ↓
             </span>
           </motion.div>
-        </motion.div>
+        </div>
       </Section>
 
       {/* Section 2 — Journey timeline */}

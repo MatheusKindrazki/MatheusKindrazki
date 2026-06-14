@@ -17,7 +17,7 @@ import { FaGithub, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FiCopy, FiCheck, FiCalendar, FiArrowUpRight } from "react-icons/fi";
 import { getColorValue } from "@/lib/colors";
-import { stagger, fadeUp } from "@/lib/motion";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
 
 const ParticlePhoto = dynamic(
   () => import("@/components/canvas/ParticlePhoto"),
@@ -98,17 +98,19 @@ function ContatoContent() {
 
   return (
     <ScrollStage>
-      {/* Section 1 - Hero + email CTA + socials */}
+      {/* Section 1 - Hero + email CTA + socials. Enters via the CSS
+          `.enter-rise` idiom (globals.css), not framer `initial="hidden"` —
+          the SSR HTML must paint the h1 before the pixi-heavy bundle
+          hydrates (deep-link LCP). */}
       <Section align="left" innerClassName="py-10">
-        <motion.div variants={stagger} initial="hidden" animate="show">
-          <motion.div variants={fadeUp}>
+        <div>
+          <div className="enter-rise" style={enterAt(0)}>
             <Eyebrow index="05" label="let's talk" />
-          </motion.div>
+          </div>
 
-          <motion.h1
-            variants={fadeUp}
-            className="mb-4 mt-5 font-bold text-[var(--color-kindra-text-white)] tracking-[-0.02em]"
-            style={{ fontFamily: "var(--font-heading)" }}
+          <h1
+            className="enter-rise mb-4 mt-5 font-bold text-[var(--color-kindra-text-white)] tracking-[-0.02em]"
+            style={{ ...enterAt(1), fontFamily: "var(--font-heading)" }}
           >
             <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[length:var(--text-h1)] leading-[1.05]">
               <Mark color="red">Contact</Mark>
@@ -116,23 +118,19 @@ function ContatoContent() {
                 — coffee, ventures, ideas
               </span>
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="mb-10 max-w-[var(--measure-narrow)] text-[length:var(--text-body)] leading-[24px] text-[var(--color-kindra-meta-high)] font-light"
-            style={{ fontFamily: "var(--font-body)" }}
+          <p
+            className="enter-rise mb-10 max-w-[var(--measure-narrow)] text-[length:var(--text-body)] leading-[24px] text-[var(--color-kindra-meta-high)] font-normal"
+            style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
           >
             Want to talk about architecture, AI, or new ventures? Drop me a
             line.
-          </motion.p>
+          </p>
 
           {/* Primary email CTA */}
-          <motion.div variants={fadeUp} className="mb-10">
-            <p
-              className="mb-2 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
+          <div className="enter-rise mb-10" style={enterAt(3)}>
+            <p className="mb-2 font-data text-data tabular-nums uppercase tracking-[0.1em] text-[var(--color-kindra-meta-low)]">
               <span className="mr-1 text-[var(--color-kindra-rule)]">/</span>{" "}
               primary
             </p>
@@ -146,7 +144,7 @@ function ContatoContent() {
               <a
                 href={`mailto:${profile.email}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[34px] leading-[44px] font-bold text-[var(--color-kindra-cream)] transition-colors duration-700 group-hover/email:text-[var(--color-kindra-text-white)]"
+                className="text-[length:var(--text-h2)] leading-[1.3] font-bold text-[var(--color-kindra-cream)] transition-colors duration-700 group-hover/email:text-[var(--color-kindra-text-white)]"
                 style={{
                   fontFamily: "var(--font-heading)",
                   transitionTimingFunction: "var(--ease-smooth)",
@@ -191,24 +189,18 @@ function ContatoContent() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-2 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em]"
-                  style={{
-                    color: green,
-                    fontFamily: "var(--font-body)",
-                  }}
+                  className="mt-2 font-data text-data uppercase tracking-[0.1em]"
+                  style={{ color: green }}
                 >
                   copied to clipboard
                 </motion.p>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           {/* Calendar CTA */}
-          <motion.div variants={fadeUp} className="mb-10">
-            <p
-              className="mb-2 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
+          <div className="enter-rise mb-10" style={enterAt(4)}>
+            <p className="mb-2 font-data text-data tabular-nums uppercase tracking-[0.1em] text-[var(--color-kindra-meta-low)]">
               <span className="mr-1 text-[var(--color-kindra-rule)]">/</span> or
               schedule
             </p>
@@ -240,14 +232,11 @@ function ContatoContent() {
                 style={{ color: red }}
               />
             </a>
-          </motion.div>
+          </div>
 
           {/* Social rails */}
-          <motion.div variants={fadeUp} className="mb-2">
-            <p
-              className="mb-3 text-[length:var(--text-eyebrow)] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
+          <div className="enter-rise mb-2" style={enterAt(5)}>
+            <p className="mb-3 font-data text-data tabular-nums uppercase tracking-[0.1em] text-[var(--color-kindra-meta-low)]">
               <span className="mr-1 text-[var(--color-kindra-rule)]">/</span>{" "}
               social
             </p>
@@ -273,26 +262,20 @@ function ContatoContent() {
                       }}
                     />
                     <Icon className="text-[15px] text-[var(--color-kindra-meta-mid)] transition-colors duration-700 group-hover/row:text-[var(--color-kindra-text-white)]" />
-                    <span
-                      className="w-[80px] text-[length:var(--text-eyebrow)] uppercase tracking-[0.25em] text-[var(--color-kindra-meta-mid)] transition-colors duration-700 group-hover/row:text-[var(--color-kindra-text-white)]"
-                      style={{ fontFamily: "var(--font-body)" }}
-                    >
+                    <span className="w-[80px] font-data text-data uppercase tracking-[0.1em] text-[var(--color-kindra-meta-mid)] transition-colors duration-700 group-hover/row:text-[var(--color-kindra-text-white)]">
                       {label}
                     </span>
-                    <span
-                      className="flex-1 text-[length:var(--text-eyebrow)] tracking-[0.15em] text-[var(--color-kindra-meta-low)] transition-colors duration-700 group-hover/row:text-[var(--color-kindra-meta-high)]"
-                      style={{ fontFamily: "var(--font-body)" }}
-                    >
+                    <span className="flex-1 font-data text-data tracking-[0.05em] text-[var(--color-kindra-meta-low)] transition-colors duration-700 group-hover/row:text-[var(--color-kindra-meta-high)]">
                       {fragment}
                     </span>
                   </a>
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           <PageNav current="/contato" onClick={onNavClick} />
-        </motion.div>
+        </div>
       </Section>
 
       {/* Section 2 - Form */}

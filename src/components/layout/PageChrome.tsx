@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Identity from "@/components/ui/Identity";
 import { useLiveTime } from "@/hooks/useLiveTime";
 import { site } from "@/lib/content";
+import shell from "./shell.module.css";
 
 interface PageChromeProps {
   /** Zero-padded index, e.g. "01", "02" — shown in wordmark and default strip. */
@@ -57,19 +58,16 @@ export default function PageChrome({
         className="absolute top-[49px] left-6 z-30 flex items-center gap-4"
       >
         <Identity status="rest" />
-        <div
-          className="hidden sm:flex flex-col text-[10px] tracking-[0.22em] uppercase text-[var(--color-kindra-meta-low)] leading-[1.5]"
-          style={{ fontFamily: "var(--font-body)" }}
-        >
+        <div className={`hidden sm:flex flex-col ${shell.chromeWordmark}`}>
           <span>Matheus · Kindrazki</span>
-          <span className="text-[var(--color-kindra-meta-low)]">
+          <span>
             {label} · idx.{index}
           </span>
           {showBack && (
             <Link
               href="/"
               onClick={onBackClick}
-              className="mt-1 inline-flex w-fit items-center gap-1 text-[var(--color-kindra-meta-low)] transition-colors duration-500 hover:text-white"
+              className="mt-1 inline-flex w-fit items-center gap-1 transition-colors duration-500 hover:text-white"
             >
               <span aria-hidden>&larr;</span>
               <span>back</span>
@@ -85,10 +83,7 @@ export default function PageChrome({
         animate="show"
         className="absolute top-[49px] right-6 z-30 hidden sm:block text-right"
       >
-        <div
-          className="text-[10px] tracking-[0.25em] uppercase text-[var(--color-kindra-meta-low)] leading-[1.7]"
-          style={{ fontFamily: "var(--font-body)" }}
-        >
+        <div className={shell.chromeHud}>
           <div className="flex items-center justify-end gap-2">
             <span className="relative inline-flex h-[6px] w-[6px]">
               <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-kindra-green)] opacity-70" />
@@ -96,17 +91,9 @@ export default function PageChrome({
             </span>
             <span className="text-[var(--color-kindra-meta-mid)]">{hudRole}</span>
           </div>
-          <div
-            className="mt-2 text-[12px] tracking-[0.2em] text-white/80"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {time}
-          </div>
+          <div className={`mt-2 ${shell.chromeClock}`}>{time}</div>
           <div className="mt-0.5">Curitiba · BRT · -25.42° -49.27°</div>
-          <div className="text-[var(--color-kindra-meta-low)]">
+          <div>
             portfolio · {site.version} · {site.year}
           </div>
         </div>
@@ -117,9 +104,8 @@ export default function PageChrome({
         variants={fadeIn}
         initial="hidden"
         animate="show"
-        className="absolute right-5 top-1/2 z-30 hidden text-[9px] uppercase tracking-[0.4em] text-[var(--color-kindra-meta-low)] md:block pointer-events-none"
+        className={`absolute right-5 top-1/2 z-30 hidden md:block pointer-events-none ${shell.chromeStrip}`}
         style={{
-          fontFamily: "var(--font-body)",
           writingMode: "vertical-rl",
           transform: "translateY(-50%) rotate(180deg)",
         }}
