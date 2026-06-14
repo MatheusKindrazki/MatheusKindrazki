@@ -66,7 +66,11 @@ export default function SkillsPage() {
 function SkillsBackground() {
   return (
     <>
-      <BlackHole src="/images/kindra-skills.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
+      {/* Boomerang clip: forward + reverse pre-concatenated (ffmpeg), so the
+          native <video loop> plays it as one continuous take — plays through,
+          glides back, repeats — no hard cut. The seam is frame-matched
+          (last frame ≈ first frame) for a seamless restart. */}
+      <BlackHole src="/images/kindra-skills-loop.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
       {/* Black hole + DJ photo sit right-of-center; darken the left so the
           left-anchored text column stays legible over it. */}
       <ContentScrim side="left" intensity="strong" />
