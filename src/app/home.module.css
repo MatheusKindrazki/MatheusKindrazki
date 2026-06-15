@@ -368,6 +368,17 @@
   padding-inline: var(--shell-pad-x);
 }
 
+/* Below the shell release the page is auto-height, so an absolute footer
+   anchored to the content-sized container lands ON TOP of the in-flow
+   PageNav. Drop it into normal flow at the end of the page instead. */
+@media (max-width: 820px) {
+  .footer {
+    position: static;
+    margin-top: 56px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
+  }
+}
+
 .footerGrid {
   display: flex;
   flex-direction: column;
