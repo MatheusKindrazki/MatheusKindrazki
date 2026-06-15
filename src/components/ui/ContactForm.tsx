@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent, useId } from 'react'
 import { FiArrowRight } from 'react-icons/fi'
+import styles from './ContactForm.module.css'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -145,7 +146,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="touch-target group/submit relative mt-2 inline-flex w-fit items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] transition-all duration-700"
+        className={`${styles.submit} touch-target group/submit relative mt-2 inline-flex w-fit items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] transition-all duration-700`}
         style={{
           color: status === 'sent' ? green : red,
           transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',

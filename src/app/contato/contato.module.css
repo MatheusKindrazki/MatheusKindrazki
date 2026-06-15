@@ -24,6 +24,20 @@
   }
   .stage > section:last-child {
     padding-top: var(--section-pad-sm);
+    /* Clear the fixed JARVIS pill (ClientShell, position:fixed bottom:35px
+       right:35px, ~62px tall footprint, z-60) so the form's bottom CTA + the
+       "based in curitiba" meta row never collide with it where the page foots.
+       The pill is global chrome we don't touch here; instead the last section
+       reserves a band beneath its content so the pill floats over empty space.
+       (Desktop is a 100vh snap panel and never reaches this rule.) */
+    padding-bottom: calc(var(--section-pad-lg) + 4.5rem);
+  }
+  /* Keep the closing meta row out of the fixed pill's right-edge footprint so
+     "usually reply within 24h" can't sit under "JARVIS · ONLINE" while the
+     page is scrolled to the foot. (Stable hook on the wrapper in page.tsx —
+     never target hashed CSS-module class names.) */
+  .metaFooter {
+    padding-right: 3rem;
   }
 }
 

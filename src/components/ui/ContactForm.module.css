@@ -1,0 +1,52 @@
+/* ──────────────────────────────────────────────────────────────────
+   ContactForm — mobile-flow submit button.
+
+   On desktop the "Send message" button is a quiet inline text+arrow line
+   with an expanding underline (authored entirely in ContactForm.tsx). That
+   stays byte-identical: every rule here lives inside @media (max-width:820px),
+   so >=1280px never sees it.
+
+   On mobile the same inline line collapses to a ~21px-tall hit target that
+   reads as body text, not a CTA, and sits in the same bottom band as the
+   fixed JARVIS pill (bottom:35px right:35px, z-60) + the "based in curitiba"
+   meta row — crowded and ambiguous. Below 820px we promote it to an explicit
+   bordered button: a real >=44px tap target, left-anchored, with a hard
+   right-side gutter so it can never tuck under the fixed pill on the right
+   edge. The inner underline + arrow choreography is preserved untouched.
+   ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .submit {
+    /* Real, comfortable tap target — not a 21px text line. */
+    min-height: 48px;
+    /* Explicit box so the CTA reads as a button, not a sentence. */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.1rem;
+    /* Hard right gutter: the fixed JARVIS pill lives at right:35px and is
+       ~150px wide. Reserving room on the right keeps the button (and its
+       expanding underline) clear of the pill's footprint near the page foot. */
+    padding-right: 1.1rem;
+    border: 1px solid var(--color-kindra-rule-strong);
+    border-radius: 2px;
+    /* Box look replaces the bare-text density; keep it left-anchored and
+       intrinsically sized so a long status string ("Error. Try again.")
+       still fits without wrapping under the pill. */
+    width: fit-content;
+    max-width: calc(100% - 4rem);
+    margin-top: 1rem;
+    background: rgba(0, 0, 0, 0.35);
+    transition:
+      border-color 0.7s cubic-bezier(0.19, 1, 0.22, 1),
+      background-color 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  .submit:active {
+    border-color: var(--color-kindra-red);
+    background: rgba(0, 0, 0, 0.5);
+  }
+  /* The inner underline (absolute, -bottom-1) would now ride on the button's
+     padding box edge; pull it to the text baseline so the hover/focus stroke
+     still hugs the label inside the padded box. */
+  .submit > span:first-child {
+    display: inline-flex;
+  }
+}

@@ -1,0 +1,18 @@
+/* ──────────────────────────────────────────────────────────────────
+   Floating Jarvis trigger — the fixed bottom-right status badge rendered
+   globally by ClientShell on every non-home route.
+
+   Below the 820px mobile-flow release the shell stops being a fixed-height
+   100vh box and content scrolls naturally, so this `position: fixed` corner
+   badge floats ON TOP of the scrolling copy (project card tags, section
+   headings, the writing-article titles) and collides with it. It carries no
+   load-bearing affordance on mobile — the compact fixed chrome bar already
+   owns navigation there — so it yields below 820px to keep the reading
+   surface clean. Desktop (>=1280px) is untouched: the rule only fires inside
+   the same 820px line the rest of the mobile flow uses.
+   ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .floating {
+    display: none !important;
+  }
+}

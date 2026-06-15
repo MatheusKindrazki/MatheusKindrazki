@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useJarvis } from './JarvisProvider'
+import styles from './JarvisTrigger.module.css'
 
 interface JarvisTriggerProps {
   /**
@@ -70,7 +71,7 @@ export default function JarvisTrigger({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1, delay: 1.2 }}
-      className="touch-target group/trigger fixed bottom-10 right-10 z-[60] flex flex-col items-end gap-1.5"
+      className={`${styles.floating} touch-target group/trigger fixed bottom-10 right-10 z-[60] flex flex-col items-end gap-1.5`}
       style={{ fontFamily: 'var(--font-body)' }}
     >
       {/* Label row */}
