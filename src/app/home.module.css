@@ -374,8 +374,20 @@
 @media (max-width: 820px) {
   .footer {
     position: static;
-    margin-top: 56px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
+    /* Give the stacked footer real separation from the PageNav above and
+       breathing room at the bottom edge — at 360 the cluster (social row +
+       now link + status stamp) read cramped against both edges. */
+    margin-top: 64px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 44px);
+  }
+  /* Loosen the vertical rhythm of the stacked single-column footer so the
+     social row, the "currently / now" link, and the status stamp don't pack
+     together at narrow widths. */
+  .footerGrid {
+    gap: 28px;
+  }
+  .nowLane {
+    gap: 6px;
   }
 }
 
@@ -597,6 +609,38 @@
   .socialArrow {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* ── Mobile-width tap targets (width-gated, pointer-agnostic) ─────────
+   The `pointer: coarse` block above is the right signal for real touch
+   devices, but it never fires when a narrow-viewport browser reports a
+   fine pointer (headless audits, desktop dev-tools device mode, hybrid
+   laptops). Below the 820px mobile-flow line every footer affordance is
+   genuinely tap-driven, so guarantee the 44px minimum here too — keyed on
+   the same single breakpoint as the rest of the mobile layout. Mirrors the
+   coarse-pointer heights; visual text size is unchanged. Desktop (>=821px)
+   never sees these rules. */
+@media (max-width: 820px) {
+  .social,
+  .nowLink,
+  .jarvisButton,
+  .jarvisStatus {
+    min-height: 44px;
+  }
+  /* Icon-only social rows (label hidden below 640px) need width too. */
+  .social {
+    min-width: 44px;
+    justify-content: center;
+  }
+  /* The footer nav links (Projects/Skills/About/Contact) render as ~21px
+     inline anchors via PageNav's shared `.touch-target`; that class only
+     grows the hit area under `pointer: coarse`. Expand the box here so the
+     anchors clear 44px on any narrow viewport without shifting the text. */
+  .navWrap a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 }
 

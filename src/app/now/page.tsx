@@ -251,7 +251,28 @@ function NowContent() {
   const parallaxEnabled = !reduceMotion && !isMobileFlow;
 
   return (
-    <ScrollStage ref={scrollRef}>
+    <ScrollStage ref={scrollRef} className="now-flow">
+      {/* Mobile (<=820px) rhythm fix. On desktop every <section> centers its
+          content inside a 100vh snap box. Below 820 the shell releases that
+          (height:auto, snap off) and shell.module.css falls back to
+          padding-block: var(--section-pad-lg) (~12vh ≈ 101px each side). With
+          four stacked sections that doubled into ~200px dead voids between
+          every content block (intro→Building, Thinking-about→Thesis,
+          Thesis→Not-doing). Tighten to a continuous magazine rhythm here —
+          scoped to /now via .now-flow, gated to mobile, desktop untouched. */}
+      <style jsx global>{`
+        @media (max-width: 820px) {
+          .now-flow section {
+            padding-block: var(--section-pad-sm);
+          }
+          /* The first section already clears the fixed chrome bar via the
+             shell's padding-top — drop its extra top pad so the hero starts
+             tight under the bar instead of floating. */
+          .now-flow section:first-child {
+            padding-top: 0;
+          }
+        }
+      `}</style>
       {/* ─────────────────────────────────────────────────────────
           Section 1 — MASSIVE HERO
          ───────────────────────────────────────────────────────── */}
@@ -559,11 +580,15 @@ function NowContent() {
                 "living document",
                 <>last update · {site.lastUpdated}</>,
                 <>
-                  /now inspired by{" "}
+                  /now inspired by
                   <a
                     href="https://nownownow.com"
                     target="_blank"
                     rel="noopener noreferrer"
+                    /* Explicit left margin (plus the leading nbsp) so the row's
+                       0.1em uppercase tracking can't swallow the gap and read
+                       "BYNOWNOWNOW.COM" — keep a real word break before the link. */
+                    style={{ marginLeft: "0.4em" }}
                     className="underline decoration-[var(--color-kindra-rule)] underline-offset-2 transition-colors duration-500 hover:text-[var(--color-kindra-text-white)] hover:decoration-[var(--color-kindra-yellow)]"
                   >
                     nownownow.com

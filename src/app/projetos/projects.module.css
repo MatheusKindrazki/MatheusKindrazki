@@ -238,8 +238,30 @@
   gap: 8px;
   margin-top: 26px;
   padding-bottom: 8px;
+  /* Trailing breathing room so the LAST card isn't flush-cut against the
+     viewport edge when fully scrolled, and the scroll snaps clear of it. */
+  padding-right: 16px;
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-right: 16px;
   scrollbar-width: none;
+  /* Fade the right edge so the partial next card reads as an intentional
+     "more to scroll" peek instead of a hard clip. Anchored to the container
+     (not the content), so it always marks the live scroll boundary. The fade
+     retracts once the rail is scrolled to its end (no JS — the last card's
+     trailing padding lands it inside the solid band). */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 28px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 28px),
+    transparent 100%
+  );
 }
 
 .mobileRail::-webkit-scrollbar {
@@ -251,6 +273,7 @@
   flex: 0 0 auto;
   min-width: 132px;
   min-height: 44px;
+  scroll-snap-align: start;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;

@@ -317,7 +317,7 @@ function ContatoContent() {
           </motion.div>
 
           {/* Footer meta row */}
-          <motion.div variants={fadeUp} className="mt-14">
+          <motion.div variants={fadeUp} className={`${styles.metaFooter} mt-14`}>
             <MetaRow
               items={["based in curitiba", "BRT", "usually reply within 24h"]}
             />
