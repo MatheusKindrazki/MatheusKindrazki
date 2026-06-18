@@ -101,7 +101,7 @@ export const projects: Project[] = [
   {
     title: 'Jarvis — Personal AI Operating System',
     description:
-      'My personal knowledge graph + AI agent. Connects memory, entities, tasks, and decisions across every project I touch. A living second brain built on MCP servers, vector search, and a growing taxonomy of what I know. This very page has a live Jarvis instance — ask it anything about me.',
+      'My personal knowledge graph + AI agent. Connects memory, entities, tasks, and decisions across every project I touch. A living second brain built on MCP servers, vector search, and a growing taxonomy of what I know. It is private by design — my own assistant, not a public chatbot.',
     tags: ['MCP', 'RAG', 'Vector DB', 'Personal AI', 'Knowledge Graph', 'Claude'],
     color: 'yellow',
     year: '2024-2026',
@@ -110,7 +110,7 @@ export const projects: Project[] = [
     role: 'personal ai os',
     coordinate: 'rag/mcp',
     nowNote:
-      'My personal knowledge graph + AI agent — the live instance answers questions right here on this site.',
+      'My personal knowledge graph + AI agent — a private second brain on MCP servers and vector search.',
     nowStatus: 'in-production',
   },
   {

@@ -17,7 +17,8 @@ export interface ChatMessage {
 }
 
 export const JARVIS_INTRO =
-  "Hey — I'm Jarvis, Matheus's personal AI. I know his projects, his thinking, his story. Ask me anything."
+  "Hey — I'm Jarvis, Matheus's personal AI. I'm private, so I'm offline for visitors right now. " +
+  'Want to talk to the real Matheus? Reach him through the contact page.'
 
 interface ApiResponse {
   response: string

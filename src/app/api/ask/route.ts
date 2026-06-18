@@ -1,25 +1,48 @@
-// TODO: add IP-based rate limiting before public deployment
-
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+/**
+ * SECURITY — the public portfolio chat is DISCONNECTED from the personal
+ * Jarvis backend.
+ *
+ * The previous implementation proxied every anonymous visitor message straight
+ * to the owner's personal Jarvis (`platform: 'api'`), which the backend treats
+ * as the owner: full access to private context (profile, agenda, memory,
+ * documents) AND the ability to EXECUTE actions (it was observed creating
+ * tasks). That leaks personal data and lets strangers mutate the owner's
+ * system — unacceptable for a public endpoint.
+ *
+ * Until the Jarvis backend ships a hardened public/read-only mode (no personal
+ * data, no actions), this route does NOT call Jarvis at all. It returns a
+ * fixed, safe message. The proxy stays gated behind an explicit opt-in env so
+ * it can never silently re-enable: it only proxies when
+ * JARVIS_PUBLIC_MODE === 'enabled' AND the URL/key are set. Setting the key
+ * alone is no longer enough.
+ */
+
 const JARVIS_URL = process.env.JARVIS_API_URL
 const JARVIS_KEY = process.env.JARVIS_API_KEY
+const PUBLIC_MODE_ENABLED = process.env.JARVIS_PUBLIC_MODE === 'enabled'
+
+const UNAVAILABLE_MESSAGE =
+  "Jarvis is offline for visitors right now — it's my private assistant, not a public one. " +
+  'Ask me anything in person instead: reach me through the contact page.'
+
+function unavailable(): Response {
+  return Response.json(
+    {
+      response: UNAVAILABLE_MESSAGE,
+      sources: [],
+      suggested_buttons: [],
+      conversation_id: null,
+    },
+    { status: 200 },
+  )
+}
 
 export async function POST(req: Request): Promise<Response> {
-  if (!JARVIS_URL || !JARVIS_KEY) {
-    return Response.json(
-      {
-        response:
-          "Jarvis is sleeping — the portfolio owner hasn't wired up the API key yet. But he's real, and you can reach him via the contact page.",
-        sources: [],
-        suggested_buttons: [],
-        conversation_id: null,
-      },
-      { status: 200 },
-    )
-  }
-
+  // Validate input shape even while disabled, so the contract is stable and we
+  // never echo arbitrary bodies back.
   let body: { message?: string; conversation_id?: string | null }
   try {
     body = (await req.json()) as {
@@ -41,6 +64,17 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
+  // Hard gate: the personal Jarvis is NEVER contacted unless public mode is
+  // explicitly enabled AND the backend has a hardened read-only public mode.
+  // Today that mode does not exist, so this stays off and we short-circuit.
+  if (!PUBLIC_MODE_ENABLED || !JARVIS_URL || !JARVIS_KEY) {
+    return unavailable()
+  }
+
+  // NOTE: This proxy path is intentionally unreachable until JARVIS_PUBLIC_MODE
+  // is set to 'enabled'. Before enabling it, the Jarvis backend MUST enforce a
+  // public, read-only, no-actions, no-personal-data mode for `platform:
+  // 'public'`. Do not flip the env without that guarantee.
   try {
     const upstream = await fetch(`${JARVIS_URL}/chat`, {
       method: 'POST',
@@ -51,24 +85,16 @@ export async function POST(req: Request): Promise<Response> {
       body: JSON.stringify({
         message,
         conversation_id: body.conversation_id ?? undefined,
-        platform: 'api',
+        // Signal the public, consultative, read-only context to the backend.
+        // The backend is the source of truth for enforcing it.
+        platform: 'public',
+        mode: 'public_readonly',
+        allow_actions: false,
       }),
-      // Jarvis responses can take 15s+ for complex questions. Set a 45s server timeout.
       signal: AbortSignal.timeout(45_000),
     })
 
-    if (!upstream.ok) {
-      return Response.json(
-        {
-          response:
-            'Jarvis had trouble answering that one. Try rephrasing, or reach Matheus directly at matheus@kindrazki.dev.',
-          sources: [],
-          suggested_buttons: [],
-          conversation_id: body.conversation_id ?? null,
-        },
-        { status: 200 },
-      )
-    }
+    if (!upstream.ok) return unavailable()
 
     const data = (await upstream.json()) as {
       response?: unknown
@@ -77,7 +103,6 @@ export async function POST(req: Request): Promise<Response> {
       conversation_id?: unknown
     }
 
-    // Pass through only the fields the UI uses — don't leak upstream internals
     return Response.json({
       response: typeof data.response === 'string' ? data.response : '',
       sources: Array.isArray(data.sources) ? data.sources : [],
@@ -87,19 +112,7 @@ export async function POST(req: Request): Promise<Response> {
       conversation_id:
         typeof data.conversation_id === 'string' ? data.conversation_id : null,
     })
-  } catch (err) {
-    const msg =
-      err instanceof Error && err.name === 'TimeoutError'
-        ? 'Jarvis took too long to reply — try a simpler question.'
-        : 'Jarvis hit a snag. Try again in a moment.'
-    return Response.json(
-      {
-        response: msg,
-        sources: [],
-        suggested_buttons: [],
-        conversation_id: body.conversation_id ?? null,
-      },
-      { status: 200 },
-    )
+  } catch {
+    return unavailable()
   }
 }

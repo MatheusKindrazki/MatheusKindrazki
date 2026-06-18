@@ -20,12 +20,10 @@ import {
 } from '@/hooks/useJarvisChat'
 import styles from './JarvisChat.module.css'
 
-const SUGGESTIONS: string[] = [
-  "what's matheus building right now?",
-  'tell me about MokLabs',
-  "what's his engineering philosophy?",
-  'why Jarvis?',
-]
+// Jarvis is offline for visitors (it's the owner's private assistant — see
+// /api/ask). No starter prompts, since nothing will be answered. Restore these
+// only once a hardened public read-only mode exists.
+const SUGGESTIONS: string[] = []
 
 function useIsNarrow(breakpoint = 640): boolean {
   const [narrow, setNarrow] = useState(false)
@@ -237,6 +235,7 @@ export default function JarvisChat() {
 
   const showSuggestions = useMemo(() => {
     return (
+      SUGGESTIONS.length > 0 &&
       messages.length === 1 &&
       messages[0].role === 'assistant' &&
       messages[0].content === JARVIS_INTRO
@@ -306,11 +305,11 @@ export default function JarvisChat() {
                     className={`${styles.statusRow} flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)]`}
                     style={{ fontFamily: 'var(--font-body)' }}
                   >
-                    <span className="relative inline-flex h-[5px] w-[5px]">
-                      <span className="absolute inset-0 animate-ping rounded-full bg-[var(--color-kindra-green)] opacity-60" />
-                      <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-[var(--color-kindra-green)]" />
-                    </span>
-                    knowledge graph · active
+                    <span
+                      className="relative inline-flex h-[5px] w-[5px] rounded-full"
+                      style={{ background: 'var(--color-kindra-meta-low)' }}
+                    />
+                    private assistant · offline
                   </p>
                 </div>
                 <button
