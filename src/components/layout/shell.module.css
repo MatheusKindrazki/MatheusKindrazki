@@ -7,12 +7,14 @@
 
 .shell {
   position: relative;
-  /* z-0: the shell sits in the SAME plane as the fixed Pixi background canvas
-     (also z-0), so the black-hole / explosion behind it is never clipped by
-     the shell's box. The readable content lifts to z-1 via .scroll below.
-     (Previously z-10 put the whole shell above the canvas, so the centered
-     1280px box visually cut off the explosion expanding outside it.) */
-  z-index: 0;
+  /* z-3: the shell (transparent box) sits ABOVE the reading scrim (z-2) and
+     the grain (z-2) so route text is never dimmed by them — the bug where the
+     left scrim painted over the /skills quote. It's still transparent, so the
+     fixed Pixi background canvas (z-0) and its black-hole explosion show
+     through and are NOT clipped (overflow:hidden only clips the shell's own
+     children, not the sibling canvas). Was z-0, which let the z-2 scrim cover
+     the text; was z-10 before that, which is unrelated to the explosion clip. */
+  z-index: 3;
   width: 100%;
   max-width: var(--shell-max-w);
   height: 100vh;
