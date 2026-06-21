@@ -229,6 +229,43 @@ export const projects: Project[] = [
     coordinate: 'audio/focus',
   },
   {
+    title: 'FastShared',
+    description:
+      'Ephemeral file sharing as a single gesture: pick a file, set how long the link lives, get a URL that vanishes on its own — every file auto-deleted by design. Apple-native (iOS Share Extension + macOS menu bar) on a Cloudflare Workers / R2 backend, plus a CLI pitched as a file-handoff primitive for AI agents.',
+    tags: ['SwiftUI', 'Cloudflare Workers', 'R2', 'CLI', 'Privacy-First', 'Agent Infra'],
+    color: 'green',
+    link: 'https://fastsha.red',
+    year: '2026',
+    status: 'side',
+    signal: 'ephemeral',
+    role: 'solo founder',
+    coordinate: 'share/vanish',
+  },
+  {
+    title: 'Lavra',
+    description:
+      'A native macOS app that transcribes audio to clean, formatted text fully offline on Apple Silicon — WhisperKit / Apple SpeechAnalyzer for speech-to-text and Apple Foundation Models for on-device refinement and summaries. Strong Portuguese-BR support, handles WhatsApp opus audio natively; nothing leaves the device.',
+    tags: ['Swift 6', 'SwiftUI', 'WhisperKit', 'Core ML', 'On-device AI', 'Privacy-First'],
+    color: 'yellow',
+    year: '2026',
+    status: 'side',
+    signal: 'transcribe',
+    role: 'solo founder',
+    coordinate: 'audio/text',
+  },
+  {
+    title: 'ScreenshotDetox',
+    description:
+      'Turns your screenshot pile into an inbox of decisions — categorize, triage, and declutter your camera roll entirely on-device, no backend or account. Native iOS (SwiftUI + SwiftData) with Apple Vision OCR and a local classifier that suggests intent (shopping / event / receipt / task) — AI whispers, you decide.',
+    tags: ['SwiftUI', 'SwiftData', 'Vision OCR', 'iOS', 'On-device AI', 'Privacy-First'],
+    color: 'blue',
+    year: '2026',
+    status: 'side',
+    signal: 'triage',
+    role: 'solo founder',
+    coordinate: 'shots/inbox',
+  },
+  {
     title: 'Arco Educação Platform',
     description:
       'Joined in 2020 and grew into Principal Engineer of AI over nearly six years. Architected the microfrontend ecosystem with Module Federation and led design-system integration and governance across product surfaces reaching millions of students — then pivoted the same rigor into applied AI.',

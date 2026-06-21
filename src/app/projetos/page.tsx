@@ -53,7 +53,9 @@ function parseYearRange(year: string): YearRange {
 /** Per-ring arc in degrees — 0° points right, sweeping clockwise on screen. */
 const RING_ARCS: Record<ProjectStatus, { start: number; span: number }> = {
   current: { start: -90, span: 300 },
-  side: { start: -15, span: 120 },
+  // Widened from 120° → 210°: the side ring now carries 6 bodies (several from
+  // the same 2026 cohort), so it needs a longer arc to keep labels apart.
+  side: { start: -28, span: 210 },
   past: { start: 130, span: 175 },
 };
 
@@ -112,19 +114,24 @@ function computeAtlasPlacements(list: Project[]): { x: number; y: number }[] {
 
       if (status === "current") {
         // Inner ring: the longer a venture has been live, the deeper it
-        // has spiralled toward the core.
+        // has spiralled toward the core. Same-year bodies alternate shells
+        // more aggressively (±5) so a 2024 pair like Jarvis/MokLabs doesn't
+        // sit on one radius with colliding labels.
         const radius = Math.min(
-          28,
-          22 + (member.year.start - minYear) * 2 + (yearRun % 2) * 2,
+          30,
+          22 + (member.year.start - minYear) * 2 + (yearRun % 2) * 5,
         );
         x = 50 + radius * Math.cos(theta);
         y = 50 + radius * Math.sin(theta);
       } else if (status === "side") {
         // Mid ring: eccentric, slightly inclined ellipse — side signals
-        // ride a tilted orbit instead of a perfect circle.
+        // ride a tilted orbit instead of a perfect circle. Same-year bodies
+        // alternate between two shells (like the inner ring) so the 2026
+        // cohort never stacks on one radius.
         const inclination = (-8 * Math.PI) / 180;
-        const px = 39 * Math.cos(theta);
-        const py = 34 * Math.sin(theta);
+        const shell = (yearRun % 2) * 6;
+        const px = (39 + shell) * Math.cos(theta);
+        const py = (34 + shell) * Math.sin(theta);
         x = 50 + px * Math.cos(inclination) - py * Math.sin(inclination);
         y = 50 + px * Math.sin(inclination) + py * Math.cos(inclination);
       } else {
@@ -154,7 +161,11 @@ function shortTitle(title: string): string {
     .replace(" — Personal AI Operating System", "")
     .replace(" — AI Research Fellow", "")
     .replace(" Platform", "")
-    .replace(" Venture Studio", "");
+    .replace(" Venture Studio", "")
+    // 15 chars wraps badly in the atlas node ("SCREENSHO/TOX") and crowds
+    // its neighbor — show the short mark on the node; the dossier keeps the
+    // full name.
+    .replace("ScreenshotDetox", "Detox");
 }
 
 function truncateDescription(description: string): string {
