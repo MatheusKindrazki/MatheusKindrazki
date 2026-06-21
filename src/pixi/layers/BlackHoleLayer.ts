@@ -121,7 +121,24 @@ export class BlackHoleLayer implements PixiLayer {
 
     const signature = `${config.src}|${config.offsetX ?? 0}|${config.revealMedia ?? true}`;
     if (signature === this.signature) return;
+
+    // Fast media swap: if only the video `src` changed (same formation —
+    // offsetX/revealMedia) and the hole is already formed and showing media,
+    // just swap the clip in place instead of re-running the ~7.6s collapse
+    // sequence. Used by /skills to change the video per scrolled section.
+    const formationSig = `${config.offsetX ?? 0}|${config.revealMedia ?? true}`;
+    const prevFormationSig = this.signature.split("|").slice(1).join("|");
+    const onlySrcChanged =
+      this.signature !== "" && formationSig === prevFormationSig;
+
     this.signature = signature;
+
+    if (onlySrcChanged && this.formationFired && config.revealMedia !== false) {
+      this.clearMedia();
+      this.prepareMedia();
+      return;
+    }
+
     this.reset();
   }
 
