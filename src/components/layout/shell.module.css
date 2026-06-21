@@ -7,7 +7,12 @@
 
 .shell {
   position: relative;
-  z-index: var(--z-content);
+  /* z-0: the shell sits in the SAME plane as the fixed Pixi background canvas
+     (also z-0), so the black-hole / explosion behind it is never clipped by
+     the shell's box. The readable content lifts to z-1 via .scroll below.
+     (Previously z-10 put the whole shell above the canvas, so the centered
+     1280px box visually cut off the explosion expanding outside it.) */
+  z-index: 0;
   width: 100%;
   max-width: var(--shell-max-w);
   height: 100vh;
@@ -22,7 +27,9 @@
    content reflows naturally (previously only /projetos had this fallback). */
 .scroll {
   position: relative;
-  z-index: var(--z-content);
+  /* z-1: readable content sits just above the Pixi background plane (z-0),
+     without forcing the whole shell above it. */
+  z-index: 1;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
