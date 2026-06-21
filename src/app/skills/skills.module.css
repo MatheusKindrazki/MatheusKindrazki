@@ -37,6 +37,21 @@
    the content, only below the 820px release where the column re-centers
    over the black hole. Layers under ContentScrim's uniform dim for a bit
    more contrast on the bright DJ video without hiding it. */
+/* Fun-fact pull-quote — full-strength white with a soft shadow so it stays
+   crisp over the bright video / starfield without relying on the side scrim
+   (which doesn't reach the lower-center where these quotes sit). */
+.funQuote {
+  color: var(--color-kindra-text-white);
+  text-shadow:
+    0 1px 18px rgba(0, 0, 0, 0.85),
+    0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+.funSignoff {
+  color: var(--color-kindra-meta-mid);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+}
+
 .legibility {
   display: none;
 }
