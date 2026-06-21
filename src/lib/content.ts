@@ -51,7 +51,7 @@ export const profile = {
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
   headline: 'Building ventures where bold ideas meet careful engineering.',
   description:
-    'Co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). A decade architecting platforms used by millions of students at Arco Educação — now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
+    'Co-founder at MokLabs Venture Studio, founding team at Lugui.ai (AI infrastructure for the real-estate market), and AI Research Fellow at CEIA (UFG). Nearly six years at Arco Educação — from platform architecture at scale to Principal Engineer of AI, shipping applied-AI systems used by millions of students. Now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
@@ -131,16 +131,16 @@ export const projects: Project[] = [
   {
     title: 'Lugui.ai',
     description:
-      'Founding team member building AI-native educational intelligence from day zero — tutoring systems that actually understand what a student just missed. Architecting the frontend, RAG pipelines, and the developer experience that lets a small team ship like a large one.',
-    tags: ['AI', 'RAG', 'Next.js', 'LangChain', 'Founding Team'],
+      'Founding team member building AI infrastructure for the real-estate market — "the intelligence of your agency, inside WhatsApp." Conversational agents and RAG pipelines that let realtors qualify leads, answer about listings, and close deals where their clients already are. Architecting the frontend, the agent/RAG stack, and the DX that lets a small team ship like a large one.',
+    tags: ['AI', 'RAG', 'Conversational Agents', 'WhatsApp', 'Real Estate', 'Founding Team'],
     color: 'blue',
     year: '2025-2026',
     status: 'current',
     signal: 'ai-native',
     role: 'founding team',
-    coordinate: 'product/rag',
+    coordinate: 'proptech/agents',
     nowNote:
-      'Tutoring systems that actually understand what a student just missed — frontend, RAG pipelines, and the DX that keeps a small team fast.',
+      'AI infrastructure for real-estate agencies, delivered inside WhatsApp — conversational agents + RAG. Building the frontend, the agent stack, and the DX that keeps a small team fast.',
     nowStatus: 'alpha',
   },
   {
@@ -229,28 +229,65 @@ export const projects: Project[] = [
     coordinate: 'audio/focus',
   },
   {
+    title: 'FastShared',
+    description:
+      'Ephemeral file sharing as a single gesture: pick a file, set how long the link lives, get a URL that vanishes on its own — every file auto-deleted by design. Apple-native (iOS Share Extension + macOS menu bar) on a Cloudflare Workers / R2 backend, plus a CLI pitched as a file-handoff primitive for AI agents.',
+    tags: ['SwiftUI', 'Cloudflare Workers', 'R2', 'CLI', 'Privacy-First', 'Agent Infra'],
+    color: 'green',
+    link: 'https://fastsha.red',
+    year: '2026',
+    status: 'side',
+    signal: 'ephemeral',
+    role: 'solo founder',
+    coordinate: 'share/vanish',
+  },
+  {
+    title: 'Lavra',
+    description:
+      'A native macOS app that transcribes audio to clean, formatted text fully offline on Apple Silicon — WhisperKit / Apple SpeechAnalyzer for speech-to-text and Apple Foundation Models for on-device refinement and summaries. Strong Portuguese-BR support, handles WhatsApp opus audio natively; nothing leaves the device.',
+    tags: ['Swift 6', 'SwiftUI', 'WhisperKit', 'Core ML', 'On-device AI', 'Privacy-First'],
+    color: 'yellow',
+    year: '2026',
+    status: 'side',
+    signal: 'transcribe',
+    role: 'solo founder',
+    coordinate: 'audio/text',
+  },
+  {
+    title: 'ScreenshotDetox',
+    description:
+      'Turns your screenshot pile into an inbox of decisions — categorize, triage, and declutter your camera roll entirely on-device, no backend or account. Native iOS (SwiftUI + SwiftData) with Apple Vision OCR and a local classifier that suggests intent (shopping / event / receipt / task) — AI whispers, you decide.',
+    tags: ['SwiftUI', 'SwiftData', 'Vision OCR', 'iOS', 'On-device AI', 'Privacy-First'],
+    color: 'blue',
+    year: '2026',
+    status: 'side',
+    signal: 'triage',
+    role: 'solo founder',
+    coordinate: 'shots/inbox',
+  },
+  {
     title: 'Arco Educação Platform',
     description:
-      'Architected the microfrontend ecosystem at Arco Educação with Module Federation, enabling independent squad velocity while maintaining system coherence. Led design-system integration and governance across product surfaces reaching millions of students.',
+      'Joined in 2020 and grew into Principal Engineer of AI over nearly six years. Architected the microfrontend ecosystem with Module Federation and led design-system integration and governance across product surfaces reaching millions of students — then pivoted the same rigor into applied AI.',
     tags: ['React', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design System'],
     color: 'green',
-    year: '2020-2024',
+    year: '2020-2026',
     status: 'past',
     signal: 'scale',
-    role: 'principal engineer',
+    role: 'principal engineer · ai',
     coordinate: 'millions/students',
   },
   {
-    title: 'AI Education Tools',
+    title: 'Essay Correction with AI',
     description:
-      'RAG systems over 10k+ document bases, automated essay correction with OCR/HTR pipelines, and semantic search infrastructure for educational content.',
-    tags: ['LangChain', 'RAG', 'OCR', 'Python', 'Vector DB'],
+      'My last delivery at Arco as Principal Engineer of AI: the AI essay-correction platform for the ENEM exam. I led the core pipeline (ingestion, classification, analysis) and owned the computer-vision model that reads handwritten essays — OCR/HTR over a queued, real-time correction system feeding teachers.',
+    tags: ['Computer Vision', 'OCR/HTR', 'LLM', 'Python', 'RAG', 'ENEM'],
     color: 'blue',
-    year: '2023-2024',
+    year: '2024-2026',
     status: 'past',
-    signal: 'retrieval',
-    role: 'architecture',
-    coordinate: '10k+ docs',
+    signal: 'vision',
+    role: 'principal engineer · ai',
+    coordinate: 'essay/vision',
   },
   {
     title: 'Café com Código',
@@ -308,8 +345,8 @@ export const timeline = [
   { year: '2019', title: 'Engineering Manager', description: 'Led a small team at Mentores Digital: custom client platforms, APIs (Express/Adonis), React & React Native apps, ERP integrations.' },
   { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a Software Engineer at one of Brazil’s largest edtechs — frontend platform work across pedagogical products.' },
   { year: '2021', title: 'Staff Engineer', description: 'Stepped up to Staff: microfrontend architecture with Module Federation, design-system governance, and DX across squads.' },
-  { year: '2025', title: 'Principal Engineer — Applied AI', description: 'Led the Applied AI & AI Platform front: RAG over large document bases, automated essay correction (OCR/HTR), and AI infra reaching millions of students.' },
-  { year: '2026', title: 'Founder & Research Fellow', description: 'Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG). Turning a decade of platform work into ventures of my own.' },
+  { year: '2025', title: 'Principal Engineer of AI', description: 'Consolidated as Principal Engineer of AI at Arco. Last delivery: the AI essay-correction platform for ENEM — led the core pipeline and owned the computer-vision model reading handwritten essays, serving millions of students.' },
+  { year: '2026', title: 'Founder & Research Fellow', description: 'Left Arco after nearly six years. Co-founded MokLabs, joined the founding team at Lugui.ai (AI infrastructure for real-estate agencies, inside WhatsApp), and became an AI Research Fellow at CEIA (UFG).' },
 ]
 
 /**
