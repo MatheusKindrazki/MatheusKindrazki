@@ -506,13 +506,11 @@ function FunFactSection({
 
         <motion.blockquote
           variants={fadeUp}
-          className="max-w-[600px] italic font-normal"
+          className={`max-w-[600px] italic font-normal ${styles.funQuote}`}
           style={{
             fontFamily: "var(--font-heading)",
             fontSize: "var(--text-h2)",
             lineHeight: 1.35,
-            color:
-              "color-mix(in srgb, var(--color-kindra-text-white) 90%, transparent)",
           }}
         >
           {fact.quote}
@@ -520,11 +518,10 @@ function FunFactSection({
 
         <motion.p
           variants={fadeUp}
-          className="mt-6 uppercase tracking-[0.3em]"
+          className={`mt-6 uppercase tracking-[0.3em] ${styles.funSignoff}`}
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "var(--text-eyebrow)",
-            color: "var(--color-kindra-meta-low)",
           }}
         >
           <span className="mr-2" style={{ color: "var(--color-kindra-rule)" }}>

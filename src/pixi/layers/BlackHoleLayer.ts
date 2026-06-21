@@ -28,6 +28,8 @@ const PHASE_CONVERGE = 3000;
 const PHASE_COLLAPSE = 800;
 const PHASE_SHOCKWAVE = 600;
 const PHASE_MEDIA = 1200;
+/** Crossfade duration when swapping the clip inside an already-formed hole. */
+const CROSSFADE_MS = 650;
 
 const STAR_COLORS = [
   0xffffff,
@@ -91,6 +93,11 @@ export class BlackHoleLayer implements PixiLayer {
   private mediaSrc = "";
   private mediaTexture: Texture | null = null;
   private mediaSprite: Sprite | null = null;
+  // Crossfade state: when a swap happens mid-flight, the outgoing clip lives
+  // here and fades out while the new mediaSprite fades in over CROSSFADE_MS.
+  private fadingSprite: Sprite | null = null;
+  private crossfadeElapsed = 0;
+  private crossfading = false;
 
   constructor() {
     this.root.visible = false;
@@ -134,7 +141,26 @@ export class BlackHoleLayer implements PixiLayer {
     this.signature = signature;
 
     if (onlySrcChanged && this.formationFired && config.revealMedia !== false) {
-      this.clearMedia();
+      // Crossfade instead of a hard cut: keep the current clip as the fading
+      // sprite, then load the new one (mediaSprite starts at alpha 0 and rises
+      // while the old one falls — handled in updateMedia).
+      if (this.mediaSprite) {
+        // Drop any in-progress fade sprite first (rapid re-swaps).
+        if (this.fadingSprite) {
+          this.root.removeChild(this.fadingSprite);
+          this.fadingSprite.destroy();
+        }
+        this.fadingSprite = this.mediaSprite;
+        this.mediaSprite = null;
+        this.crossfading = true;
+        this.crossfadeElapsed = 0;
+      }
+      // Don't destroy the outgoing texture/sprite via clearMedia — just reset
+      // the loader bookkeeping so prepareMedia fetches the new src.
+      this.mediaLoadId += 1;
+      this.mediaLoading = false;
+      this.mediaSrc = "";
+      this.mediaTexture = null;
       this.prepareMedia();
       return;
     }
@@ -173,7 +199,7 @@ export class BlackHoleLayer implements PixiLayer {
       Math.min(0.05, ticker.deltaMS / 1000),
     );
     this.drawRings(phase.name, phase.progress, cx, cy, maxDist);
-    this.updateMedia(phase.name, phase.progress, cx, cy);
+    this.updateMedia(phase.name, phase.progress, cx, cy, ticker.deltaMS);
   }
 
   destroy(): void {
@@ -569,6 +595,7 @@ export class BlackHoleLayer implements PixiLayer {
     progress: number,
     cx: number,
     cy: number,
+    deltaMS: number,
   ): void {
     if (phase === "shockwave" || phase === "media" || phase === "done") {
       if (!this.formationFired) {
@@ -577,28 +604,60 @@ export class BlackHoleLayer implements PixiLayer {
       }
     }
 
+    // Crossfade progress (0→1) when a clip swap is in flight.
+    let fade = 1;
+    if (this.crossfading) {
+      this.crossfadeElapsed += deltaMS;
+      fade = clamp(this.crossfadeElapsed / CROSSFADE_MS, 0, 1);
+      if (this.fadingSprite) {
+        // Outgoing clip stays full-size, just dips out.
+        this.fadingSprite.alpha = 1 - fade;
+        this.fadingSprite.position.set(cx, cy);
+        this.fadingSprite.width = 320;
+        this.fadingSprite.height = 320;
+      }
+      if (fade >= 1) {
+        // Fade done — drop the outgoing sprite.
+        if (this.fadingSprite) {
+          this.root.removeChild(this.fadingSprite);
+          this.fadingSprite.destroy();
+          this.fadingSprite = null;
+        }
+        this.crossfading = false;
+      }
+    }
+
     if (!this.mediaSprite) {
-      if (phase === "shockwave" || phase === "media" || phase === "done") {
-        const alpha = phase === "shockwave" ? 0.5 + progress * 0.35 : 0.9;
-        this.drawPersistentSingularity(cx, cy, alpha);
+      // New clip not loaded yet: keep the outgoing one masked & visible so the
+      // hole never flashes empty mid-swap.
+      if (this.fadingSprite) {
+        this.mediaMask.clear().circle(cx, cy, 160).fill({ color: 0xffffff });
+        this.fadingSprite.mask = this.mediaMask;
+      } else if (phase === "shockwave" || phase === "media" || phase === "done") {
+        const a = phase === "shockwave" ? 0.5 + progress * 0.35 : 0.9;
+        this.drawPersistentSingularity(cx, cy, a);
       }
       return;
     }
 
     if (phase === "media" || phase === "done") {
-      const alpha = phase === "media" ? easeOutQuart(progress) : 1;
+      // Formation reveal alpha (first load) OR crossfade-in alpha (swap).
+      const revealAlpha = phase === "media" ? easeOutQuart(progress) : 1;
+      const alpha = this.crossfading ? easeOutQuart(fade) : revealAlpha;
       const scale = phase === "media" ? lerp(0.3, 1, easeOutExpo(progress)) : 1;
       this.mediaSprite.alpha = alpha;
       this.mediaSprite.position.set(cx, cy);
       this.mediaSprite.width = 320 * scale;
       this.mediaSprite.height = 320 * scale;
       this.mediaMask.clear().circle(cx, cy, 160 * scale).fill({ color: 0xffffff });
+      // Both clips share the single circular mask during a crossfade.
+      if (this.fadingSprite) this.fadingSprite.mask = this.mediaMask;
 
       this.rings
         .circle(cx, cy, 360)
-        .stroke({ color: KINDRA_COLORS.blue, alpha: 0.04 * alpha, width: 1 })
+        .stroke({ color: KINDRA_COLORS.blue, alpha: 0.04, width: 1 })
         .circle(cx, cy, 185)
-        .stroke({ color: 0xb4d2ff, alpha: 0.2 * alpha, width: 1 });
+        .stroke({ color: 0xb4d2ff, alpha: 0.2, width: 1 });
     }
   }
 
@@ -659,6 +718,13 @@ export class BlackHoleLayer implements PixiLayer {
       this.mediaSprite.destroy();
       this.mediaSprite = null;
     }
+    if (this.fadingSprite) {
+      this.root.removeChild(this.fadingSprite);
+      this.fadingSprite.destroy();
+      this.fadingSprite = null;
+    }
+    this.crossfading = false;
+    this.crossfadeElapsed = 0;
     this.mediaTexture = null;
   }
 }
