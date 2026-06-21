@@ -21,6 +21,67 @@ const BH_OFFSET_X = 200;
 const GRAVITY_SELECTOR = "[data-gravity-item]";
 
 /**
+ * The "fun facts" — each one swaps the black-hole video as you scroll to it,
+ * so the clip behind the quote matches what's being said. The DJ clip is the
+ * default (shown on the hero + categories before any fact is reached).
+ * `import("react").ReactNode` quotes use <Mark> for the accent words.
+ */
+const DEFAULT_VIDEO = "/images/kindra-skills-loop.mp4";
+
+interface FunFact {
+  id: string;
+  eyebrow: string;
+  video: string;
+  videoAlt: string;
+  signoff: string;
+  quote: React.ReactNode;
+}
+
+const FUN_FACTS: FunFact[] = [
+  {
+    id: "dj",
+    eyebrow: "fun fact",
+    video: DEFAULT_VIDEO,
+    videoAlt: "Kindra DJ",
+    signoff: "mixing tracks between deploys",
+    quote: (
+      <>
+        &ldquo;Off the clock, I&apos;m a <Mark color="blue">musician</Mark> and{" "}
+        <Mark color="yellow">DJ</Mark>. Creativity doesn&apos;t stop at the
+        code.&rdquo;
+      </>
+    ),
+  },
+  {
+    id: "piano",
+    eyebrow: "fun fact",
+    video: "/images/kindra-piano.mp4",
+    videoAlt: "Kindra playing piano",
+    signoff: "favorite instrument, hands down",
+    quote: (
+      <>
+        &ldquo;The <Mark color="blue">piano</Mark> is my favorite instrument —
+        and, modesty aside, I <Mark color="yellow">play it well</Mark>.&rdquo;
+      </>
+    ),
+  },
+  {
+    id: "borracha",
+    eyebrow: "fun fact",
+    video: "/images/kindra-borracha.mp4",
+    videoAlt: "Kindra making rubber",
+    signoff: "hands-on, far from a screen",
+    quote: (
+      <>
+        &ldquo;Turns out I also know how to{" "}
+        <Mark color="green">make rubber</Mark> — some skills don&apos;t fit in a
+        repo.&rdquo;
+      </>
+    ),
+  },
+];
+
+/**
  * The gravity rAF assumes a tall, wide desktop viewport: it warps every
  * `data-gravity-item` toward the black-hole center at innerWidth/2 + offset,
  * innerHeight/2. On the released mobile-flow shell (<=820px) and on short
@@ -52,6 +113,9 @@ export default function SkillsPage() {
   const shellStyle = {
     "--project-accent": accent,
   } as CSSProperties;
+  // The black-hole video is driven by which fun-fact section is in view.
+  // Lifted here so the background render-prop and the content can share it.
+  const [activeVideo, setActiveVideo] = useState(DEFAULT_VIDEO);
 
   return (
     <PageShell
@@ -59,9 +123,9 @@ export default function SkillsPage() {
       stripText="◈ MK · capability stacks · idx.03"
       style={shellStyle}
       persistentBackground
-      background={() => <SkillsBackground />}
+      background={() => <SkillsBackground videoSrc={activeVideo} />}
     >
-      <SkillsContent />
+      <SkillsContent onActiveVideoChange={setActiveVideo} />
     </PageShell>
   );
 }
@@ -75,26 +139,30 @@ export default function SkillsPage() {
  * the explode synchronously here (the old approach) made every navigation
  * leaving /skills an unmasked hard cut under a still-playing band.
  */
-function SkillsBackground() {
+function SkillsBackground({ videoSrc }: { videoSrc: string }) {
+  // `videoSrc` is driven by the active fun-fact section (scroll). Changing it
+  // re-runs BlackHoleLayer.prepareMedia, swapping the clip inside the hole.
+  // The DJ clip is a boomerang (forward+reverse pre-concat) so it loops with
+  // no hard cut; the piano/rubber clips just loop natively.
   return (
     <>
-      {/* Boomerang clip: forward + reverse pre-concatenated (ffmpeg), so the
-          native <video loop> plays it as one continuous take — plays through,
-          glides back, repeats — no hard cut. The seam is frame-matched
-          (last frame ≈ first frame) for a seamless restart. */}
-      <BlackHole src="/images/kindra-skills-loop.mp4" alt="Kindra DJ" offsetX={BH_OFFSET_X} />
-      {/* Black hole + DJ photo sit right-of-center; darken the left so the
-          left-anchored text column stays legible over it. */}
+      <BlackHole src={videoSrc} alt="Kindra" offsetX={BH_OFFSET_X} />
+      {/* Black hole sits right-of-center; darken the left so the left-anchored
+          text column stays legible over it. */}
       <ContentScrim side="left" intensity="strong" />
       {/* Narrow-only: under the released shell the column re-centers over the
-          black hole — this route-local scrim recedes the bright DJ video so
-          the stacked category chips stay readable (no-op >=821px). */}
+          black hole — this route-local scrim recedes the bright video so the
+          stacked category chips stay readable (no-op >=821px). */}
       <div aria-hidden className={styles.legibility} />
     </>
   );
 }
 
-function SkillsContent() {
+function SkillsContent({
+  onActiveVideoChange,
+}: {
+  onActiveVideoChange: (src: string) => void;
+}) {
   const { onNavClick } = useShellNav();
   const scrollRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
@@ -362,57 +430,115 @@ function SkillsContent() {
         </motion.div>
       </Section>
 
-      {/* Section 3 — Fun fact as pull-quote */}
-      <Section data-gravity-item align="left" className={styles.section}>
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          variants={stagger}
-        >
-          <Eyebrow label="fun fact" />
-
-          <motion.blockquote
-            variants={fadeUp}
-            className="max-w-[600px] italic font-normal"
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontSize: "var(--text-h2)",
-              lineHeight: 1.35,
-              color: "color-mix(in srgb, var(--color-kindra-text-white) 90%, transparent)",
-            }}
-          >
-            &ldquo;Off the clock, I&apos;m a <Mark color="blue">musician</Mark>{" "}
-            and <Mark color="yellow">DJ</Mark>. Creativity doesn&apos;t stop at
-            the code.&rdquo;
-          </motion.blockquote>
-
-          <motion.p
-            variants={fadeUp}
-            className="mt-6 uppercase tracking-[0.3em]"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-eyebrow)",
-              color: "var(--color-kindra-meta-low)",
-            }}
-          >
-            <span
-              className="mr-2"
-              style={{ color: "var(--color-kindra-rule)" }}
-            >
-              —
-            </span>{" "}
-            mixing tracks between deploys
-          </motion.p>
-
-          {/* Footer meta row */}
-          <motion.div variants={fadeUp} className="mt-12">
-            <MetaRow
-              items={["idx.03", `${totalSkills} capabilities`, "still learning"]}
-            />
-          </motion.div>
-        </motion.div>
-      </Section>
+      {/* Sections 3–5 — fun facts as pull-quotes, each swapping the black-hole
+          video as it scrolls into view (DJ → piano → rubber). The last one
+          carries the footer meta row. */}
+      {FUN_FACTS.map((fact, i) => (
+        <FunFactSection
+          key={fact.id}
+          fact={fact}
+          onActive={onActiveVideoChange}
+          metaRow={
+            i === FUN_FACTS.length - 1 ? (
+              <MetaRow
+                items={[
+                  "idx.03",
+                  `${totalSkills} capabilities`,
+                  "still learning",
+                ]}
+              />
+            ) : null
+          }
+        />
+      ))}
     </ScrollStage>
+  );
+}
+
+/**
+ * One fun-fact section. An IntersectionObserver tells the page which video to
+ * show in the black hole while this section owns the viewport, so the clip
+ * matches the quote. Falls back gracefully (no observer support → no swap).
+ */
+function FunFactSection({
+  fact,
+  onActive,
+  metaRow,
+}: {
+  fact: FunFact;
+  onActive: (src: string) => void;
+  metaRow: React.ReactNode;
+}) {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          // The rootMargin collapses the root to a thin band across the
+          // vertical middle of the viewport, so this fires whenever the
+          // section crosses the screen's center — regardless of how tall the
+          // section is. (The old `ratio >= 0.5` was unreachable: sections are
+          // ~900px but a -25%/-25% root is only ~450px, so the ratio capped
+          // at ~0.47 and the swap never triggered.)
+          if (entry.isIntersecting) {
+            onActive(fact.video);
+          }
+        }
+      },
+      { threshold: 0, rootMargin: "-45% 0px -45% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [fact.video, onActive]);
+
+  return (
+    <Section ref={ref} data-gravity-item align="left" className={styles.section}>
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        variants={stagger}
+      >
+        <Eyebrow label={fact.eyebrow} />
+
+        <motion.blockquote
+          variants={fadeUp}
+          className="max-w-[600px] italic font-normal"
+          style={{
+            fontFamily: "var(--font-heading)",
+            fontSize: "var(--text-h2)",
+            lineHeight: 1.35,
+            color:
+              "color-mix(in srgb, var(--color-kindra-text-white) 90%, transparent)",
+          }}
+        >
+          {fact.quote}
+        </motion.blockquote>
+
+        <motion.p
+          variants={fadeUp}
+          className="mt-6 uppercase tracking-[0.3em]"
+          style={{
+            fontFamily: "var(--font-body)",
+            fontSize: "var(--text-eyebrow)",
+            color: "var(--color-kindra-meta-low)",
+          }}
+        >
+          <span className="mr-2" style={{ color: "var(--color-kindra-rule)" }}>
+            —
+          </span>{" "}
+          {fact.signoff}
+        </motion.p>
+
+        {metaRow && (
+          <motion.div variants={fadeUp} className="mt-12">
+            {metaRow}
+          </motion.div>
+        )}
+      </motion.div>
+    </Section>
   );
 }

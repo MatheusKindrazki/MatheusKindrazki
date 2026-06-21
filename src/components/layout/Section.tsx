@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import styles from "./shell.module.css";
 
 type Measure = "narrow" | "wide" | "ledger";
@@ -32,17 +32,20 @@ interface SectionProps {
  * `w-[90%] max-w-[650px] mx-auto` literals that had drifted across six
  * different widths.
  */
-export default function Section({
-  children,
-  measure = "narrow",
-  align = "center",
-  bare = false,
-  className,
-  innerClassName,
-  ...rest
-}: SectionProps) {
+const Section = forwardRef<HTMLElement, SectionProps>(function Section(
+  {
+    children,
+    measure = "narrow",
+    align = "center",
+    bare = false,
+    className,
+    innerClassName,
+    ...rest
+  },
+  ref,
+) {
   return (
-    <section className={`${styles.section} ${className ?? ""}`} {...rest}>
+    <section ref={ref} className={`${styles.section} ${className ?? ""}`} {...rest}>
       {bare ? (
         children
       ) : (
@@ -56,4 +59,6 @@ export default function Section({
       )}
     </section>
   );
-}
+});
+
+export default Section;
