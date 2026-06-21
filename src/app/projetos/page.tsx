@@ -472,6 +472,7 @@ function ProjectNode({
     <button
       type="button"
       aria-pressed={isActive}
+      aria-label={title}
       onClick={onSelect}
       onMouseEnter={onSelect}
       className={`${styles.node} ${nodeStatusClass[status]}`}
@@ -488,10 +489,13 @@ function ProjectNode({
       <span className={styles.nodeIndex}>
         {String(index + 1).padStart(2, "0")}
       </span>
-      <span className={styles.nodeLabel}>{title}</span>
-      {/* Meta is just the signal — status is already conveyed by the node's
-          color/ring and shown in the dossier; dropping '· {status}' keeps the
-          meta short enough that neighboring node labels never collide. */}
+      {/* Default state: index + short signal only, so 15 nodes stay clean and
+          can spread out. The full name reveals on hover/focus (desktop) and
+          while selected (the tap state, so touch users still get it). It is
+          absolutely positioned so revealing it never reflows neighbors. */}
+      <span className={styles.nodeName} aria-hidden="true">
+        {title}
+      </span>
       <span className={styles.nodeMeta}>/ {signal}</span>
     </button>
   );
