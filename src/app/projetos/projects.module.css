@@ -556,14 +556,15 @@
 .nodeMeta {
   display: block;
   margin-top: 4px;
-  max-width: 96px;
+  /* Meta is just the short signal now (status dropped) — no wrap, no width
+     cap needed; it stays a single narrow line that can't reach a neighbor. */
+  white-space: nowrap;
   color: var(--color-kindra-meta-low);
   font-size: 8px;
   font-weight: 700;
   line-height: 1.4;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
 }
 
 .ledgerInner {

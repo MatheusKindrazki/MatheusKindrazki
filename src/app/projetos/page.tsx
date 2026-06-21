@@ -489,9 +489,10 @@ function ProjectNode({
         {String(index + 1).padStart(2, "0")}
       </span>
       <span className={styles.nodeLabel}>{title}</span>
-      <span className={styles.nodeMeta}>
-        / {signal} · {status}
-      </span>
+      {/* Meta is just the signal — status is already conveyed by the node's
+          color/ring and shown in the dossier; dropping '· {status}' keeps the
+          meta short enough that neighboring node labels never collide. */}
+      <span className={styles.nodeMeta}>/ {signal}</span>
     </button>
   );
 }
