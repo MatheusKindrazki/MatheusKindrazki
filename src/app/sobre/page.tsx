@@ -76,7 +76,7 @@ function SobreContent() {
                 About <Mark color="yellow">me</Mark>
               </span>
               <span className="italic font-normal text-[length:var(--text-h2)] text-[var(--color-kindra-meta-mid)]">
-                — co-founder &amp; builder
+                — CTO &amp; co-founder
               </span>
             </span>
           </h1>
@@ -85,12 +85,11 @@ function SobreContent() {
             className="enter-rise max-w-[540px] font-normal text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
             style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
           >
-            Co-founder at <Mark color="yellow">MokLabs Venture Studio</Mark>,
-            founding team at Lugui.ai, and{" "}
+            <Mark color="yellow">CTO at Applause.team</Mark>, co-founder at
+            MokLabs Venture Studio, founding team at Lugui.ai, and{" "}
             <Mark color="yellow">AI Research Fellow at CEIA (UFG)</Mark>. Nearly
-            a decade architecting platforms at Arco Educação — shipping
-            infrastructure that reached millions of students. Now turning that
-            experience into ventures of my own.
+            a decade turning complex systems into product velocity — from
+            platforms used by millions to AI-native ventures.
           </p>
 
           <PageNav current="/sobre" onClick={onNavClick} />
@@ -124,7 +123,7 @@ function SobreContent() {
 
           <motion.h2 variants={fadeUp} className={`mt-4 ${styles.sectionTitle}`}>
             From code to{" "}
-            <span className={styles.sectionTitleNote}>co-founder</span>
+            <span className={styles.sectionTitleNote}>technical leadership</span>
           </motion.h2>
 
           <div className={styles.timeline}>

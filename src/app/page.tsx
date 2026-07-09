@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { preload } from "react-dom";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -20,7 +20,8 @@ import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import ContentScrim from "@/components/layout/ContentScrim";
 import { useJarvis } from "@/components/chat/JarvisProvider";
-import { profile, site } from "@/lib/content";
+import { profile, roleSignals, site } from "@/lib/content";
+import { getColorValue } from "@/lib/colors";
 import { enterAt } from "@/lib/motion";
 import styles from "./home.module.css";
 
@@ -40,8 +41,6 @@ const socialLinks = [
   { href: profile.social.instagram, label: "Instagram", Icon: FiInstagram },
   { href: profile.social.twitter, label: "X/Twitter", Icon: FiTwitter },
 ];
-
-const keywords = ["ventures", "AI-products", "RAG", "platform", "builder", "DX"];
 
 // Telemetry glyph set — hex digits + signal punctuation, so the decode
 // reads as signal acquisition rather than generic terminal noise.
@@ -172,8 +171,9 @@ function BootSequence() {
       // order regardless (push dedupes by id, so this is a no-op otherwise).
       push("sensor", "sensor array online");
       push("field", "particle field decoded");
-      at(240, () => push("target", "target acquired"));
-      at(560, finish);
+      at(180, () => push("roles", "04 active signals resolved"));
+      at(420, () => push("target", "target acquired"));
+      at(760, finish);
     };
     const img = new Image();
     img.onload = onPortrait;
@@ -224,8 +224,8 @@ export default function Home() {
 
   return (
     <PageShell
-      hudRole="online · building"
-      stripText="◈ MK · co-founder / builder · 2017 — now"
+      hudRole="online · leading"
+      stripText="◈ MK · CTO @ APPLAUSE.TEAM · CO-FOUNDER @ MOKLABS"
       background={({ exploding, onExplodeComplete }) => (
         <>
           <div
@@ -250,10 +250,106 @@ export default function Home() {
   );
 }
 
+interface RoleSignalDeckProps {
+  onNavigate: (href: string) => (event: React.MouseEvent) => void;
+}
+
+/**
+ * A small operating console for the four roles that currently define the
+ * portfolio. It advances like a live telemetry feed, pauses as soon as the
+ * visitor engages, and becomes completely static under reduced motion.
+ */
+function RoleSignalDeck({ onNavigate }: RoleSignalDeckProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduceMotion = usePrefersReducedMotion();
+  const activeSignal = roleSignals[activeIndex];
+
+  useEffect(() => {
+    if (reduceMotion || paused) return;
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % roleSignals.length);
+    }, 4800);
+
+    return () => window.clearInterval(interval);
+  }, [paused, reduceMotion]);
+
+  const deckStyle = {
+    "--active-signal": getColorValue(activeSignal.color),
+  } as CSSProperties;
+
+  return (
+    <section
+      aria-label="Current roles"
+      className={styles.signalDeck}
+      style={deckStyle}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className={styles.signalHeader}>
+        <span className={styles.signalHeaderLabel}>
+          <span aria-hidden className={styles.signalLiveDot} />
+          active signals
+        </span>
+        <span>{String(roleSignals.length).padStart(2, "0")} channels · live</span>
+      </div>
+
+      <div className={styles.signalTabs}>
+        {roleSignals.map((signal, index) => {
+          const signalStyle = {
+            "--signal-accent": getColorValue(signal.color),
+          } as CSSProperties;
+
+          return (
+            <button
+              key={signal.organization}
+              type="button"
+              aria-pressed={index === activeIndex}
+              aria-describedby="active-signal-readout"
+              className={styles.signalTab}
+              style={signalStyle}
+              onClick={() => setActiveIndex(index)}
+              onFocus={() => {
+                setPaused(true);
+                setActiveIndex(index);
+              }}
+              onBlur={() => setPaused(false)}
+            >
+              <span className={styles.signalIndex}>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className={styles.signalRole}>{signal.role}</span>
+              <strong>{signal.organization}</strong>
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        key={activeSignal.organization}
+        id="active-signal-readout"
+        className={styles.signalReadout}
+      >
+        <span aria-hidden className={styles.signalCursor} />
+        <p>{activeSignal.note}</p>
+        <Link
+          href="/projetos"
+          data-cursor="link"
+          onClick={onNavigate("/projetos")}
+          className={styles.signalMapLink}
+        >
+          inspect map <span aria-hidden>&rarr;</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function HomeContent() {
   const { onNavClick } = useShellNav();
   const { setOpen: setJarvisOpen } = useJarvis();
-  const cofounderScramble = useScramble("Co-founder", 900, 350);
+  const ctoScramble = useScramble("CTO", 900, 350);
 
   return (
     <>
@@ -277,12 +373,12 @@ function HomeContent() {
             <h1
               className={`${styles.title} enter-rise`}
               style={enterAt(1)}
-              aria-label={`Co-founder & Builder — at ${profile.company}`}
+              aria-label={`CTO & Builder — at ${profile.company}`}
             >
-              {/* Line 1 — Co-founder & Builder */}
+              {/* Line 1 — CTO & Builder */}
               <span className={styles.titleLine}>
                 <span aria-hidden className={styles.titleWord}>
-                  {cofounderScramble}
+                  {ctoScramble}
                 </span>
                 {/* The ornamental ampersand */}
                 <span aria-hidden className={`shimmer-yellow ${styles.ampersand}`}>
@@ -317,10 +413,18 @@ function HomeContent() {
               {profile.description}
             </p>
 
+            {/* Current role constellation — the home page's live instrument. */}
+            <div
+              className="enter-rise"
+              style={enterAt(4)}
+            >
+              <RoleSignalDeck onNavigate={onNavClick} />
+            </div>
+
             {/* Ask Jarvis — inline CTA */}
             <p
               className={`${styles.jarvisRow} enter-rise`}
-              style={enterAt(4)}
+              style={enterAt(5)}
             >
               <button
                 type="button"
@@ -340,19 +444,6 @@ function HomeContent() {
                 </span>
               </button>
             </p>
-
-            {/* Keywords */}
-            <ul
-              className={`${styles.keywords} enter-rise`}
-              style={enterAt(5)}
-            >
-              {keywords.map((kw) => (
-                <li key={kw} className={styles.keyword}>
-                  <span className={styles.keywordSlash}>/</span>
-                  {kw}
-                </li>
-              ))}
-            </ul>
 
             {/* Nav */}
             <div

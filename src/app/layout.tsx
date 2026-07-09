@@ -69,6 +69,8 @@ export const metadata: Metadata = {
     profile.nickname,
     profile.title,
     profile.company,
+    "Applause.team",
+    "CTO",
     "Lugui.ai",
     "MokLabs",
     "venture studio",

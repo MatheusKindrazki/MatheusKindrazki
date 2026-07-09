@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
   title: getRouteMeta(PATH).label,
   accent: getRouteMeta(PATH).accent,
   description:
-    "Engineering since 2017 — from platforms used by millions of students at Arco Educação to co-founding MokLabs Venture Studio. Formation, philosophy, and the timeline.",
+    "Engineering since 2017 — from platforms used by millions at Arco Educação to CTO at Applause.team and co-founder at MokLabs. Formation, philosophy, and the timeline.",
 });
 
 export default function SobreLayout({

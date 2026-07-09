@@ -252,11 +252,222 @@
 
 .description {
   max-width: 520px;
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   color: var(--color-kindra-meta-mid);
   font-family: var(--font-body);
   font-size: var(--text-caption);
   line-height: 22px;
+}
+
+/* ── Active role signal deck ───────────────────────────────────────
+   Replaces the old static keyword cloud with an operating console. The
+   structure stays flat and rule-driven: it should read like telemetry, never
+   like a row of product cards. */
+.signalDeck {
+  --active-signal: var(--color-kindra-yellow);
+  position: relative;
+  max-width: 620px;
+  margin: 0 0 18px;
+  border-top: 1px solid var(--color-kindra-rule);
+  border-bottom: 1px solid var(--color-kindra-rule);
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.signalDeck::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 24%;
+  height: 1px;
+  background: var(--active-signal);
+  transform-origin: left;
+  transition: width 700ms var(--ease-smooth), background-color 500ms var(--ease-smooth);
+}
+
+.signalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0 5px;
+  color: var(--color-kindra-meta-low);
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signalHeaderLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-kindra-meta-mid);
+}
+
+.signalLiveDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--active-signal);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--active-signal) 45%, transparent);
+  animation: signal-breathe 2.8s var(--ease-smooth) infinite;
+}
+
+@keyframes signal-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.signalTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid color-mix(in srgb, var(--color-kindra-rule) 72%, transparent);
+}
+
+.signalTab {
+  --signal-accent: var(--color-kindra-yellow);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 54px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding: 8px 10px;
+  border-right: 1px solid color-mix(in srgb, var(--color-kindra-rule) 72%, transparent);
+  color: var(--color-kindra-meta-low);
+  text-align: left;
+  transition: color 280ms var(--ease-smooth), background-color 280ms var(--ease-smooth);
+}
+
+.signalTab:last-child {
+  border-right: 0;
+}
+
+.signalTab::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  height: 1px;
+  background: var(--signal-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 360ms var(--ease-smooth);
+}
+
+.signalTab:hover,
+.signalTab:focus-visible,
+.signalTab[aria-pressed="true"] {
+  color: var(--signal-accent);
+  background: color-mix(in srgb, var(--signal-accent) 7%, transparent);
+  outline: none;
+}
+
+.signalTab:hover::after,
+.signalTab:focus-visible::after,
+.signalTab[aria-pressed="true"]::after {
+  transform: scaleX(1);
+}
+
+.signalIndex {
+  color: color-mix(in srgb, var(--signal-accent) 58%, var(--color-kindra-meta-low));
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.signalRole {
+  max-width: 100%;
+  overflow: hidden;
+  color: currentColor;
+  font-size: 8px;
+  line-height: 1.25;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signalTab strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-kindra-meta-high);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signalReadout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 6px 0;
+  animation: signal-readout-in 420ms var(--ease-smooth) both;
+}
+
+@keyframes signal-readout-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.signalCursor {
+  width: 5px;
+  height: 12px;
+  background: var(--active-signal);
+}
+
+.signalReadout p {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-kindra-meta-mid);
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signalMapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--active-signal);
+  font-size: var(--text-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 280ms var(--ease-smooth), transform 280ms var(--ease-smooth);
+}
+
+.signalMapLink:hover,
+.signalMapLink:focus-visible {
+  color: var(--color-kindra-text-white);
+  transform: translateX(3px);
+  outline: none;
 }
 
 /* ── Ask Jarvis CTA ──────────────────────────────────────────────── */
@@ -323,38 +534,65 @@
   transform: translateX(4px);
 }
 
-/* ── Keywords ────────────────────────────────────────────────────── */
-
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  max-width: 600px;
-  margin: 0 0 40px;
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
-}
-
-.keyword {
-  color: var(--color-kindra-meta-low);
-  font-size: var(--text-data);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: default;
-  transition: color 500ms var(--ease-smooth);
-}
-
-.keyword:hover {
-  color: var(--color-kindra-yellow);
-}
-
-.keywordSlash {
-  margin-right: 4px;
-  color: var(--color-kindra-rule);
-}
-
 .navWrap {
-  margin-top: 8px;
+  margin-top: 2px;
+}
+
+/* Laptop-height cockpit mode. The shell remains a fixed instrument viewport
+   above 820px, so 720–768px-tall screens need a denser vertical score rather
+   than letting the hero collide with the HUD/footer lanes. Width and visual
+   hierarchy stay intact; only the breathing intervals compress. */
+@media (min-width: 821px) and (max-height: 780px) {
+  .greeting {
+    margin-bottom: 10px;
+  }
+
+  .title {
+    margin-bottom: 18px;
+  }
+
+  .titleLine {
+    font-size: clamp(2.5rem, 5.4vw, 4.3rem);
+  }
+
+  .subtitle {
+    margin-top: 6px;
+    font-size: clamp(1rem, 1.8vw, 1.5rem);
+  }
+
+  .headline {
+    margin-bottom: 10px;
+    font-size: 17px;
+    line-height: 25px;
+  }
+
+  .description {
+    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 18px;
+  }
+
+  .signalDeck {
+    margin-bottom: 10px;
+  }
+
+  .signalHeader {
+    padding-block: 5px 4px;
+  }
+
+  .signalTab {
+    min-height: 46px;
+    padding-block: 5px;
+  }
+
+  .signalReadout {
+    min-height: 30px;
+    padding-block: 4px;
+  }
+
+  .jarvisRow {
+    margin-bottom: 12px;
+  }
 }
 
 /* ── Footer ──────────────────────────────────────────────────────── */
@@ -572,6 +810,42 @@
   .titleLine {
     font-size: 2.75rem;
   }
+
+  .signalHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .signalTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signalTab:nth-child(2) {
+    border-right: 0;
+  }
+
+  .signalTab:nth-child(n + 3) {
+    border-top: 1px solid color-mix(in srgb, var(--color-kindra-rule) 72%, transparent);
+  }
+
+  .signalReadout {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    padding-block: 9px;
+  }
+
+  .signalReadout p {
+    overflow: visible;
+    font-size: 11px;
+    line-height: 1.45;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .signalMapLink {
+    grid-column: 2;
+  }
 }
 
 /* ── Touch UX (coarse pointers) ──────────────────────────────────────
@@ -654,7 +928,10 @@
   .nowLink,
   .nowUnderline,
   .jarvisStatus,
-  .keyword {
+  .signalDeck::before,
+  .signalTab,
+  .signalTab::after,
+  .signalMapLink {
     transition: none;
   }
 
@@ -664,7 +941,9 @@
      globals.css.) */
   .footerEnter,
   .bootLine,
-  .bootCursor {
+  .bootCursor,
+  .signalLiveDot,
+  .signalReadout {
     animation: none;
   }
 }

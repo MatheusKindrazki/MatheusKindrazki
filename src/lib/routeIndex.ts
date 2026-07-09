@@ -38,7 +38,7 @@ export interface RouteMeta {
 const ORIGIN: RouteCoord = { ra: -49.27, dec: -25.42 }
 
 const ROUTE_META: Record<string, RouteMeta> = {
-  '/': { index: '01', label: 'co-founder & builder', accent: 'yellow', coord: ORIGIN },
+  '/': { index: '01', label: 'cto & builder', accent: 'yellow', coord: ORIGIN },
   '/projetos': { index: '02', label: 'projects', accent: 'green', coord: { ra: -41.93, dec: -19.58 } },
   '/skills': { index: '03', label: 'skills', accent: 'blue', coord: { ra: -57.66, dec: -31.04 } },
   '/sobre': { index: '04', label: 'about', accent: 'yellow', coord: { ra: -36.87, dec: -12.31 } },

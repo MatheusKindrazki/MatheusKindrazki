@@ -132,7 +132,8 @@ export function websiteSchema(): JsonLdSchema {
 }
 
 /**
- * Person node — the author entity. worksFor (MokLabs), affiliation (CEIA/UFG),
+ * Person node — the author entity. worksFor (Applause + MokLabs),
+ * affiliation (CEIA/UFG),
  * address (Curitiba/BR), and sameAs (all socials) all derive from the profile.
  * It carries a stable @id so the WebSite node can reference it.
  */
@@ -146,10 +147,17 @@ export function personSchema(): JsonLdSchema {
     url: canonicalUrl('/'),
     jobTitle: profile.title,
     description: profile.description,
-    worksFor: {
-      '@type': 'Organization',
-      name: profile.company,
-    },
+    worksFor: [
+      {
+        '@type': 'Organization',
+        name: profile.company,
+        url: profile.companyUrl,
+      },
+      {
+        '@type': 'Organization',
+        name: 'MokLabs Venture Studio',
+      },
+    ],
     affiliation: {
       '@type': 'Organization',
       name: 'CEIA — Centro de Excelência em Inteligência Artificial',

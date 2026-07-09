@@ -1,8 +1,8 @@
 <h1 align="center">Matheus Kindrazki</h1>
 
 <p align="center">
-  <strong>Founder &amp; Principal Engineer of AI</strong><br>
-  I build ventures where bold ideas meet careful engineering.
+  <strong>CTO at Applause.team · Co-founder at MokLabs</strong><br>
+  I build technical organizations and the systems that let them move.
 </p>
 
 <p align="center">
@@ -18,13 +18,15 @@
 
 ## Who I am
 
-I'm an entrepreneur and Principal Engineer who spent nearly a decade architecting platforms used by millions of students — and is now turning that experience into products of my own.
+I'm a CTO, entrepreneur, and engineer who spent nearly a decade architecting platforms used by millions of students — and is now turning that experience into high-agency teams and products of my own.
 
 I think in systems. I like understanding a problem deeply before touching it, then building the kind of solution that holds up: predictable, observable, documented, and automated so the right thing becomes the easy thing. I care about results that are real and durable over things that just look impressive — **mechanisms over magic**.
 
 Off the clock I'm a musician and a DJ, the piano is my favorite instrument, and — turns out — I also know how to make rubber. Creativity doesn't stop at the code.
 
 ## What I'm building
+
+**[Applause.team](https://www.applause.team/)** — CTO. A gamified sales incentive and recognition platform. I lead technology across product architecture, engineering systems, team velocity, reliability, and the operating model that lets the organization scale.
 
 **[MokLabs Venture Studio](https://matheuskindrazki.dev/projetos)** — Co-founder. An AI venture studio that turns sharp ideas into shipped products: shared platform engineering, design systems, and AI infrastructure so each new venture reuses the scaffolding instead of rebuilding it.
 

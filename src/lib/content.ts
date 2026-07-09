@@ -42,16 +42,17 @@ export const profile = {
   name: 'Matheus Kindrazki',
   nickname: 'Kindra',
   age: computeAge(BIRTHDATE),
-  title: 'Co-founder & Builder',
-  company: 'MokLabs Venture Studio',
-  secondaryRole: 'Founding team at Lugui.ai',
+  title: 'CTO & Co-founder',
+  company: 'Applause.team',
+  companyUrl: 'https://www.applause.team/',
+  secondaryRole: 'Co-founder at MokLabs Venture Studio',
   fellowship: 'AI Research Fellow · CEIA (UFG)',
   email: 'matheus@kindrazki.dev',
   location: 'Curitiba, Brazil',
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
-  headline: 'Building ventures where bold ideas meet careful engineering.',
+  headline: 'Building technical organizations — and the systems that let them move.',
   description:
-    'Co-founder at MokLabs Venture Studio, founding team at Lugui.ai (AI infrastructure for the real-estate market), and AI Research Fellow at CEIA (UFG). Nearly six years at Arco Educação — from platform architecture at scale to Principal Engineer of AI, shipping applied-AI systems used by millions of students. Now turning that experience into products of my own. Technology adventurer, pragmatic builder.',
+    'CTO at Applause.team, co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). Nearly a decade turning complex systems into product velocity — from platforms used by millions to AI-native ventures.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
@@ -61,6 +62,45 @@ export const profile = {
     twitter: 'https://x.com/kindraScript',
   },
 }
+
+export interface RoleSignal {
+  role: string
+  organization: string
+  note: string
+  color: ThemeColor
+}
+
+/**
+ * Current leadership / venture constellation. The home page treats these as
+ * live signals instead of a static keyword cloud, so the visitor can inspect
+ * the operating context without reading a résumé paragraph.
+ */
+export const roleSignals: RoleSignal[] = [
+  {
+    role: 'CTO',
+    organization: 'Applause.team',
+    note: 'Leading the technology organization behind a gamified sales incentive and recognition platform.',
+    color: 'red',
+  },
+  {
+    role: 'Co-founder',
+    organization: 'MokLabs',
+    note: 'Building an AI venture studio where shared platforms turn sharp ideas into shipped products.',
+    color: 'yellow',
+  },
+  {
+    role: 'Founding team',
+    organization: 'Lugui.ai',
+    note: 'Designing AI infrastructure and conversational agents for the real-estate market.',
+    color: 'blue',
+  },
+  {
+    role: 'Research fellow',
+    organization: 'CEIA · UFG',
+    note: 'Bridging applied AI research, rigorous evaluation, and systems that reach production.',
+    color: 'green',
+  },
+]
 
 /**
  * Site-wide rot-prone strings, kept in ONE place so the date stamp in the home
@@ -98,6 +138,22 @@ export interface Project {
 }
 
 export const projects: Project[] = [
+  {
+    title: 'Applause.team',
+    description:
+      'CTO at Applause.team, leading the technology organization behind a gamified sales incentive and recognition platform. Turning product direction into reliable systems, faster delivery, and an engineering operating model built to scale.',
+    tags: ['Technology Leadership', 'Platform', 'Applied AI', 'Gamification', 'Sales Tech'],
+    color: 'red',
+    link: 'https://www.applause.team/',
+    year: '2026',
+    status: 'current',
+    signal: 'leadership',
+    role: 'cto',
+    coordinate: 'sales/incentives',
+    nowNote:
+      'Leading technology for a gamified sales incentive and recognition platform — product architecture, engineering systems, and team velocity.',
+    nowStatus: 'in-production',
+  },
   {
     title: 'Jarvis — Personal AI Operating System',
     description:
@@ -346,7 +402,7 @@ export const timeline = [
   { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a Software Engineer at one of Brazil’s largest edtechs — frontend platform work across pedagogical products.' },
   { year: '2021', title: 'Staff Engineer', description: 'Stepped up to Staff: microfrontend architecture with Module Federation, design-system governance, and DX across squads.' },
   { year: '2025', title: 'Principal Engineer of AI', description: 'Consolidated as Principal Engineer of AI at Arco. Last delivery: the AI essay-correction platform for ENEM — led the core pipeline and owned the computer-vision model reading handwritten essays, serving millions of students.' },
-  { year: '2026', title: 'Founder & Research Fellow', description: 'Left Arco after nearly six years. Co-founded MokLabs, joined the founding team at Lugui.ai (AI infrastructure for real-estate agencies, inside WhatsApp), and became an AI Research Fellow at CEIA (UFG).' },
+  { year: '2026', title: 'CTO, founder & research fellow', description: 'Left Arco after nearly six years and became CTO at Applause.team. Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG).' },
 ]
 
 /**

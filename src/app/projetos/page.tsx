@@ -158,6 +158,9 @@ const nodePlacements = computeAtlasPlacements(projects);
 
 function shortTitle(title: string): string {
   return title
+    // The dossier and ledger keep the canonical domain; the orbital node uses
+    // the compact brand mark so its hover label clears the dense lower ring.
+    .replace("Applause.team", "Applause")
     .replace(" — Personal AI Operating System", "")
     .replace(" — AI Research Fellow", "")
     .replace(" Platform", "")
