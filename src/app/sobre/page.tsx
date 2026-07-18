@@ -85,7 +85,8 @@ function SobreContent() {
             className="enter-rise max-w-[540px] font-normal text-[length:var(--text-body)] leading-[1.7] text-[var(--color-kindra-meta-high)]"
             style={{ ...enterAt(2), fontFamily: "var(--font-body)" }}
           >
-            <Mark color="yellow">CTO at Applause.team</Mark>, co-founder at
+            <Mark color="yellow">CTO &amp; partner at Applause.team</Mark>,
+            leading its transformation into an AI-first company. Co-founder at
             MokLabs Venture Studio, founding team at Lugui.ai, and{" "}
             <Mark color="yellow">AI Research Fellow at CEIA (UFG)</Mark>. Nearly
             a decade turning complex systems into product velocity — from

@@ -52,7 +52,7 @@ export const profile = {
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
   headline: 'Building technical organizations — and the systems that let them move.',
   description:
-    'CTO at Applause.team, co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). Nearly a decade turning complex systems into product velocity — from platforms used by millions to AI-native ventures.',
+    'CTO & partner at Applause.team, leading its transformation into an AI-first company. Co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). Nearly a decade turning complex systems into product velocity — from platforms used by millions to AI-native ventures.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
@@ -77,9 +77,9 @@ export interface RoleSignal {
  */
 export const roleSignals: RoleSignal[] = [
   {
-    role: 'CTO',
+    role: 'CTO & Partner',
     organization: 'Applause.team',
-    note: 'Leading the technology organization behind a gamified sales incentive and recognition platform.',
+    note: 'Equity partner leading the company’s transformation into AI-first — shipping high-end AI products into the sales incentive and trade market.',
     color: 'red',
   },
   {
@@ -141,24 +141,24 @@ export const projects: Project[] = [
   {
     title: 'Applause.team',
     description:
-      'CTO at Applause.team, leading the technology organization behind a gamified sales incentive and recognition platform. Turning product direction into reliable systems, faster delivery, and an engineering operating model built to scale.',
-    tags: ['Technology Leadership', 'Platform', 'Applied AI', 'Gamification', 'Sales Tech'],
+      'CTO & partner — with equity and a mandate: transform a gamified sales incentive and recognition platform into an AI-first company. Computer vision reading retail execution at the point of sale, intelligence layers over proprietary incentive data, and products where AI doesn’t just diagnose — it prescribes the next action. Building the engineering organization that ships it at market pace.',
+    tags: ['AI-First', 'Computer Vision', 'Applied AI', 'Technology Leadership', 'Sales Tech'],
     color: 'red',
     link: 'https://www.applause.team/',
     year: '2026',
     status: 'current',
-    signal: 'leadership',
-    role: 'cto',
+    signal: 'ai-first',
+    role: 'cto & partner',
     coordinate: 'sales/incentives',
     nowNote:
-      'Leading technology for a gamified sales incentive and recognition platform — product architecture, engineering systems, and team velocity.',
+      'Leading Applause’s AI-first transformation as CTO & partner — computer vision at the point of sale, intelligence over incentive data, and an engineering org built to ship AI products fast.',
     nowStatus: 'in-production',
   },
   {
     title: 'Jarvis — Personal AI Operating System',
     description:
-      'My personal knowledge graph + AI agent. Connects memory, entities, tasks, and decisions across every project I touch. A living second brain built on MCP servers, vector search, and a growing taxonomy of what I know. It is private by design — my own assistant, not a public chatbot.',
-    tags: ['MCP', 'RAG', 'Vector DB', 'Personal AI', 'Knowledge Graph', 'Claude'],
+      'Not a chatbot — a chief of staff. Jarvis holds a knowledge graph of everything I touch (people, companies, meetings, decisions), briefs me before every event, recalls what I decided months ago, manages tasks and reminders, and plugs into my coding sessions via MCP to operate my projects alongside me. Built on MCP servers, vector search, and a growing taxonomy of what I know — private by design.',
+    tags: ['AI Agents', 'MCP', 'RAG', 'Knowledge Graph', 'Personal AI', 'Claude'],
     color: 'yellow',
     year: '2024-2026',
     status: 'current',
@@ -166,7 +166,7 @@ export const projects: Project[] = [
     role: 'personal ai os',
     coordinate: 'rag/mcp',
     nowNote:
-      'My personal knowledge graph + AI agent — a private second brain on MCP servers and vector search.',
+      'My personal AI operating system — a chief of staff that briefs my meetings, recalls my decisions, and operates my projects with me via MCP.',
     nowStatus: 'in-production',
   },
   {
@@ -402,7 +402,7 @@ export const timeline = [
   { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a Software Engineer at one of Brazil’s largest edtechs — frontend platform work across pedagogical products.' },
   { year: '2021', title: 'Staff Engineer', description: 'Stepped up to Staff: microfrontend architecture with Module Federation, design-system governance, and DX across squads.' },
   { year: '2025', title: 'Principal Engineer of AI', description: 'Consolidated as Principal Engineer of AI at Arco. Last delivery: the AI essay-correction platform for ENEM — led the core pipeline and owned the computer-vision model reading handwritten essays, serving millions of students.' },
-  { year: '2026', title: 'CTO, founder & research fellow', description: 'Left Arco after nearly six years and became CTO at Applause.team. Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG).' },
+  { year: '2026', title: 'CTO, partner & research fellow', description: 'Left Arco after nearly six years and became CTO & partner at Applause.team — with equity and a mandate to make the company AI-first. Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG).' },
 ]
 
 /**

@@ -225,7 +225,7 @@ export default function Home() {
   return (
     <PageShell
       hudRole="online · leading"
-      stripText="◈ MK · CTO @ APPLAUSE.TEAM · CO-FOUNDER @ MOKLABS"
+      stripText="◈ MK · CTO & PARTNER @ APPLAUSE.TEAM · CO-FOUNDER @ MOKLABS"
       background={({ exploding, onExplodeComplete }) => (
         <>
           <div
