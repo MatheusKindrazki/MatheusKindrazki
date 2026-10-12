@@ -11,6 +11,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import Link from 'next/link'
 import { useJarvis } from './JarvisProvider'
 import {
   useJarvisChat,
@@ -24,6 +25,9 @@ import styles from './JarvisChat.module.css'
 // /api/ask). No starter prompts, since nothing will be answered. Restore these
 // only once a hardened public read-only mode exists.
 const SUGGESTIONS: string[] = []
+// Deliberately an explainer, not a publicly writable chat. Enabling a public
+// assistant is a separate backend/security decision, not a copy change.
+const VISITOR_CHAT_AVAILABLE = false
 
 function useIsNarrow(breakpoint = 640): boolean {
   const [narrow, setNarrow] = useState(false)
@@ -177,6 +181,8 @@ export default function JarvisChat() {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLElement | null>(null)
+  const closeRef = useRef<HTMLButtonElement | null>(null)
   const reduceMotion = useReducedMotion()
   const isNarrow = useIsNarrow(640)
 
@@ -196,16 +202,31 @@ export default function JarvisChat() {
 
   useEffect(() => {
     if (!open) return
-    const t = window.setTimeout(() => {
-      textareaRef.current?.focus()
-    }, 320)
-    return () => window.clearTimeout(t)
+    const previousFocus = document.activeElement as HTMLElement | null
+    const frame = window.requestAnimationFrame(() => closeRef.current?.focus())
+    return () => {
+      window.cancelAnimationFrame(frame)
+      previousFocus?.focus()
+    }
   }, [open])
 
   useEffect(() => {
     if (!open) return
     const handler = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
+      if (e.key !== 'Tab') return
+      const targets = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), [tabindex="0"]',
+      ) ?? []).filter((el) => el.getClientRects().length > 0)
+      const first = targets[0]
+      const last = targets[targets.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last?.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first?.focus()
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -214,7 +235,7 @@ export default function JarvisChat() {
   const submit = useCallback(
     (text: string) => {
       const trimmed = text.trim()
-      if (!trimmed || loading) return
+      if (!VISITOR_CHAT_AVAILABLE || !trimmed || loading) return
       setInput('')
       void send(trimmed)
     },
@@ -283,7 +304,9 @@ export default function JarvisChat() {
           <motion.aside
             key="jarvis-panel"
             role="dialog"
-            aria-label="Jarvis chat"
+            ref={panelRef}
+            id="jarvis-panel"
+            aria-label="About Jarvis, private assistant"
             aria-modal="true"
             initial={panelInitial}
             animate={panelAnimate}
@@ -315,6 +338,7 @@ export default function JarvisChat() {
                 <button
                   type="button"
                   data-cursor="link"
+                  ref={closeRef}
                   onClick={() => setOpen(false)}
                   aria-label="Close Jarvis"
                   className={`${styles.closeNudge} text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] transition-colors duration-500 hover:text-white`}
@@ -382,6 +406,7 @@ export default function JarvisChat() {
                 aria-hidden
                 className={`${styles.inputDivider} h-px w-full bg-[var(--color-kindra-rule)]`}
               />
+              {VISITOR_CHAT_AVAILABLE ? (
               <form onSubmit={handleSubmit}>
                 <div className="flex items-start gap-4">
                   <span
@@ -416,11 +441,21 @@ export default function JarvisChat() {
                   </button>
                 </div>
               </form>
+              ) : (
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm leading-6 text-[var(--color-kindra-text-white)]">
+                  <Link href="/contato/" onClick={() => setOpen(false)}
+                    className="underline underline-offset-4">Talk to Matheus ↗</Link>
+                  <Link href="/projetos/?project=jarvis" onClick={() => setOpen(false)}
+                    className="underline underline-offset-4">Read the case notes →</Link>
+                </div>
+              )}
               <p
-                className={`${styles.helperGap} text-[9px] uppercase tracking-[0.3em] text-[#333]`}
+                className={`${styles.helperGap} text-[9px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-mid)]`}
                 style={{ fontFamily: 'var(--font-body)' }}
               >
-                esc to close · enter to send · shift+enter for new line
+                {VISITOR_CHAT_AVAILABLE
+                  ? 'esc to close · enter to send · shift+enter for new line'
+                  : 'private system · no public chat · esc to close'}
               </p>
             </div>
           </motion.aside>

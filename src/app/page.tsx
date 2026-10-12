@@ -225,7 +225,7 @@ export default function Home() {
   return (
     <PageShell
       hudRole="online · leading"
-      stripText="◈ MK · CTO & PARTNER @ APPLAUSE.TEAM · CO-FOUNDER @ MOKLABS"
+      stripText="◈ MK · CTO @ APPLAUSE.TEAM · CO-FOUNDER @ MOKLABS"
       background={({ exploding, onExplodeComplete }) => (
         <>
           <div
@@ -432,10 +432,10 @@ function HomeContent() {
                 onClick={() => setJarvisOpen(true)}
                 className={styles.jarvisButton}
               >
-                <span>don&apos;t believe me?</span>
+                <span>behind the build</span>
                 <span className={styles.jarvisLink}>
                   <span className={styles.jarvisUnderlineWrap}>
-                    &mdash; ask jarvis
+                    &mdash; meet jarvis
                     <span aria-hidden className={styles.jarvisUnderline} />
                   </span>
                   <span aria-hidden className={styles.jarvisArrow}>

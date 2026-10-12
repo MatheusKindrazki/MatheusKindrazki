@@ -102,7 +102,7 @@ function InstrumentCluster() {
         <span className="inline-flex flex-wrap items-baseline gap-x-6 gap-y-2">
           <span>
             <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
-            updated{" "}
+            content commit{" "}
             <span className="text-[var(--color-kindra-meta-mid)]">
               {paddedDays}
             </span>{" "}
@@ -110,6 +110,11 @@ function InstrumentCluster() {
           </span>
         </span>
       </div>
+
+      <p className="mt-4 max-w-[560px] text-xs normal-case tracking-normal leading-relaxed text-[var(--color-kindra-meta-mid)]">
+        Stages are project notes, not live deployment checks. The date records
+        the latest commit to the shared site content.
+      </p>
 
       <div
         aria-hidden="true"

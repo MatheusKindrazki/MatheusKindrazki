@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
   title: getRouteMeta(PATH).label,
   accent: getRouteMeta(PATH).accent,
   description:
-    "The operating stack — AI & RAG systems, platform engineering, frontend architecture, and the tools Matheus Kindrazki works with daily.",
+    "Tools and practices behind platform engineering, product development, and applied AI. How Matheus Kindrazki approaches the work.",
 });
 
 export default function SkillsLayout({

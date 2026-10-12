@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>CTO at Applause.team · Co-founder at MokLabs</strong><br>
-  I build technical organizations and the systems that let them move.
+  I build products, test ideas, and put AI to work.
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 
 ## Who I am
 
-I'm a CTO, entrepreneur, and engineer who spent nearly a decade architecting platforms used by millions of students — and is now turning that experience into high-agency teams and products of my own.
+I'm a CTO, entrepreneur, and engineer working across technology leadership, product engineering, and applied AI.
 
 I think in systems. I like understanding a problem deeply before touching it, then building the kind of solution that holds up: predictable, observable, documented, and automated so the right thing becomes the easy thing. I care about results that are real and durable over things that just look impressive — **mechanisms over magic**.
 
@@ -34,7 +34,7 @@ Off the clock I'm a musician and a DJ, the piano is my favorite instrument, and 
 
 **CEIA (UFG)** — AI Research Fellow. Applied research at the frontier of LLMs and intelligent systems, bridging academic rigor and shipped products.
 
-**Jarvis** — My personal knowledge graph + AI agent. A private second brain on MCP servers and vector search, connecting memory, entities, tasks, and decisions across every project I touch.
+**Jarvis** — My personal knowledge graph + AI agent. A private assistant on MCP servers and vector search, connecting knowledge, tasks, and project tools with permissions and approval boundaries. The portfolio presents it, but public chat is unavailable.
 
 ### Own products
 
@@ -50,7 +50,7 @@ Off the clock I'm a musician and a DJ, the piano is my favorite instrument, and 
 
 Nearly six years at one of Brazil's largest edtechs. I joined as a Software Engineer, stepped up to Staff with microfrontend architecture, and consolidated as **Principal Engineer of AI**.
 
-- Architected the microfrontend ecosystem with Module Federation, enabling independent squad velocity while keeping system coherence across product surfaces reaching millions of students.
+- Worked on the microfrontend ecosystem with Module Federation, shared navigation, design-system integration, and developer experience across product teams.
 - Led design-system integration and governance, plus DX — canonical documentation, RFC/ADR processes, CI/CD standardization.
 - **Last delivery:** the AI essay-correction platform for the ENEM exam. I led the core pipeline (ingestion, classification, analysis) and owned the **computer-vision model that reads handwritten essays** (OCR/HTR) over a queued, real-time correction system feeding teachers.
 - Seeded **Café com Código**, a recurring engineering ritual for knowledge sharing and technical culture.

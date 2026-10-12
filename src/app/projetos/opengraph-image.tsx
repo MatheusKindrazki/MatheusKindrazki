@@ -4,7 +4,7 @@ import { OG_CONTENT_TYPE, OG_SIZE, renderOgCard } from "@/lib/og";
 const PATH = "/projetos";
 const meta = getRouteMeta(PATH);
 const description =
-  "A live atlas of current ventures and past systems — AI products, platforms, and developer tools.";
+  "An interactive atlas of current and past work, with selected case notes and public references.";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;

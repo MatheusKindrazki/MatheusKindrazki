@@ -4,7 +4,7 @@ import { OG_CONTENT_TYPE, OG_SIZE, renderOgCard } from "@/lib/og";
 const PATH = "/sobre";
 const meta = getRouteMeta(PATH);
 const description =
-  "Engineering since 2017 — from platforms used by millions of students to co-founding a venture studio.";
+  "Technology, products, and applied AI. The journey, working principles, and selected writing.";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;

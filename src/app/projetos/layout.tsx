@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
   title: getRouteMeta(PATH).label,
   accent: getRouteMeta(PATH).accent,
   description:
-    "A live atlas of current ventures and past systems — AI products, platforms, and developer tools Matheus Kindrazki has been building since 2017.",
+    "An interactive atlas of current and past work: ventures, AI systems, platforms, and developer tools, with selected case notes and public references.",
 });
 
 export default function ProjetosLayout({

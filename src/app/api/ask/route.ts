@@ -53,6 +53,10 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'invalid json' }, { status: 400 })
   }
 
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    return Response.json({ error: 'invalid request body' }, { status: 400 })
+  }
+
   const message = typeof body.message === 'string' ? body.message.trim() : ''
   if (!message) {
     return Response.json({ error: 'message is required' }, { status: 400 })

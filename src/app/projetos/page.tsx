@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import { FiArrowUpRight } from "react-icons/fi";
 import Mark from "@/components/ui/Mark";
 import PageNav from "@/components/ui/PageNav";
@@ -15,9 +16,9 @@ import { stagger, fadeUp, swapUp, enterAt } from "@/lib/motion";
 import styles from "./projects.module.css";
 
 const statusCopy: Record<ProjectStatus, string> = {
-  current: "shipping",
-  past: "deployed",
-  side: "signal",
+  current: "current work",
+  past: "past work",
+  side: "side project",
 };
 
 /**
@@ -176,6 +177,16 @@ function truncateDescription(description: string): string {
   return `${description.slice(0, 167).trim()}...`;
 }
 
+function ProjectQuery({ onSelect }: { onSelect: (index: number) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const id = searchParams.get("project");
+    const index = projects.findIndex((project) => project.id === id);
+    onSelect(index >= 0 ? index : 0);
+  }, [searchParams, onSelect]);
+  return null;
+}
+
 export default function ProjetosPage() {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -195,6 +206,11 @@ export default function ProjetosPage() {
       persistentBackground
       background={() => <div aria-hidden className={styles.backdrop} />}
     >
+      {/* Only query synchronization waits for the router; the atlas remains
+          SSR-visible, including on a direct project deep link. */}
+      <Suspense fallback={null}>
+        <ProjectQuery onSelect={setActiveIndex} />
+      </Suspense>
       <ProjetosContent
         activeIndex={activeIndex}
         activeProject={activeProject}
@@ -237,7 +253,8 @@ function ProjetosContent({
 
               <p className={styles.deck}>
                 Ventures, AI systems, education platforms, and small sharp
-                tools arranged as a living build map.
+                tools. Selected case notes separate the work from the public
+                references.
               </p>
 
               <div className={styles.navWrap}>
@@ -304,7 +321,7 @@ function ProjetosContent({
               <motion.div variants={fadeUp} className={styles.ledgerHeader}>
                 <Eyebrow label="build ledger" accent={activeAccent} />
                 <h2 className={styles.ledgerTitle}>
-                  Not a gallery. A map of systems that shipped.
+                  Selected work. The role, the approach, and what’s public.
                 </h2>
               </motion.div>
 
@@ -344,7 +361,7 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
 
   const ephemeris: [label: string, value: string][] = [
     ["epoch", year],
-    ["status", statusCopy[status]],
+    ["focus", statusCopy[status]],
     ["signal", signal],
     ["coord", coordinate],
     ["role", role],
@@ -371,7 +388,7 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
           {ephemeris.map(([label, value]) => (
             <div key={label} className={styles.ephemerisItem}>
               <dt>{label}</dt>
-              <dd className={label === "status" ? styles.ephemerisStatus : undefined}>
+              <dd className={label === "focus" ? styles.ephemerisStatus : undefined}>
                 {value}
               </dd>
             </div>
@@ -379,6 +396,29 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
         </dl>
 
         <p className={styles.dossierDescription}>{description}</p>
+
+        {project.caseNote && (
+          <div className={styles.caseNote} aria-label="Case notes">
+            <dl className={styles.caseFields}>
+              {[
+                ["problem", project.caseNote.problem],
+                ["approach", project.caseNote.approach],
+                ["public evidence", project.caseNote.evidence],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {project.caseNote.references?.map((reference) => (
+              <a key={reference.url} href={reference.url} target="_blank"
+                rel="noopener noreferrer" className={styles.caseReference}>
+                {reference.label}<FiArrowUpRight aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        )}
 
         <div className={styles.tags}>
           {tags.slice(0, 6).map((tag) => (

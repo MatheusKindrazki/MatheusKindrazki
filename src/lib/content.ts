@@ -3,8 +3,7 @@ import type { ThemeColor } from '@/lib/colors'
 // ──────────────────────────────────────────────────────────────────────
 // Honest-by-construction dates. Nothing below is hand-edited: the "last
 // updated" stamp is injected at build time from the last git commit that
-// touched THIS file (see next.config.ts), and the age is computed from a
-// birthdate instead of a number that silently rots.
+// touched THIS file (see next.config.ts). It is not a live project-state check.
 // ──────────────────────────────────────────────────────────────────────
 
 /** Mirrors the fallback in next.config.ts — used only when git history is unavailable. */
@@ -22,27 +21,10 @@ function formatMonthYear(isoDate: string): string {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
 }
 
-/**
- * Only the birth YEAR is load-bearing: the site published "29" in feb 2026,
- * which pins the year to 1996; the day is a placeholder the owner can correct.
- * Computing from a date means the number can never go stale again.
- */
-export const BIRTHDATE = new Date('1996-07-01T00:00:00Z')
-
-export function computeAge(birthdate: Date, today: Date = new Date()): number {
-  let age = today.getUTCFullYear() - birthdate.getUTCFullYear()
-  const monthDelta = today.getUTCMonth() - birthdate.getUTCMonth()
-  if (monthDelta < 0 || (monthDelta === 0 && today.getUTCDate() < birthdate.getUTCDate())) {
-    age -= 1
-  }
-  return age
-}
-
 export const profile = {
   name: 'Matheus Kindrazki',
   nickname: 'Kindra',
-  age: computeAge(BIRTHDATE),
-  title: 'CTO & Co-founder',
+  title: 'CTO at Applause.team',
   company: 'Applause.team',
   companyUrl: 'https://www.applause.team/',
   secondaryRole: 'Co-founder at MokLabs Venture Studio',
@@ -50,9 +32,9 @@ export const profile = {
   email: 'matheus@kindrazki.dev',
   location: 'Curitiba, Brazil',
   bio: 'Hey — my name is Matheus, but you can call me Kindra =)',
-  headline: 'Building technical organizations — and the systems that let them move.',
+  headline: 'Building products, testing ideas, and putting AI to work.',
   description:
-    'CTO & partner at Applause.team, leading its transformation into an AI-first company. Co-founder at MokLabs Venture Studio, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). Nearly a decade turning complex systems into product velocity — from platforms used by millions to AI-native ventures.',
+    'CTO at Applause.team. Co-founder at MokLabs, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). I build products, test ideas, and use AI in real work.',
   calLink: 'https://cal.com/matheuskindrazki',
   social: {
     github: 'https://github.com/MatheusKindrazki',
@@ -77,9 +59,9 @@ export interface RoleSignal {
  */
 export const roleSignals: RoleSignal[] = [
   {
-    role: 'CTO & Partner',
+    role: 'CTO',
     organization: 'Applause.team',
-    note: 'Equity partner leading the company’s transformation into AI-first — shipping high-end AI products into the sales incentive and trade market.',
+    note: 'Leading technology and engineering for sales incentives, recognition, and applied AI.',
     color: 'red',
   },
   {
@@ -119,7 +101,16 @@ export type ProjectStatus = 'current' | 'past' | 'side'
 /** Maturity chip shown on /now's Building column. */
 export type NowStatus = 'building' | 'alpha' | 'beta' | 'in-progress' | 'in-production'
 
+export interface ProjectCaseNote {
+  problem: string
+  approach: string
+  evidence: string
+  references?: { label: string; url: string }[]
+}
+
 export interface Project {
+  /** Stable URL identifier; independent of the display name. */
+  id: string
   title: string
   description: string
   tags: string[]
@@ -135,29 +126,39 @@ export interface Project {
   nowNote?: string
   /** /now maturity chip. Defaults to 'building'. */
   nowStatus?: NowStatus
+  /** Selected, evidence-bounded notes; never a synthetic performance report. */
+  caseNote?: ProjectCaseNote
 }
 
 export const projects: Project[] = [
   {
+    id: 'applause',
     title: 'Applause.team',
     description:
-      'CTO & partner — with equity and a mandate: transform a gamified sales incentive and recognition platform into an AI-first company. Computer vision reading retail execution at the point of sale, intelligence layers over proprietary incentive data, and products where AI doesn’t just diagnose — it prescribes the next action. Building the engineering organization that ships it at market pace.',
+      'CTO at Applause.team, working across technology leadership, product engineering, and applied AI for sales incentives and retail execution.',
     tags: ['AI-First', 'Computer Vision', 'Applied AI', 'Technology Leadership', 'Sales Tech'],
     color: 'red',
     link: 'https://www.applause.team/',
     year: '2026',
     status: 'current',
     signal: 'ai-first',
-    role: 'cto & partner',
+    role: 'cto',
     coordinate: 'sales/incentives',
     nowNote:
-      'Leading Applause’s AI-first transformation as CTO & partner — computer vision at the point of sale, intelligence over incentive data, and an engineering org built to ship AI products fast.',
+      'Technology and engineering at Applause.team, with an AI-first product direction.',
     nowStatus: 'in-production',
+    caseNote: {
+      problem: 'Connect sales incentives, recognition, and retail execution to useful product decisions.',
+      approach: 'Work across technology leadership, product engineering, and applied AI rather than treating AI as an isolated feature.',
+      evidence: 'The company site shows the product context. Internal delivery details and client outcomes are not included in this case note.',
+      references: [{ label: 'Company & product context', url: 'https://www.applause.team/' }],
+    },
   },
   {
+    id: 'jarvis',
     title: 'Jarvis — Personal AI Operating System',
     description:
-      'Not a chatbot — a chief of staff. Jarvis holds a knowledge graph of everything I touch (people, companies, meetings, decisions), briefs me before every event, recalls what I decided months ago, manages tasks and reminders, and plugs into my coding sessions via MCP to operate my projects alongside me. Built on MCP servers, vector search, and a growing taxonomy of what I know — private by design.',
+      'My personal assistant connects knowledge, tasks, and project tools through MCP. I use it for recall and coordination, with actions bounded by permissions and approvals. It is a private system, not a public chatbot.',
     tags: ['AI Agents', 'MCP', 'RAG', 'Knowledge Graph', 'Personal AI', 'Claude'],
     color: 'yellow',
     year: '2024-2026',
@@ -166,10 +167,16 @@ export const projects: Project[] = [
     role: 'personal ai os',
     coordinate: 'rag/mcp',
     nowNote:
-      'My personal AI operating system — a chief of staff that briefs my meetings, recalls my decisions, and operates my projects with me via MCP.',
+      'A private assistant for knowledge, tasks, and project coordination through MCP. Offline for site visitors.',
     nowStatus: 'in-production',
+    caseNote: {
+      problem: 'Keep useful context and decisions accessible across conversations and projects.',
+      approach: 'Connect retrieval, a knowledge graph, and project tools through MCP, with explicit permissions and approval boundaries for actions.',
+      evidence: 'This portfolio presents the assistant but does not offer a public chat. Personal data and private workflows are not shown here.',
+    },
   },
   {
+    id: 'moklabs',
     title: 'MokLabs Venture Studio',
     description:
       'Co-founded AI venture studio turning sharp ideas into shipped products. Shared platform engineering, design systems, and AI infrastructure power a portfolio of ventures — each new product reuses the scaffolding instead of rebuilding it.',
@@ -185,6 +192,7 @@ export const projects: Project[] = [
     nowStatus: 'building',
   },
   {
+    id: 'lugui',
     title: 'Lugui.ai',
     description:
       'Founding team member building AI infrastructure for the real-estate market — "the intelligence of your agency, inside WhatsApp." Conversational agents and RAG pipelines that let realtors qualify leads, answer about listings, and close deals where their clients already are. Architecting the frontend, the agent/RAG stack, and the DX that lets a small team ship like a large one.',
@@ -200,6 +208,7 @@ export const projects: Project[] = [
     nowStatus: 'alpha',
   },
   {
+    id: 'ceia',
     title: 'CEIA — AI Research Fellow',
     description:
       'AI Research Fellow at the Centro de Excelência em Inteligência Artificial (CEIA / UFG) — applied research at the frontier of LLMs and intelligent systems, bridging academic rigor and shipped products.',
@@ -215,6 +224,7 @@ export const projects: Project[] = [
     nowStatus: 'in-progress',
   },
   {
+    id: 'synk',
     title: 'Synk',
     description:
       'A real code editor for the iPad with on-device AI. Native SwiftUI + Runestone with TreeSitter syntax, cloud AI (Anthropic) plus an opt-in local model via MLC-LLM, and three modes: AI-assisted editing, a browser-based playground, and a remote workspace. The iPad becomes a first-class dev machine.',
@@ -230,6 +240,7 @@ export const projects: Project[] = [
     nowStatus: 'in-progress',
   },
   {
+    id: 'argus',
     title: 'Argus',
     description:
       'Privacy-first, camera-agnostic security platform with AI vision. Connects to any ONVIF/RTSP camera or webcam and analyzes frames through Gemini/OpenRouter for motion and event detection — open-source and low-cost, with local SQLite persistence and an optional Tauri desktop build. No rip-and-replace.',
@@ -245,6 +256,7 @@ export const projects: Project[] = [
     nowStatus: 'in-progress',
   },
   {
+    id: 'kindraw',
     title: 'Kindraw',
     description:
       'A warm, playful workspace built on top of Excalidraw — authenticated boards, a folder tree, markdown docs with Mermaid, and real-time collaboration. Coral-forward identity (Fraunces + Bricolage Grotesque) on a Cloudflare-first stack: Workers, D1, R2, GitHub login.',
@@ -260,6 +272,7 @@ export const projects: Project[] = [
     nowStatus: 'in-progress',
   },
   {
+    id: 'remindr',
     title: 'Remindr.AI',
     description:
       'Privacy-first desktop app for intelligent transcription, diarization, and daily memory. Built for people who think while they talk — local-first capture (Tauri + Rust + Whisper) with a cloud knowledge layer on pgvector.',
@@ -273,6 +286,7 @@ export const projects: Project[] = [
     coordinate: 'tauri/whisper',
   },
   {
+    id: 'lofiever',
     title: 'Lofiever',
     description:
       'A 24/7 lo-fi streaming app with an AI DJ that curates the playlist and talks back in chat. Next.js 15 + a custom Socket.IO server stream music continuously, with an Expo tvOS client for the living-room build — ambient focus, on tap.',
@@ -285,6 +299,7 @@ export const projects: Project[] = [
     coordinate: 'audio/focus',
   },
   {
+    id: 'fastshared',
     title: 'FastShared',
     description:
       'Ephemeral file sharing as a single gesture: pick a file, set how long the link lives, get a URL that vanishes on its own — every file auto-deleted by design. Apple-native (iOS Share Extension + macOS menu bar) on a Cloudflare Workers / R2 backend, plus a CLI pitched as a file-handoff primitive for AI agents.',
@@ -298,6 +313,7 @@ export const projects: Project[] = [
     coordinate: 'share/vanish',
   },
   {
+    id: 'lavra',
     title: 'Lavra',
     description:
       'A native macOS app that transcribes audio to clean, formatted text fully offline on Apple Silicon — WhisperKit / Apple SpeechAnalyzer for speech-to-text and Apple Foundation Models for on-device refinement and summaries. Strong Portuguese-BR support, handles WhatsApp opus audio natively; nothing leaves the device.',
@@ -310,6 +326,7 @@ export const projects: Project[] = [
     coordinate: 'audio/text',
   },
   {
+    id: 'screenshot-detox',
     title: 'ScreenshotDetox',
     description:
       'Turns your screenshot pile into an inbox of decisions — categorize, triage, and declutter your camera roll entirely on-device, no backend or account. Native iOS (SwiftUI + SwiftData) with Apple Vision OCR and a local classifier that suggests intent (shopping / event / receipt / task) — AI whispers, you decide.',
@@ -322,18 +339,26 @@ export const projects: Project[] = [
     coordinate: 'shots/inbox',
   },
   {
+    id: 'arco',
     title: 'Arco Educação Platform',
     description:
-      'Joined in 2020 and grew into Principal Engineer of AI over nearly six years. Architected the microfrontend ecosystem with Module Federation and led design-system integration and governance across product surfaces reaching millions of students — then pivoted the same rigor into applied AI.',
+      'Frontend platform and applied AI work at Arco Educação: microfrontend architecture, design-system integration, and developer experience across product teams.',
     tags: ['React', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design System'],
     color: 'green',
     year: '2020-2026',
     status: 'past',
     signal: 'scale',
     role: 'principal engineer · ai',
-    coordinate: 'millions/students',
+    coordinate: 'education/platform',
+    caseNote: {
+      problem: 'Keep navigation coherent when independently built frontend modules share a product.',
+      approach: 'Shared routing, coordinated navigation, error handling, lazy loading, and monitoring. I describe these decisions in my published architecture notes.',
+      evidence: 'The article documents an architectural approach. It is not a student-reach metric or a production rollout report.',
+      references: [{ label: 'Read the architecture notes', url: 'https://blog.arcotech.io/como-gerenciar-rotas-compartilhadas-em-aplica%C3%A7%C3%B5es-microfrontends-1355aeb62a88' }],
+    },
   },
   {
+    id: 'essay-correction',
     title: 'Essay Correction with AI',
     description:
       'My last delivery at Arco as Principal Engineer of AI: the AI essay-correction platform for the ENEM exam. I led the core pipeline (ingestion, classification, analysis) and owned the computer-vision model that reads handwritten essays — OCR/HTR over a queued, real-time correction system feeding teachers.',
@@ -346,6 +371,7 @@ export const projects: Project[] = [
     coordinate: 'essay/vision',
   },
   {
+    id: 'cafe-com-codigo',
     title: 'Café com Código',
     description:
       'Recurring engineering community ritual for knowledge sharing and technical culture building, originally seeded at Arco.',
@@ -362,26 +388,31 @@ export const projects: Project[] = [
 export const skillCategories = [
   {
     title: 'Frontend Architecture & Platform',
+    focus: 'Shared structure, navigation, and design decisions across product surfaces.',
     color: 'blue' as const,
     skills: ['React', 'Next.js', 'TypeScript', 'Module Federation', 'Micro Frontends', 'Design Systems', 'Monorepo', 'Component Libraries', 'Build Optimization', 'Runtime Performance'],
   },
   {
     title: 'Applied AI & Agents',
+    focus: 'Retrieval, models, and tools with explicit evaluation and action boundaries.',
     color: 'yellow' as const,
     skills: ['LangChain', 'LangGraph', 'RAG Orchestration', 'MCP Servers', 'Vector DBs', 'On-device AI', 'OCR/HTR', 'Langfuse', 'Semantic Search', 'Dataset Engineering'],
   },
   {
     title: 'Developer Experience',
+    focus: 'Make engineering work easier to understand, automate, and maintain.',
     color: 'green' as const,
     skills: ['CI/CD Pipelines', 'Tooling & Automation', 'RFC/ADR/DCP', 'WikiJS', 'Quality Gates', 'Standardization'],
   },
   {
     title: 'Full-Stack & Native',
+    focus: 'Choose the interface and runtime around the actual product workflow.',
     color: 'red' as const,
     skills: ['Node.js', 'Python', 'PHP', 'Rust', 'SwiftUI', 'Tauri', 'GraphQL', 'REST APIs', 'PostgreSQL'],
   },
   {
     title: 'Cloud & Infrastructure',
+    focus: 'Keep deployment, data, and operations observable and repeatable.',
     color: 'blue' as const,
     skills: ['AWS', 'Azure', 'Cloudflare', 'Docker', 'Coolify', 'Supabase', 'Edge Functions', 'n8n', 'Observability'],
   },
@@ -401,8 +432,8 @@ export const timeline = [
   { year: '2019', title: 'Engineering Manager', description: 'Led a small team at Mentores Digital: custom client platforms, APIs (Express/Adonis), React & React Native apps, ERP integrations.' },
   { year: '2020', title: 'Joined Arco Educação', description: 'Came in as a Software Engineer at one of Brazil’s largest edtechs — frontend platform work across pedagogical products.' },
   { year: '2021', title: 'Staff Engineer', description: 'Stepped up to Staff: microfrontend architecture with Module Federation, design-system governance, and DX across squads.' },
-  { year: '2025', title: 'Principal Engineer of AI', description: 'Consolidated as Principal Engineer of AI at Arco. Last delivery: the AI essay-correction platform for ENEM — led the core pipeline and owned the computer-vision model reading handwritten essays, serving millions of students.' },
-  { year: '2026', title: 'CTO, partner & research fellow', description: 'Left Arco after nearly six years and became CTO & partner at Applause.team — with equity and a mandate to make the company AI-first. Co-founded MokLabs, joined the founding team at Lugui.ai, and became an AI Research Fellow at CEIA (UFG).' },
+  { year: '2025', title: 'Principal Engineer of AI', description: 'Principal Engineer of AI at Arco. Worked on the AI essay-correction platform for ENEM, including the core pipeline and computer vision for handwritten essays.' },
+  { year: '2026', title: 'CTO & research fellow', description: 'CTO at Applause.team, co-founder at MokLabs, founding team at Lugui.ai, and AI Research Fellow at CEIA (UFG). Building products and using applied AI across these contexts.' },
 ]
 
 /**

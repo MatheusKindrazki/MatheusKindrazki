@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
   title: getRouteMeta(PATH).label,
   accent: getRouteMeta(PATH).accent,
   description:
-    "What Matheus Kindrazki is building, learning, reading — and deliberately not doing — right now. Derived from live project data.",
+    "What Matheus Kindrazki is building, learning, reading, and deliberately not doing. Project notes derived from the shared site content.",
 });
 
 export default function NowLayout({

@@ -22,7 +22,7 @@ import { profile } from "@/lib/content";
  * browsers but falls back to TTF (`format('truetype')`) for a legacy UA — so we
  * spoof `Mozilla/4.0`, scrape the .ttf URL out of the returned @font-face, and
  * hand the bytes to ImageResponse. This gives us the *real* Fraunces display
- * serif and IBM Plex Mono (the site's actual type system) inside the card,
+ * serif, Instrument Sans body and IBM Plex Mono telemetry inside the card,
  * rather than a Satori system-serif fallback. Fonts are cached
  * (`force-cache`) so repeated builds/requests don't re-hit Google.
  * ──────────────────────────────────────────────────────────────────────────
@@ -53,21 +53,21 @@ async function loadGoogleFont(family: string, weight: number): Promise<ArrayBuff
   return fetch(url, { cache: "force-cache" }).then((res) => res.arrayBuffer());
 }
 
-/** Font set every card shares — Fraunces display + IBM Plex Mono telemetry. */
+/** Match root layout: Fraunces display, Instrument Sans body, IBM Plex Mono HUD. */
 type OgFont = NonNullable<
   ConstructorParameters<typeof ImageResponse>[1]
 >["fonts"];
 
 async function loadCardFonts(): Promise<OgFont> {
-  const [fraunces, frauncesBold, mono] = await Promise.all([
+  const [fraunces, body, mono] = await Promise.all([
     loadGoogleFont("Fraunces", 600),
-    loadGoogleFont("Fraunces", 300),
+    loadGoogleFont("Instrument Sans", 400),
     loadGoogleFont("IBM Plex Mono", 500),
   ]);
 
   return [
     { name: "Fraunces", data: fraunces, weight: 600, style: "normal" },
-    { name: "Fraunces", data: frauncesBold, weight: 300, style: "normal" },
+    { name: "Instrument Sans", data: body, weight: 400, style: "normal" },
     { name: "IBM Plex Mono", data: mono, weight: 500, style: "normal" },
   ];
 }
@@ -83,12 +83,13 @@ function withAlpha(hex: string, alpha: number): string {
 const BG = "#000000";
 const CREAM = "#ece5d8";
 const WHITE = "#ffffff";
-const MUTED = "rgba(236, 229, 216, 0.55)";
+const MUTED = "#9a9a9a";
+const BODY = "#dddddd";
 
 /**
  * Faint cosmic dot-field — positioned divs (no images allowed). Deterministic
- * coordinates so the card is byte-stable across builds. Mirrors the site's
- * "Observatório K-2542 parked over Curitiba" star-field gesture.
+ * coordinates keep the visual stable across builds. A background gesture,
+ * never a substitute for the person's name or the Kindra identity.
  */
 const STARS: { x: number; y: number; s: number; o: number }[] = [
   { x: 7, y: 18, s: 3, o: 0.5 },
@@ -125,39 +126,82 @@ function IdentityDots({ accent }: { accent: string }) {
   );
 }
 
+/**
+ * Conservative glyph budgets, not browser measurement. Explicit lines keep long
+ * copy inside the fixed canvas without relying on unsupported CSS line-clamp.
+ * Wide/unrecognised glyphs get a full em; over-budget copy ends in an ellipsis.
+ */
+function textUnits(text: string): number {
+  return Array.from(text).reduce((total, character) => {
+    if (/\s/.test(character)) return total + 0.35;
+    if (/[ilI1.,:;'!|]/.test(character)) return total + 0.4;
+    if (/[MWmw@%&]/.test(character)) return total + 1.1;
+    if (/[A-Z]/.test(character)) return total + 0.85;
+    if (/[a-z0-9]/.test(character)) return total + 0.7;
+    return total + 1;
+  }, 0);
+}
+
+function cardLines(text: string, width: number, fontSize: number, limit: number): string[] {
+  const budget = width / fontSize;
+  const lines: string[] = [];
+  let line = "";
+  // Iterate glyphs as well as words so URLs/unbroken route labels cannot overflow.
+  for (const word of text.trim().replace(/\s+/g, " ").split(" ")) {
+    if (!word) continue;
+    if (line && textUnits(line + " " + word) <= budget) {
+      line += " " + word;
+      continue;
+    }
+    if (line) lines.push(line);
+    line = "";
+    for (const character of Array.from(word)) {
+      if (line && textUnits(line + character) > budget) {
+        lines.push(line);
+        line = "";
+      }
+      line += character;
+    }
+  }
+  if (line) lines.push(line);
+  if (lines.length <= limit) return lines;
+  const result = lines.slice(0, limit);
+  let last = result[limit - 1];
+  while (textUnits(last + "…") > budget) last = Array.from(last).slice(0, -1).join("");
+  result[limit - 1] = last.trimEnd() + "…";
+  return result;
+}
+
 export interface OgCardOptions {
   /** Route label (e.g. "projects"); omit for the default site card. */
   label?: string;
-  /** One-line route description; omit for the default site card. */
+  /** Route summary; long copy is bounded to three lines with an ellipsis. */
   description?: string;
-  /** Theme accent — drives the radial glow, eyebrow, dots and palette swatches. */
+  /** Existing site accent — tint, HUD, dots and palette swatches. */
   accent?: ThemeColor;
-  /** Zero-padded HUD index (e.g. "02"); shown in the mono footer. */
+  /** Zero-padded route index (e.g. "02"); shown in the HUD. */
   index?: string;
-  /** Satori `alt` for the resulting <img>. */
+  /** Accessible description exported by the calling metadata route. */
   alt: string;
 }
 
 /**
- * Build a 1200×630 share card. The default site card (no label) leads with the
- * full name + title + headline; route cards (with a label) lead with the route
- * label + its one-line description. Both share the dark cosmic shell, the accent
- * glow, the Identity dots, the palette swatch row, and the mono footer.
+ * 1200×630 share cards: Kindra + full name + shared profile title, once each.
+ * Routes lead with their label; home leads with Kindra. Identity is independent
+ * of route copy, and bounded line budgets reserve room for the footer/HUD.
  */
 export async function renderOgCard(options: OgCardOptions): Promise<ImageResponse> {
-  const { label, description, index, alt } = options;
+  const { label, description, index } = options;
   const accentKey: ThemeColor = options.accent ?? "yellow";
   const accent = colors[accentKey];
-
   const fonts = await loadCardFonts();
-
-  const isRouteCard = Boolean(label);
-  const eyebrow = isRouteCard
-    ? `${index ? `${index} · ` : ""}observatório k-2542`
-    : "observatório k-2542";
-  const heading = isRouteCard ? label! : profile.name;
-  const subhead = isRouteCard ? profile.name : profile.title;
-  const body = isRouteCard ? description ?? "" : profile.headline;
+  const routeLabel = label?.trim();
+  const isRouteCard = Boolean(routeLabel);
+  const heading = isRouteCard ? routeLabel! : profile.nickname;
+  const headingSize = textUnits(heading) <= 1040 / 112 ? 112 : 80;
+  const headingLines = cardLines(heading, 1040, headingSize, 2);
+  const bodyLines = cardLines(isRouteCard ? description ?? "" : profile.headline, 960, 26, 3);
+  const identity = isRouteCard ? `${profile.nickname} · ${profile.name}` : profile.name;
 
   return new ImageResponse(
     (
@@ -168,155 +212,68 @@ export async function renderOgCard(options: OgCardOptions): Promise<ImageRespons
           justifyContent: "space-between",
           width: "100%",
           height: "100%",
-          padding: "72px 80px",
+          padding: "64px 80px 56px",
           backgroundColor: BG,
-          backgroundImage: `radial-gradient(900px circle at 78% 12%, ${withAlpha(
-            accent,
-            0.22,
-          )}, rgba(0,0,0,0) 55%), radial-gradient(700px circle at 8% 96%, ${withAlpha(
-            accent,
-            0.1,
-          )}, rgba(0,0,0,0) 50%)`,
-          fontFamily: "Fraunces",
+          backgroundImage: `radial-gradient(900px circle at 78% 12%, ${withAlpha(accent, 0.12)}, rgba(0,0,0,0) 55%)`,
+          fontFamily: "Instrument Sans",
+          fontWeight: 400,
           position: "relative",
         }}
       >
-        {/* faint cosmic dot-field */}
         {STARS.map((star, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${star.x}%`,
-              top: `${star.y}%`,
-              width: star.s,
-              height: star.s,
-              borderRadius: star.s,
-              backgroundColor: CREAM,
-              opacity: star.o,
-            }}
-          />
+          <div key={i} style={{ position: "absolute", left: `${star.x}%`, top: `${star.y}%`,
+            width: star.s, height: star.s, borderRadius: star.s,
+            backgroundColor: CREAM, opacity: star.o }} />
         ))}
+        {/* Square hairline frame and index: the site's handcrafted HUD, not a new brand. */}
+        <div style={{ position: "absolute", top: 28, left: 28, right: 28, bottom: 28,
+          border: `1px solid ${withAlpha(accent, 0.18)}` }} />
 
-        {/* hairline frame */}
-        <div
-          style={{
-            position: "absolute",
-            top: 28,
-            left: 28,
-            right: 28,
-            bottom: 28,
-            border: `1px solid ${withAlpha(accent, 0.18)}`,
-            borderRadius: 6,
-          }}
-        />
-
-        {/* top row — eyebrow + identity dots */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "IBM Plex Mono",
-              fontSize: 22,
-              letterSpacing: 4,
-              textTransform: "uppercase",
-              color: accent,
-            }}
-          >
-            {eyebrow}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", height: 72, flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 28, color: WHITE }}>
+              {cardLines(identity, 880, 28, 1)[0]}
+            </div>
+            <div style={{ fontSize: 22, color: BODY }}>
+              {cardLines(profile.title, 880, 22, 1)[0]}
+            </div>
           </div>
-          <IdentityDots accent={accent} />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 16 }}>
+            <div style={{ fontFamily: "IBM Plex Mono", fontWeight: 500, fontSize: 18,
+              letterSpacing: 2, color: accent }}>{cardLines(index ?? "01", 100, 18, 1)[0]}</div>
+            <IdentityDots accent={accent} />
+          </div>
         </div>
 
-        {/* center block — heading + subhead + body */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              display: "flex",
-              fontSize: isRouteCard ? 120 : 96,
-              fontWeight: 600,
-              lineHeight: 1,
-              color: WHITE,
-              textTransform: isRouteCard ? "lowercase" : "none",
-            }}
-          >
-            {heading}
+        {/* Explicit line heights leave at least 24px between copy and footer. */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: 306, flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", fontFamily: "Fraunces",
+            fontSize: headingSize, fontWeight: 600, lineHeight: 1.08, color: WHITE }}>
+            {headingLines.map((line, i) => <div key={i} style={{ height: headingSize * 1.08 }}>{line}</div>)}
           </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 24,
-              fontSize: 34,
-              fontWeight: 300,
-              color: CREAM,
-            }}
-          >
-            {subhead}
-          </div>
-          {body ? (
-            <div
-              style={{
-                display: "flex",
-                marginTop: 18,
-                maxWidth: 880,
-                fontSize: 26,
-                fontWeight: 300,
-                lineHeight: 1.35,
-                color: MUTED,
-              }}
-            >
-              {body}
+          {bodyLines.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", marginTop: 24,
+              fontSize: 26, lineHeight: 1.3, color: BODY }}>
+              {bodyLines.map((line, i) => <div key={i} style={{ height: 34 }}>{line}</div>)}
             </div>
           ) : null}
         </div>
 
-        {/* bottom row — palette swatches + mono footer */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-            {(["green", "yellow", "red", "blue"] as ThemeColor[]).map((c) => (
-              <div
-                key={c}
-                style={{
-                  width: 36,
-                  height: 6,
-                  borderRadius: 6,
-                  backgroundColor: colors[c],
-                  opacity: c === accentKey ? 1 : 0.4,
-                }}
-              />
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", height: 32, flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            {(["green", "yellow", "red", "blue"] as ThemeColor[]).map((color) => (
+              <div key={color} style={{ width: 32, height: 6, backgroundColor: colors[color],
+                opacity: color === accentKey ? 1 : 0.4 }} />
             ))}
           </div>
-          <div
-            style={{
-              display: "flex",
-              fontFamily: "IBM Plex Mono",
-              fontSize: 22,
-              letterSpacing: 1,
-              color: MUTED,
-            }}
-          >
-            {`${SITE_URL} — ${profile.location.toLowerCase()}`}
+          <div style={{ fontFamily: "IBM Plex Mono", fontWeight: 500, fontSize: 18,
+            letterSpacing: 0.5, color: MUTED }}>
+            {cardLines(SITE_URL + " · " + profile.location.toLowerCase(), 780, 18, 1)[0]}
           </div>
         </div>
       </div>
     ),
-    {
-      ...OG_SIZE,
-      fonts,
-    },
+    { ...OG_SIZE, fonts },
   );
 }
 

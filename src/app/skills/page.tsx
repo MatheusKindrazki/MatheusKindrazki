@@ -290,7 +290,7 @@ function SkillsContent({
                   fontSize: "var(--text-h2)",
                 }}
               >
-                — tools i reach for daily
+                — how i build
               </span>
             </span>
           </h1>
@@ -305,14 +305,15 @@ function SkillsContent({
               color: "var(--color-kindra-meta-high)",
             }}
           >
-            Technologies I use to ship coherent systems at scale — from platform
-            work to applied AI.
+            Technologies and practices behind my platform, product, and applied
+            AI work. Start with the problem; pick the tools that fit.
           </p>
 
           <PageNav current="/skills" onClick={onNavClick} />
 
-          {/* Continuous horizontal marquee of skill tokens */}
+          {/* Decorative repeat; the complete skill list is accessible below. */}
           <div
+            aria-hidden="true"
             className="enter-rise mt-10 overflow-hidden opacity-70 select-none"
             style={{
               ...enterAt(3),
@@ -408,6 +409,9 @@ function SkillsContent({
                   >
                     {category.title}
                   </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--color-kindra-meta-mid)]">
+                    {category.focus}
+                  </p>
                   <div
                     className="mt-2 mb-4 h-px w-full transition-opacity duration-700"
                     style={{
@@ -443,7 +447,7 @@ function SkillsContent({
               <MetaRow
                 items={[
                   "idx.03",
-                  `${totalSkills} capabilities`,
+                  `${totalSkills} tools & practices`,
                   "still learning",
                 ]}
               />
