@@ -43,7 +43,7 @@ const statusOrder: NowStatus[] = [
 // ──────────────────────────────────────────────────────────────────────
 // Instrument cluster — the dashboard signature of /now. Preserved.
 // Counters derive from the real nowBuilding array (itself derived from
-// `projects`); the "days ago" stamp reads site.lastUpdatedIso, which is
+// `projects`); the exact date stamp reads site.lastUpdatedIso, which is
 // injected at build time from the last git commit touching content.ts.
 // ──────────────────────────────────────────────────────────────────────
 function InstrumentCluster() {
@@ -55,12 +55,6 @@ function InstrumentCluster() {
       count: nowBuilding.filter((i) => i.status === status).length,
     }))
     .filter(({ count }) => count > 0);
-
-  const lastUpdated = new Date(site.lastUpdatedIso + "T00:00:00Z");
-  const now = new Date();
-  const diffMs = now.getTime() - lastUpdated.getTime();
-  const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-  const paddedDays = String(diffDays).padStart(2, "0");
 
   return (
     <aside
@@ -103,10 +97,9 @@ function InstrumentCluster() {
           <span>
             <span className="text-[var(--color-kindra-rule-strong)]">//</span>{" "}
             content commit{" "}
-            <span className="text-[var(--color-kindra-meta-mid)]">
-              {paddedDays}
-            </span>{" "}
-            days ago
+            <time dateTime={site.lastUpdatedIso} className="text-[var(--color-kindra-meta-mid)]">
+              {site.lastUpdatedIso}
+            </time>
           </span>
         </span>
       </div>
@@ -270,11 +263,10 @@ function NowContent() {
           .now-flow section {
             padding-block: var(--section-pad-sm);
           }
-          /* The first section already clears the fixed chrome bar via the
-             shell's padding-top — drop its extra top pad so the hero starts
-             tight under the bar instead of floating. */
+          /* Keep the compact rhythm, but reserve a small first-section gap
+             so the eyebrow fully clears the fixed mobile chrome. */
           .now-flow section:first-child {
-            padding-top: 0;
+            padding-top: 2rem;
           }
         }
       `}</style>
@@ -345,9 +337,9 @@ function NowContent() {
                 lineHeight: 1.55,
               }}
             >
-              A snapshot of what&apos;s on my desk, in my head, and on my
-              calendar. This page is short on purpose — the timestamp below
-              comes straight from the last content commit, not a promise.
+              A snapshot of what&apos;s on my desk and on my mind. This page is
+              short on purpose. The date below comes from the last content
+              commit, not a promise of live updates.
             </p>
 
             {/* Instrument cluster */}

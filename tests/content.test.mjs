@@ -105,3 +105,22 @@ test('public API rejects malformed and oversized input without calling an upstre
     assert.equal(response.status, 400, `Expected 400 for input shape: ${body.slice(0, 40)}`);
   }
 });
+
+// A source guard, not a substitute for the browser same-query regression.
+test('project selection writes its URL and narrow controls precede extended notes', async () => {
+  const source = await readFile(new URL('../src/app/projetos/page.tsx', import.meta.url), 'utf8');
+  assert.match(source, /url\.searchParams\.set\("project", projects\[index\]\.id\)/);
+  assert.match(source, /window\.history\.replaceState\(null, "", url\)/);
+  assert.match(source, /onSelect=\{selectProject\}/);
+  const hero = source.slice(source.indexOf('function ProjetosContent('), source.indexOf('interface ProjectDossierProps'));
+  assert.ok(hero.indexOf('aria-label="Project selector"') < hero.indexOf('<ProjectDossier'));
+  assert.match(hero, /role="group" aria-label="Project selector"/);
+});
+
+test('Now exposes the exact content date and keeps its narrow eyebrow clear', async () => {
+  const source = await readFile(new URL('../src/app/now/page.tsx', import.meta.url), 'utf8');
+  assert.match(source, /<time dateTime=\{site\.lastUpdatedIso\}/);
+  assert.doesNotMatch(source, /paddedDays|diffDays|T00:00:00Z/);
+  assert.match(source, /\.now-flow section:first-child\s*\{\s*padding-top: 2rem/);
+  assert.doesNotMatch(source, /on my\s+calendar/);
+});

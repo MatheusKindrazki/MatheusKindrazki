@@ -42,7 +42,7 @@
      1.1fr ratios fully determine the column widths (both well above these
      floors), so the desktop layout is byte-identical. */
   grid-template-columns: minmax(320px, 0.9fr) minmax(380px, 1.1fr);
-  align-items: center;
+  align-items: start;
   gap: clamp(44px, 6vw, 90px);
   width: 100%;
 }
@@ -830,4 +830,12 @@
 .caseReference:focus-visible {
   outline: 1px solid var(--project-accent);
   outline-offset: 5px;
+}
+
+/* Tall case notes must not pull the first eyebrow under the desktop HUD.
+   Top-aligning the atlas also keeps all its controls above the fold. */
+@media (min-width: 821px) {
+  .projectHero {
+    padding-top: 128px;
+  }
 }

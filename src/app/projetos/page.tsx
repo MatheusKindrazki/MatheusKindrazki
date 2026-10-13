@@ -190,6 +190,16 @@ function ProjectQuery({ onSelect }: { onSelect: (index: number) => void }) {
 export default function ProjetosPage() {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const selectProject = (index: number) => {
+    setActiveIndex(index);
+    // Keep a visible selection and its shareable URL coherent. replaceState
+    // avoids adding a history entry for each atlas hover/selection. Passing
+    // null lets the App Router synchronize useSearchParams as documented.
+    const url = new URL(window.location.href);
+    url.searchParams.set("project", projects[index].id);
+    window.history.replaceState(null, "", url);
+  };
+
   const activeProject = projects[activeIndex];
   const activeAccent = getColorValue(activeProject.color);
 
@@ -214,7 +224,7 @@ export default function ProjetosPage() {
       <ProjetosContent
         activeIndex={activeIndex}
         activeProject={activeProject}
-        onSelect={setActiveIndex}
+        onSelect={selectProject}
       />
     </PageShell>
   );
@@ -236,7 +246,7 @@ function ProjetosContent({
 
   return (
     <ScrollStage>
-        <Section bare>
+        <Section bare className={styles.projectHero}>
           {/* Hero enters via the CSS `.enter-rise` idiom (globals.css), not
               framer `initial="hidden"` — the SSR HTML must paint the h1
               before the pixi-heavy bundle hydrates (deep-link LCP). */}
@@ -261,9 +271,8 @@ function ProjetosContent({
                 <PageNav current="/projetos" onClick={onNavClick} />
               </div>
 
-              <ProjectDossier project={activeProject} index={activeIndex} />
-
-              <div className={styles.mobileRail} aria-label="Project selector">
+              {/* Choose a case before its extended notes on narrow screens. */}
+              <div className={styles.mobileRail} role="group" aria-label="Project selector">
                 {projects.map((project, index) => (
                   <ProjectRailButton
                     key={project.title}
@@ -276,6 +285,8 @@ function ProjetosContent({
                   />
                 ))}
               </div>
+
+              <ProjectDossier project={activeProject} index={activeIndex} />
             </div>
 
             <div className={`${styles.atlas} enter-rise`} style={enterAt(1)}>
@@ -290,7 +301,7 @@ function ProjetosContent({
               </div>
 
               <span aria-hidden="true" className={styles.atlasLegend}>
-                órbitas = distância do agora
+                orbits = focus + timeline
               </span>
 
               {projects.map((project, index) => (
