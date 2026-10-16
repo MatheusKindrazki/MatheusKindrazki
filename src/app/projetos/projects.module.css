@@ -329,7 +329,9 @@
 }
 
 .atlas {
-  position: relative;
+  position: sticky;
+  top: 128px;
+  align-self: start;
   min-height: 560px;
   isolation: isolate;
   overflow: visible;
@@ -832,10 +834,60 @@
   outline-offset: 5px;
 }
 
-/* Tall case notes must not pull the first eyebrow under the desktop HUD.
-   Top-aligning the atlas also keeps all its controls above the fold. */
+/* Reading is continuous, not a slide deck: changing case length must not
+   re-snap or re-center the page. Keep the atlas anchored beside the text. */
+.projectShell .projectScroll {
+  scroll-snap-type: none;
+  overflow-anchor: none;
+  scroll-behavior: auto;
+}
+
+.projectScroll .projectHero {
+  align-items: flex-start;
+}
+
+.readingToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  min-height: 44px;
+  margin-top: 12px;
+}
+
+.backToAtlas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-kindra-cream);
+  font: 600 12px/1.4 var(--font-body);
+  cursor: pointer;
+}
+
+.backToAtlas:hover {
+  color: var(--project-accent);
+}
+
+.backToAtlas:focus-visible,
+.title:focus-visible,
+.dossierTitle:focus-visible {
+  outline: 2px solid var(--project-accent);
+  outline-offset: 5px;
+}
+
 @media (min-width: 821px) {
   .projectHero {
     padding-top: 128px;
+  }
+}
+
+@media (max-width: 820px) {
+  .projectScroll .projectHero {
+    padding-top: 2rem;
   }
 }

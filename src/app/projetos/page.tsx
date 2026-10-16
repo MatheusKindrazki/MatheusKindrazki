@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowLeft, FiArrowUpRight } from "react-icons/fi";
 import Mark from "@/components/ui/Mark";
 import PageNav from "@/components/ui/PageNav";
 import Eyebrow from "@/components/ui/Eyebrow";
@@ -12,7 +12,7 @@ import ScrollStage from "@/components/layout/ScrollStage";
 import Section from "@/components/layout/Section";
 import { projects, type Project, type ProjectStatus } from "@/lib/content";
 import { getColorValue, getColorWithAlpha } from "@/lib/colors";
-import { stagger, fadeUp, swapUp, enterAt } from "@/lib/motion";
+import { stagger, fadeUp, enterAt } from "@/lib/motion";
 import styles from "./projects.module.css";
 
 const statusCopy: Record<ProjectStatus, string> = {
@@ -177,31 +177,30 @@ function truncateDescription(description: string): string {
   return `${description.slice(0, 167).trim()}...`;
 }
 
-function ProjectQuery({ onSelect }: { onSelect: (index: number) => void }) {
+function ProjectQuery({ onSelect }: { onSelect: (index: number | null) => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
     const id = searchParams.get("project");
     const index = projects.findIndex((project) => project.id === id);
-    onSelect(index >= 0 ? index : 0);
+    onSelect(index >= 0 ? index : null);
   }, [searchParams, onSelect]);
   return null;
 }
 
 export default function ProjetosPage() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const selectProject = (index: number) => {
+  const selectProject = (index: number | null) => {
     setActiveIndex(index);
-    // Keep a visible selection and its shareable URL coherent. replaceState
-    // avoids adding a history entry for each atlas hover/selection. Passing
-    // null lets the App Router synchronize useSearchParams as documented.
+    // Only an explicit selection changes the reading context and shareable URL.
     const url = new URL(window.location.href);
-    url.searchParams.set("project", projects[index].id);
+    if (index === null) url.searchParams.delete("project");
+    else url.searchParams.set("project", projects[index].id);
     window.history.replaceState(null, "", url);
   };
 
-  const activeProject = projects[activeIndex];
-  const activeAccent = getColorValue(activeProject.color);
+  const activeProject = activeIndex === null ? null : projects[activeIndex];
+  const activeAccent = getColorValue(activeProject?.color ?? "green");
 
   const shellStyle = {
     "--project-accent": activeAccent,
@@ -231,9 +230,9 @@ export default function ProjetosPage() {
 }
 
 interface ProjetosContentProps {
-  activeIndex: number;
-  activeProject: Project;
-  onSelect: (index: number) => void;
+  activeIndex: number | null;
+  activeProject: Project | null;
+  onSelect: (index: number | null) => void;
 }
 
 function ProjetosContent({
@@ -242,10 +241,27 @@ function ProjetosContent({
   onSelect,
 }: ProjetosContentProps) {
   const { onNavClick } = useShellNav();
-  const activeAccent = getColorValue(activeProject.color);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const activeAccent = getColorValue(activeProject?.color ?? "green");
+
+  const chooseProject = (index: number | null, focusTitle = false) => {
+    onSelect(index);
+    // Only an explicit click starts a new reading context, never hover/focus.
+    requestAnimationFrame(() => {
+      if (window.matchMedia("(max-width: 820px)").matches) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      } else {
+        stageRef.current?.scrollTo({ top: 0, behavior: "instant" });
+      }
+      if (focusTitle) {
+        document.getElementById(index === null ? "project-overview-title" : "selected-project-title")
+          ?.focus({ preventScroll: true });
+      }
+    });
+  };
 
   return (
-    <ScrollStage>
+    <ScrollStage ref={stageRef} className={styles.projectScroll}>
         <Section bare className={styles.projectHero}>
           {/* Hero enters via the CSS `.enter-rise` idiom (globals.css), not
               framer `initial="hidden"` — the SSR HTML must paint the h1
@@ -254,22 +270,31 @@ function ProjetosContent({
             <div className={`${styles.copyColumn} enter-rise`} style={enterAt(0)}>
               <Eyebrow index="02" label="project atlas" accent={activeAccent} />
 
-              <h1 className={styles.title}>
-                <span className={styles.titleLine}>
-                  <Mark color="green">Projects</Mark>
-                  <span className={styles.titleNote}>proof of work</span>
-                </span>
-              </h1>
-
-              <p className={styles.deck}>
-                Ventures, AI systems, education platforms, and small sharp
-                tools. Selected case notes separate the work from the public
-                references.
-              </p>
-
-              <div className={styles.navWrap}>
-                <PageNav current="/projetos" onClick={onNavClick} />
-              </div>
+              {activeProject ? (
+                <div className={styles.readingToolbar}>
+                  <button type="button" className={styles.backToAtlas}
+                    onClick={() => chooseProject(null, true)}>
+                    <FiArrowLeft aria-hidden="true" /> All projects
+                  </button>
+                  <PageNav current="/projetos" onClick={onNavClick} />
+                </div>
+              ) : (
+                <>
+                  <h1 id="project-overview-title" tabIndex={-1} className={styles.title}>
+                    <span className={styles.titleLine}>
+                      <Mark color="green">Projects</Mark>
+                      <span className={styles.titleNote}>proof of work</span>
+                    </span>
+                  </h1>
+                  <p className={styles.deck}>
+                    Ventures, AI systems, education platforms, and small sharp
+                    tools. Select a project to read its case notes and public references.
+                  </p>
+                  <div className={styles.navWrap}>
+                    <PageNav current="/projetos" onClick={onNavClick} />
+                  </div>
+                </>
+              )}
 
               {/* Choose a case before its extended notes on narrow screens. */}
               <div className={styles.mobileRail} role="group" aria-label="Project selector">
@@ -281,12 +306,14 @@ function ProjetosContent({
                     index={index}
                     isActive={index === activeIndex}
                     signal={project.signal}
-                    onSelect={() => onSelect(index)}
+                    onSelect={() => chooseProject(index)}
                   />
                 ))}
               </div>
 
-              <ProjectDossier project={activeProject} index={activeIndex} />
+              {activeProject && activeIndex !== null && (
+                <ProjectDossier project={activeProject} index={activeIndex} />
+              )}
             </div>
 
             <div className={`${styles.atlas} enter-rise`} style={enterAt(1)}>
@@ -295,9 +322,9 @@ function ProjetosContent({
               <div aria-hidden className={`${styles.orbit} ${styles.orbitInner}`} />
 
               <div className={styles.atlasCore} aria-hidden="true">
-                <span>selected</span>
-                <strong>{String(activeIndex + 1).padStart(2, "0")}</strong>
-                <small>{activeProject.signal}</small>
+                <span>{activeProject ? "selected" : "project atlas"}</span>
+                <strong>{activeIndex === null ? String(projects.length) : String(activeIndex + 1).padStart(2, "0")}</strong>
+                <small>{activeProject?.signal ?? "select to explore"}</small>
               </div>
 
               <span aria-hidden="true" className={styles.atlasLegend}>
@@ -314,7 +341,7 @@ function ProjetosContent({
                   signal={project.signal}
                   status={project.status}
                   position={nodePlacements[index]}
-                  onSelect={() => onSelect(index)}
+                  onSelect={() => chooseProject(index)}
                 />
               ))}
             </div>
@@ -343,7 +370,7 @@ function ProjetosContent({
                     project={project}
                     index={index}
                     isActive={index === activeIndex}
-                    onSelect={() => onSelect(index)}
+                    onSelect={() => chooseProject(index, true)}
                   />
                 ))}
               </div>
@@ -379,7 +406,7 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
   ];
 
   return (
-    <div className={styles.dossier}>
+    <article className={styles.dossier} aria-labelledby="selected-project-title">
       <div className={styles.dossierMeta}>
         <span style={{ color: accent }}>
           {String(index + 1).padStart(2, "0")}
@@ -387,13 +414,8 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
         <span>ephemeris</span>
       </div>
 
-      <motion.div
-        key={title}
-        initial={swapUp.initial}
-        animate={swapUp.animate}
-        transition={swapUp.transition}
-      >
-        <h2 className={styles.dossierTitle}>{title}</h2>
+      <div key={project.id}>
+        <h1 id="selected-project-title" tabIndex={-1} className={styles.dossierTitle}>{title}</h1>
 
         <dl className={styles.ephemeris}>
           {ephemeris.map(([label, value]) => (
@@ -451,8 +473,8 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
             <FiArrowUpRight />
           </a>
         )}
-      </motion.div>
-    </div>
+      </div>
+    </article>
   );
 }
 
@@ -528,7 +550,6 @@ function ProjectNode({
       aria-pressed={isActive}
       aria-label={title}
       onClick={onSelect}
-      onMouseEnter={onSelect}
       className={`${styles.node} ${nodeStatusClass[status]}`}
       style={
         {

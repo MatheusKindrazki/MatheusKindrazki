@@ -124,3 +124,24 @@ test('Now exposes the exact content date and keeps its narrow eyebrow clear', as
   assert.match(source, /\.now-flow section:first-child\s*\{\s*padding-top: 2rem/);
   assert.doesNotMatch(source, /on my\s+calendar/);
 });
+
+// Source-level guardrails; rendered hover/scroll assertions run in the browser.
+test('atlas hover identifies a project without changing the selected reading context', async () => {
+  const source = await readFile(new URL('../src/app/projetos/page.tsx', import.meta.url), 'utf8');
+  const node = source.slice(source.indexOf('function ProjectNode('), source.indexOf('interface ProjectLedgerRowProps'));
+  assert.match(node, /onClick=\{onSelect\}/);
+  assert.doesNotMatch(node, /onMouseEnter=|onPointerEnter=|onFocus=/);
+  assert.match(source, /useState<number \| null>\(null\)/);
+  assert.match(source, /if \(index === null\) url\.searchParams\.delete\("project"\)/);
+  assert.match(source, /activeProject \? \(/);
+  assert.match(source, /All projects/);
+  assert.match(source, /<h1 id="selected-project-title"/);
+  assert.doesNotMatch(source, /initial=\{swapUp\.initial\}/);
+});
+
+test('project reading layout cannot snap or vertically recenter on case changes', async () => {
+  const css = await readFile(new URL('../src/app/projetos/projects.module.css', import.meta.url), 'utf8');
+  assert.match(css, /\.projectShell \.projectScroll\s*\{[^}]*scroll-snap-type: none;[^}]*overflow-anchor: none;/);
+  assert.match(css, /\.projectScroll \.projectHero\s*\{\s*align-items: flex-start;/);
+  assert.match(css, /\.atlas\s*\{\s*position: sticky;/);
+});
