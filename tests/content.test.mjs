@@ -145,3 +145,17 @@ test('project reading layout cannot snap or vertically recenter on case changes'
   assert.match(css, /\.projectScroll \.projectHero\s*\{\s*align-items: flex-start;/);
   assert.match(css, /\.atlas\s*\{\s*position: sticky;/);
 });
+
+test('overview is the neutral entry and new reading content fades without displacement', async () => {
+  const source = await readFile(new URL('../src/app/projetos/page.tsx', import.meta.url), 'utf8');
+  const css = await readFile(new URL('../src/app/projetos/projects.module.css', import.meta.url), 'utf8');
+  assert.match(source, /onSelect\(index >= 0 \? index : null\)/);
+  assert.match(source, /key=\{activeProject \? "selected-header" : "overview-header"\}/);
+  assert.match(source, /key=\{project\.id\} className=\{styles\.readingTransition\}/);
+  assert.match(css, /animation: readingReveal 280ms ease-out both/);
+  const frames = css.slice(css.indexOf('@keyframes readingReveal'), css.indexOf('@media', css.indexOf('@keyframes readingReveal')));
+  assert.match(frames, /opacity: 0/);
+  assert.match(frames, /opacity: 1/);
+  assert.doesNotMatch(frames, /transform|height|translate/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.readingTransition\s*\{\s*animation: none;/);
+});

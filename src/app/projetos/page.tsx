@@ -270,6 +270,8 @@ function ProjetosContent({
             <div className={`${styles.copyColumn} enter-rise`} style={enterAt(0)}>
               <Eyebrow index="02" label="project atlas" accent={activeAccent} />
 
+              <div key={activeProject ? "selected-header" : "overview-header"}
+                className={styles.readingTransition} data-reading-transition="header">
               {activeProject ? (
                 <div className={styles.readingToolbar}>
                   <button type="button" className={styles.backToAtlas}
@@ -295,6 +297,7 @@ function ProjetosContent({
                   </div>
                 </>
               )}
+              </div>
 
               {/* Choose a case before its extended notes on narrow screens. */}
               <div className={styles.mobileRail} role="group" aria-label="Project selector">
@@ -414,7 +417,7 @@ function ProjectDossier({ project, index }: ProjectDossierProps) {
         <span>ephemeris</span>
       </div>
 
-      <div key={project.id}>
+      <div key={project.id} className={styles.readingTransition} data-reading-transition="case">
         <h1 id="selected-project-title" tabIndex={-1} className={styles.dossierTitle}>{title}</h1>
 
         <dl className={styles.ephemeris}>

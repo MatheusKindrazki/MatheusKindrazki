@@ -891,3 +891,20 @@
     padding-top: 2rem;
   }
 }
+
+/* Fade in the new reading context without translating text, the atlas or
+   its scroll container. The header only restarts between overview/detail. */
+.readingTransition {
+  animation: readingReveal 280ms ease-out both;
+}
+
+@keyframes readingReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .readingTransition {
+    animation: none;
+  }
+}
