@@ -139,7 +139,7 @@ test('atlas hover identifies a project without changing the selected reading con
   assert.doesNotMatch(source, /initial=\{swapUp\.initial\}/);
 });
 
-test('project reading layout cannot snap or vertically recenter on case changes', async () => {
+test('project reading frame cannot snap or reanchor on case changes', async () => {
   const css = await readFile(new URL('../src/app/projetos/projects.module.css', import.meta.url), 'utf8');
   assert.match(css, /\.projectShell \.projectScroll\s*\{[^}]*scroll-snap-type: none;[^}]*overflow-anchor: none;/);
   assert.match(css, /\.projectScroll \.projectHero\s*\{\s*align-items: flex-start;/);
@@ -158,4 +158,15 @@ test('overview is the neutral entry and new reading content fades without displa
   assert.match(frames, /opacity: 1/);
   assert.doesNotMatch(frames, /transform|height|translate/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.readingTransition\s*\{\s*animation: none;/);
+});
+
+test('desktop centers fitting copy in a viewport-based atlas frame, not a text-sized section', async () => {
+  const css = await readFile(new URL('../src/app/projetos/projects.module.css', import.meta.url), 'utf8');
+  assert.match(css, /--project-frame-height: clamp\(var\(--shell-min-h\), 100svh, var\(--shell-max-h\)\)/);
+  assert.match(css, /--project-atlas-top: max\(128px, calc\(\(var\(--project-frame-height\) - 560px\) \/ 2\)\)/);
+  const desktop = css.slice(css.lastIndexOf('@media (min-width: 1101px)'));
+  assert.match(desktop, /padding-top: var\(--project-atlas-top\)/);
+  assert.match(desktop, /\.heroGrid\s*\{\s*min-height: 560px/);
+  assert.match(desktop, /\.copyColumn\s*\{\s*align-self: center/);
+  assert.match(desktop, /\.atlas\s*\{\s*top: var\(--project-atlas-top\)/);
 });

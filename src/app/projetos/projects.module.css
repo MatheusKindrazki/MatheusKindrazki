@@ -12,6 +12,8 @@
 
 .projectShell {
   --project-accent: var(--color-kindra-green);
+  --project-frame-height: clamp(var(--shell-min-h), 100svh, var(--shell-max-h));
+  --project-atlas-top: max(128px, calc((var(--project-frame-height) - 560px) / 2));
 }
 
 .backdrop {
@@ -906,5 +908,26 @@
 @media (prefers-reduced-motion: reduce) {
   .readingTransition {
     animation: none;
+  }
+}
+
+/* Center content that fits beside the atlas in a viewport-sized frame.
+   The frame's origin never depends on a project's text length: long cases
+   start at the same origin and scroll naturally instead of moving the atlas. */
+@media (min-width: 1101px) {
+  .projectScroll .projectHero {
+    padding-top: var(--project-atlas-top);
+  }
+
+  .heroGrid {
+    min-height: 560px;
+  }
+
+  .copyColumn {
+    align-self: center;
+  }
+
+  .atlas {
+    top: var(--project-atlas-top);
   }
 }
