@@ -244,6 +244,11 @@ export default function Home() {
         </>
       )}
     >
+      {/* PROTOTYPE (studio test, 2026-11-12) — throwaway band, archive with
+          the proto/faixa-de-teste-no-topo branch. */}
+      <div role="note" className={styles.testBand}>
+        Protótipo de teste do estúdio
+      </div>
       <BootSequence />
       <HomeContent />
     </PageShell>

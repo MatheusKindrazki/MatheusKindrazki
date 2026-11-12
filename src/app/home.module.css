@@ -947,3 +947,21 @@
     animation: none;
   }
 }
+
+/* PROTOTYPE (studio test, 2026-11-12) — thin band pinned above everything,
+   including the chrome and the boot overlay. Archive with the branch. */
+.testBand {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: calc(var(--z-overlay) + 1);
+  padding: calc(env(safe-area-inset-top, 0px) + 3px) 1rem 3px;
+  background: var(--color-kindra-yellow);
+  color: var(--color-kindra-on-accent);
+  font-family: var(--font-data);
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+}
