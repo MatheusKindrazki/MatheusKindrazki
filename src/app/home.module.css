@@ -955,7 +955,7 @@
   inset: 0 0 auto 0;
   z-index: calc(var(--z-overlay) + 1);
   padding: calc(env(safe-area-inset-top, 0px) + 3px) 1rem 3px;
-  background: var(--color-kindra-yellow);
+  background: var(--color-kindra-green);
   color: var(--color-kindra-on-accent);
   font-family: var(--font-data);
   font-size: var(--text-micro);
