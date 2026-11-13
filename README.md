@@ -34,7 +34,7 @@ Off the clock I'm a musician and a DJ, the piano is my favorite instrument, and 
 
 **CEIA (UFG)** — AI Research Fellow. Applied research at the frontier of LLMs and intelligent systems, bridging academic rigor and shipped products.
 
-**Jarvis** — My personal knowledge graph + AI agent. A private assistant on MCP servers and vector search, connecting knowledge, tasks, and project tools with permissions and approval boundaries. The portfolio presents it, but public chat is unavailable.
+**Jarvis** — My personal knowledge graph + AI agent. A private assistant on MCP servers and vector search, connecting knowledge, tasks, and project tools with permissions and approval boundaries. The portfolio presents it without exposing it: the site chat, when enabled, is a separate public edition that answers only from published notes.
 
 ### Own products
 

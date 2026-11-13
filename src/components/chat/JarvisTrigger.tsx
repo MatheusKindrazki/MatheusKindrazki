@@ -17,15 +17,21 @@ interface JarvisTriggerProps {
   className?: string
 }
 
-function StatusDot() {
-  return <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-[var(--color-kindra-meta-low)]" />
+function StatusDot({ available }: { available: boolean }) {
+  return available
+    ? <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-[var(--color-kindra-yellow)]" />
+    : <span className="relative inline-flex h-[5px] w-[5px] rounded-full bg-[var(--color-kindra-meta-low)]" />
 }
 
 export default function JarvisTrigger({
   variant = 'floating',
   className,
 }: JarvisTriggerProps) {
-  const { open, setOpen } = useJarvis()
+  const { open, setOpen, available } = useJarvis()
+  const ariaLabel = available
+    ? 'Ask Jarvis about Matheus (public edition)'
+    : 'Meet Jarvis, private assistant (offline for visitors)'
+  const stateLabel = available ? 'ask' : 'private'
   const reduceMotion = useReducedMotion()
   const pathname = usePathname()
 
@@ -41,7 +47,7 @@ export default function JarvisTrigger({
         type="button"
         data-cursor="link"
         onClick={() => setOpen(true)}
-        aria-label="Meet Jarvis, private assistant (offline for visitors)"
+        aria-label={ariaLabel}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? 'jarvis-panel' : undefined}
@@ -52,10 +58,10 @@ export default function JarvisTrigger({
         className={`inline-flex items-center gap-2 ${className ?? ''}`}
         style={{ pointerEvents: open ? 'none' : undefined }}
       >
-        <StatusDot />
+        <StatusDot available={available} />
         <span>jarvis</span>
         <span className="text-[var(--color-kindra-rule-strong)]">·</span>
-        <span>private</span>
+        <span>{stateLabel}</span>
       </motion.button>
     )
   }
@@ -65,7 +71,7 @@ export default function JarvisTrigger({
       type="button"
       data-cursor="link"
       onClick={() => setOpen(true)}
-      aria-label="Meet Jarvis, private assistant (offline for visitors)"
+      aria-label={ariaLabel}
       aria-haspopup="dialog"
       aria-expanded={open}
       aria-controls={open ? 'jarvis-panel' : undefined}
@@ -78,10 +84,10 @@ export default function JarvisTrigger({
     >
       {/* Label row */}
       <span className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-low)] transition-colors duration-500 group-hover/trigger:text-white">
-        <StatusDot />
+        <StatusDot available={available} />
         <span>jarvis</span>
         <span className="text-[var(--color-kindra-rule-strong)]">·</span>
-        <span className="text-[var(--color-kindra-meta-low)]">private</span>
+        <span className="text-[var(--color-kindra-meta-low)]">{stateLabel}</span>
       </span>
 
       {/* Underline that expands on hover */}

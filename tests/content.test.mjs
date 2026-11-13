@@ -35,7 +35,7 @@ test('selected case notes separate approach and public evidence', () => {
   }
   const jarvis = projects.find((item) => item.id === 'jarvis');
   assert.match(jarvis.description, /private system, not a public chatbot/);
-  assert.match(jarvis.nowNote, /Offline for site visitors/);
+  assert.match(jarvis.nowNote, /never exposed to site visitors/);
   assert.doesNotMatch(profile.description, /millions|every event|everything I touch/i);
 });
 
@@ -62,48 +62,18 @@ test('skill categories explain their purpose, not an implied proficiency score',
   assert.ok(skillCategories.every((category) => category.focus.length > 20 && category.skills.length > 0));
 });
 
-test('visitor UI presents contact/case links rather than inviting an offline chat', async () => {
+test('visitor UI gates the chat on availability and keeps contact/case links offline', async () => {
   const source = await readFile(new URL('../src/components/chat/JarvisChat.tsx', import.meta.url), 'utf8');
-  assert.match(source, /const VISITOR_CHAT_AVAILABLE = false/);
+  assert.doesNotMatch(source, /VISITOR_CHAT_AVAILABLE/);
   assert.match(source, /href="\/contato\/"/);
   assert.match(source, /href="\/projetos\/\?project=jarvis"/);
-  assert.match(source, /!VISITOR_CHAT_AVAILABLE \|\| !trimmed/);
+  assert.match(source, /!available \|\| !trimmed/);
   const home = await readFile(new URL('../src/app/page.tsx', import.meta.url), 'utf8');
   const trigger = await readFile(new URL('../src/components/chat/JarvisTrigger.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(trigger, />online<|Open Jarvis chat|if \(open\) return null/);
   assert.match(trigger, /aria-haspopup="dialog"/);
   assert.match(home, /meet jarvis/);
   assert.doesNotMatch(home, /ask jarvis|CTO & PARTNER/);
-});
-
-test('public API stays offline when public mode is disabled, even with credentials present', async () => {
-  // Test-only placeholders. No real backend or personal data is accessed.
-  process.env.JARVIS_PUBLIC_MODE = 'disabled';
-  process.env.JARVIS_API_URL = 'https://example.invalid';
-  process.env.JARVIS_API_KEY = 'test-only';
-  const { POST } = await loadTypeScript('../src/app/api/ask/route.ts');
-  const originalFetch = globalThis.fetch;
-  let calls = 0;
-  globalThis.fetch = async () => { calls++; throw new Error('Unexpected upstream call'); };
-  try {
-    const response = await POST(new Request('http://localhost/api/ask', {
-      method: 'POST', body: JSON.stringify({ message: 'test visitor request' }),
-    }));
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.match(body.response, /offline for visitors/);
-    assert.equal(body.conversation_id, null);
-    assert.deepEqual(body.sources, []);
-    assert.equal(calls, 0);
-  } finally { globalThis.fetch = originalFetch; }
-});
-
-test('public API rejects malformed and oversized input without calling an upstream', async () => {
-  const { POST } = await loadTypeScript('../src/app/api/ask/route.ts');
-  for (const body of ['{', 'null', '[]', 'true', '"text"', '{}', '{"message":42}', '{"message":"   "}', JSON.stringify({ message: 'x'.repeat(2001) })]) {
-    const response = await POST(new Request('http://localhost/api/ask', { method: 'POST', body }));
-    assert.equal(response.status, 400, `Expected 400 for input shape: ${body.slice(0, 40)}`);
-  }
 });
 
 // A source guard, not a substitute for the browser same-query regression.

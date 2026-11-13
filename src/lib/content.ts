@@ -158,7 +158,7 @@ export const projects: Project[] = [
     id: 'jarvis',
     title: 'Jarvis — Personal AI Operating System',
     description:
-      'My personal assistant connects knowledge, tasks, and project tools through MCP. I use it for recall and coordination, with actions bounded by permissions and approvals. It is a private system, not a public chatbot.',
+      'My personal assistant connects knowledge, tasks, and project tools through MCP. I use it for recall and coordination, with actions bounded by permissions and approvals. It is a private system, not a public chatbot. Any chat offered on this site is a separate public edition that answers only from what is published here.',
     tags: ['AI Agents', 'MCP', 'RAG', 'Knowledge Graph', 'Personal AI', 'Claude'],
     color: 'yellow',
     year: '2024-2026',
@@ -167,12 +167,12 @@ export const projects: Project[] = [
     role: 'personal ai os',
     coordinate: 'rag/mcp',
     nowNote:
-      'A private assistant for knowledge, tasks, and project coordination through MCP. Offline for site visitors.',
+      'A private assistant for knowledge, tasks, and project coordination through MCP. It is never exposed to site visitors.',
     nowStatus: 'in-production',
     caseNote: {
       problem: 'Keep useful context and decisions accessible across conversations and projects.',
       approach: 'Connect retrieval, a knowledge graph, and project tools through MCP, with explicit permissions and approval boundaries for actions.',
-      evidence: 'This portfolio presents the assistant but does not offer a public chat. Personal data and private workflows are not shown here.',
+      evidence: 'This portfolio presents the assistant without exposing it: any chat offered here is a separate public edition that answers only from published notes. Personal data and private workflows are not shown here.',
     },
   },
   {

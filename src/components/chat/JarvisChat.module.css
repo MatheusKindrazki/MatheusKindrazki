@@ -75,14 +75,6 @@
   margin-bottom: 10.5px;
 }
 
-/* Assistant message extras. */
-.sourcesGap {
-  margin-top: 17.5px; /* was mt-5 */
-}
-.suggestedGap {
-  margin-top: 21px; /* was mt-6 */
-}
-
 /* "Try asking" block (was mt-12) + its caption (was mb-5). */
 .suggestionsBlock {
   margin-top: 42px;
@@ -97,12 +89,6 @@
 }
 .helperGap {
   margin-top: 17.5px;
-}
-
-/* Suggested-reply chip interior padding (was px-4 py-2 — padding, also
-   wiped by the universal reset, so the chip text would glue to its border). */
-.chip {
-  padding: 7px 14px;
 }
 
 /* Optical 3px nudge on the input prompt glyph and send arrow so they sit on
