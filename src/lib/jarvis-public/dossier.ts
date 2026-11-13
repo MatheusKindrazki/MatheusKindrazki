@@ -177,7 +177,7 @@ export function buildDossier(content: DossierContent): string {
   if (content.interviewNotes.length > 0) {
     sections.push(
       section(
-        'Interview notes — answers Matheus wrote himself',
+        'Interview notes — answers Matheus approved, in the first person (in Portuguese)',
         content.interviewNotes.map((note) => `- Q: ${note.question}\n  A: ${note.answer}`),
       ),
     )
