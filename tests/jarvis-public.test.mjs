@@ -69,6 +69,32 @@ test('dossier is a pure function of its input', () => {
   assert.ok(!dossier.includes(content.profile.name));
 });
 
+test('dossier carries the Now page note and stage for current work only', () => {
+  const dossier = buildDossier(dossierInput());
+  const lugui = content.projects.find((project) => project.id === 'lugui');
+  assert.equal(lugui.nowStatus, 'alpha');
+  assert.match(dossier, /- Stage on the Now page: alpha \(his own note, not a deployment check\)/);
+  assert.ok(dossier.includes(`- Now page note: ${lugui.nowNote}`));
+
+  const project = (fields) => ({ id: 'p', title: 'P', description: 'd', tags: [], year: '2000', role: 'r', ...fields });
+  const fixture = {
+    ...dossierInput(),
+    projects: [
+      project({ id: 'cur', title: 'CURRENT_NO_STATUS', status: 'current' }),
+      project({ id: 'old', title: 'PAST_WITH_FIELDS', status: 'past', nowNote: 'PAST_NOTE', nowStatus: 'beta' }),
+      project({ id: 'side', title: 'SIDE_WITH_FIELDS', status: 'side', nowNote: 'SIDE_NOTE', nowStatus: 'alpha' }),
+    ],
+  };
+  const built = buildDossier(fixture);
+  const block = (title) => built.slice(built.indexOf(`### ${title}`)).split('\n### ')[0].split('\n## ')[0];
+  assert.match(block('CURRENT_NO_STATUS'), /- Stage on the Now page: building \(/);
+  assert.doesNotMatch(block('CURRENT_NO_STATUS'), /Now page note/);
+  for (const title of ['PAST_WITH_FIELDS', 'SIDE_WITH_FIELDS']) {
+    assert.doesNotMatch(block(title), /Now page note|Stage on the Now page/, title);
+  }
+  assert.ok(!built.includes('PAST_NOTE') && !built.includes('SIDE_NOTE'));
+});
+
 test('dossier interview section appears only when notes exist', () => {
   assert.doesNotMatch(buildDossier(dossierInput()), /Interview notes/);
   const withNote = buildDossier(dossierInput([{ question: 'Why MCP?', answer: 'Because tools should be portable.' }]));
@@ -343,7 +369,7 @@ test('handler stays offline when disabled and never calls the model', async () =
   const res = await handler.POST(post({ message: 'hello' }));
   assert.equal(res.status, 200);
   const body = await res.json();
-  assert.deepEqual(body, { response: prompt.UNAVAILABLE_MESSAGE, available: false });
+  assert.deepEqual(body, { response: prompt.UNAVAILABLE_MESSAGE, available: false, error: 'unavailable' });
   assert.match(body.response, /offline for visitors/);
   assert.equal(calls.generate.length, 0);
   assert.equal(calls.limiterKeys.length, 0);
@@ -470,16 +496,17 @@ test('handler maps upstream failures, refusals and unsafe replies', async () => 
   const refusing = makeHandler({ generate: async () => ({ text: '', refused: true }) });
   const refused = await refusing.handler.POST(post({ message: 'hi' }));
   assert.equal(refused.status, 200);
-  assert.equal((await refused.json()).response, prompt.DECLINED_MESSAGE);
+  assert.deepEqual(await refused.json(), { response: prompt.DECLINED_MESSAGE, available: true, error: 'declined' });
 
   const leaking = makeHandler({ generate: async () => ({ text: 'Mail stranger@private.io', refused: false }) });
   const leaked = await leaking.handler.POST(post({ message: 'hi' }));
   assert.equal(leaked.status, 200);
-  assert.equal((await leaked.json()).response, prompt.UPSTREAM_ERROR_MESSAGE);
+  assert.deepEqual(await leaked.json(), { response: prompt.UPSTREAM_ERROR_MESSAGE, available: true, error: 'screened' });
 
   const empty = makeHandler({ generate: async () => ({ text: '   ', refused: false }) });
   const emptied = await empty.handler.POST(post({ message: 'hi' }));
-  assert.equal((await emptied.json()).response, prompt.UPSTREAM_ERROR_MESSAGE);
+  assert.equal(emptied.status, 200);
+  assert.deepEqual(await emptied.json(), { response: prompt.UPSTREAM_ERROR_MESSAGE, available: true, error: 'empty' });
 });
 
 test('GET reports availability without caching', async () => {
@@ -489,6 +516,102 @@ test('GET reports availability without caching', async () => {
     assert.equal(res.status, 200);
     assert.equal(res.headers.get('Cache-Control'), 'no-store');
     assert.deepEqual(await res.json(), { available: enabled });
+  }
+});
+
+/* ── body limit in bytes, read with a cap ─────────────────────────── */
+
+/** JSON body of exactly `bytes` UTF-8 bytes, padded with `é` (2 bytes each). */
+function jsonOfBytes(bytes) {
+  const shell = JSON.stringify({ message: 'hi', pad: '' });
+  const room = bytes - Buffer.byteLength(shell);
+  const pad = 'é'.repeat(Math.floor(room / 2)) + 'x'.repeat(room % 2);
+  const body = JSON.stringify({ message: 'hi', pad });
+  assert.equal(Buffer.byteLength(body), bytes);
+  return body;
+}
+
+function countingStream(chunks) {
+  const state = { pulls: 0 };
+  let index = 0;
+  const stream = new ReadableStream({
+    pull(controller) {
+      state.pulls++;
+      if (index < chunks.length) controller.enqueue(chunks[index++]);
+      else controller.close();
+    },
+  }, { highWaterMark: 0 });
+  return { stream, state };
+}
+
+test('handler counts the body limit in bytes, not characters', async () => {
+  const { handler, calls } = makeHandler();
+  const accented = JSON.stringify({ message: 'hi', pad: 'é'.repeat(20_000) });
+  assert.ok(accented.length < guard.MAX_BODY_BYTES);
+  const res = await handler.POST(post(accented));
+  assert.equal(res.status, 413);
+  assert.equal(calls.generate.length, 0);
+
+  const atLimit = await handler.POST(post(jsonOfBytes(guard.MAX_BODY_BYTES)));
+  assert.equal(atLimit.status, 200);
+  const overLimit = await handler.POST(post(jsonOfBytes(guard.MAX_BODY_BYTES + 1)));
+  assert.equal(overLimit.status, 413);
+});
+
+test('readCappedBody decodes UTF-8 and accepts a body exactly at the limit', async () => {
+  const text = jsonOfBytes(1000);
+  assert.deepEqual(await guard.readCappedBody(new Request('http://x/', { method: 'POST', body: text }), 1000), { ok: true, text });
+  assert.deepEqual(await guard.readCappedBody(new Request('http://x/', { method: 'POST', body: text }), 999), { ok: false });
+  assert.deepEqual(await guard.readCappedBody(new Request('http://x/', { method: 'POST' }), 1000), { ok: true, text: '' });
+});
+
+test('readCappedBody rejects an oversized content-length without reading', async () => {
+  const { stream, state } = countingStream([new Uint8Array(10)]);
+  const result = await guard.readCappedBody({ headers: new Headers({ 'content-length': '40000' }), body: stream }, 32_000);
+  assert.deepEqual(result, { ok: false });
+  assert.equal(state.pulls, 0);
+});
+
+test('readCappedBody stops a growing stream as soon as it passes the limit', async () => {
+  const chunks = Array.from({ length: 10 }, () => new Uint8Array(10_000));
+  const { stream, state } = countingStream(chunks);
+  const result = await guard.readCappedBody({ headers: new Headers(), body: stream }, 32_000);
+  assert.deepEqual(result, { ok: false });
+  assert.ok(state.pulls <= 5, `pulled ${state.pulls} of 10 chunks`);
+});
+
+/* ── reply classification (client) ────────────────────────────────── */
+
+test('classifyReply keeps only real model output as conversation', () => {
+  const { classifyReply } = guard;
+  assert.deepEqual(classifyReply(200, { response: 'A reply.', available: true }), { content: 'A reply.', local: false });
+  for (const error of ['declined', 'screened', 'empty']) {
+    assert.deepEqual(classifyReply(200, { response: 'notice', available: true, error }), { content: 'notice', local: true }, error);
+  }
+  assert.deepEqual(classifyReply(200, { response: 'offline', available: false, error: 'unavailable' }), { content: 'offline', local: true });
+  assert.deepEqual(classifyReply(200, { response: 'offline', available: false }), { content: 'offline', local: true });
+  assert.deepEqual(classifyReply(429, { response: 'slow down', available: true, error: 'rate_limited' }), { content: 'slow down', local: true });
+  assert.deepEqual(classifyReply(503, { response: 'oops', available: true }), { content: 'oops', local: true });
+  assert.deepEqual(classifyReply(200, { available: true }), { content: null, local: true });
+  assert.deepEqual(classifyReply(200, { response: '', available: true }), { content: null, local: true });
+  for (const body of [null, 'text', 42, ['a']]) assert.deepEqual(classifyReply(200, body), { content: null, local: true });
+});
+
+test('every handler body carries an error code exactly when it is not model output', async () => {
+  const cases = [
+    [makeHandler(), true],
+    [makeHandler({ isEnabled: () => false }), false],
+    [makeHandler({ generate: async () => ({ text: '', refused: true }) }), false],
+    [makeHandler({ generate: async () => ({ text: 'x@evil.test', refused: false }) }), false],
+    [makeHandler({ generate: async () => ({ text: ' ', refused: false }) }), false],
+    [makeHandler({ generate: async () => { throw new Error('x'); } }), false],
+    [makeHandler({ limiter: { check: () => ({ allowed: false, scope: 'visitor', retryAfterSeconds: 1 }) } }), false],
+  ];
+  for (const [{ handler }, isModelOutput] of cases) {
+    const res = await handler.POST(post({ message: 'hi' }));
+    const body = await res.json();
+    assert.equal(typeof body.error === 'string', !isModelOutput, JSON.stringify(body));
+    assert.equal(guard.classifyReply(res.status, body).local, !isModelOutput);
   }
 });
 

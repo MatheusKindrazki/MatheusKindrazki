@@ -12,8 +12,8 @@
  * model.
  *
  * The in-memory rate limiter is best-effort: on serverless, instances do not
- * share memory, so the real spending backstop is a spend limit configured on
- * the API key itself.
+ * share memory, so the real spending backstop is a spend limit on the
+ * workspace the API key belongs to.
  */
 import {
   profile,

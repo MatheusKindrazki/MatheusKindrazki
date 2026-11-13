@@ -249,3 +249,54 @@ export function screenReply(
   }
   return { ok: true, text: trimmed.slice(0, MAX_REPLY_CHARS) }
 }
+
+/**
+ * Reads a request body while counting BYTES, and stops as soon as the total
+ * passes `maxBytes` instead of buffering the whole body first. A declared
+ * `content-length` above the limit is refused without reading at all.
+ */
+export async function readCappedBody(
+  req: Pick<Request, 'headers' | 'body'>,
+  maxBytes: number,
+): Promise<{ ok: true; text: string } | { ok: false }> {
+  const declared = Number(req.headers.get('content-length') ?? NaN)
+  if (Number.isFinite(declared) && declared > maxBytes) return { ok: false }
+  if (!req.body) return { ok: true, text: '' }
+
+  const reader = req.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => undefined)
+      return { ok: false }
+    }
+    chunks.push(value)
+  }
+
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return { ok: true, text: new TextDecoder('utf-8').decode(bytes) }
+}
+
+/**
+ * Client-side decision for one `/api/ask` answer. `content` is the text to
+ * show (null when the body has none); `local` means it is not model output —
+ * a notice, an error, or the switched-off answer — so neither it nor the
+ * question that produced it is sent back as history. Relies on the server's
+ * `error` marker, never on comparing notice texts.
+ */
+export function classifyReply(status: number, body: unknown): { content: string | null; local: boolean } {
+  if (!isRecord(body)) return { content: null, local: true }
+  const content = typeof body.response === 'string' && body.response.length > 0 ? body.response : null
+  const ok = status >= 200 && status < 300
+  const local = !ok || content === null || body.available === false || typeof body.error === 'string'
+  return { content, local }
+}

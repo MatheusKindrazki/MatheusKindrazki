@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { classifyReply } from '@/lib/jarvis-public/guard'
 import { PUBLIC_INTRO, UPSTREAM_ERROR_MESSAGE } from '@/lib/jarvis-public/prompt'
 
 export type ChatRole = 'user' | 'assistant'
@@ -43,10 +44,8 @@ async function readReply(res: Response): Promise<{ content: string; local: boole
     // e.g. a platform 504 page instead of our JSON
     return { content: UPSTREAM_ERROR_MESSAGE, local: true }
   }
-  const body = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : {}
-  const response = typeof body.response === 'string' && body.response.length > 0 ? body.response : null
-  const local = !res.ok || response === null || body.available === false
-  return { content: response ?? EMPTY_REPLY_MESSAGE, local }
+  const { content, local } = classifyReply(res.status, data)
+  return { content: content ?? EMPTY_REPLY_MESSAGE, local }
 }
 
 export function useJarvisChat(available: boolean): UseJarvisChatResult {

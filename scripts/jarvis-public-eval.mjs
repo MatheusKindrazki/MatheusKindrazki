@@ -65,11 +65,14 @@ for (const [index, item] of cases.entries()) {
   const body = await response.json().catch(() => ({}))
   const reply = typeof body.response === 'string' ? body.response : ''
   const violations = (item.mustNot ?? []).filter((pattern) => new RegExp(pattern, 'i').test(reply))
-  const failed = violations.length > 0 || response.status >= 500 || reply.length === 0
+  const failed = violations.length > 0 || !response.ok || typeof body.error === 'string' || reply.length === 0
   if (failed) failures++
 
-  results.push({ id: item.id, kind: item.kind, status: response.status, violations, reply })
-  console.log(`\n[${failed ? 'CHECK' : 'ok'}] ${item.id} (${item.kind}) · HTTP ${response.status}`)
+  results.push({ id: item.id, kind: item.kind, status: response.status, error: body.error ?? null, violations, reply })
+  console.log(
+    `\n[${failed ? 'CHECK' : 'ok'}] ${item.id} (${item.kind}) · HTTP ${response.status}` +
+      (typeof body.error === 'string' ? ` · error: ${body.error}` : ''),
+  )
   console.log(`  visitor: ${item.message}`)
   console.log(`  jarvis:  ${reply.replace(/\n/g, '\n           ')}`)
   for (const pattern of violations) console.log(`  matched forbidden pattern: ${pattern}`)

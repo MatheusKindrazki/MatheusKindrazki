@@ -4,10 +4,15 @@
  *
  * Visitor message content and upstream error messages are never logged or
  * echoed back; logs carry status codes, counts and error class names only.
+ *
+ * Contract: a response body has an `error` string if and only if `response`
+ * is NOT model output (notices, limits, failures, the switched-off answer).
+ * The client relies on that marker to keep such turns out of the history.
  */
 import {
   MAX_BODY_BYTES,
   clientKey,
+  readCappedBody,
   isCrossSite,
   parseAskRequest,
   screenReply,
@@ -78,15 +83,15 @@ export function createAskHandler(deps: AskDeps): {
         return reply({ response: '', available: deps.isEnabled(), error: 'forbidden' }, 403)
       }
 
-      const text = await req.text()
-      if (text.length > MAX_BODY_BYTES) {
+      const body = await readCappedBody(req, MAX_BODY_BYTES)
+      if (!body.ok) {
         log({ status: 413 })
         return reply({ response: '', available: deps.isEnabled(), error: 'payload too large' }, 413)
       }
 
       let raw: unknown
       try {
-        raw = JSON.parse(text)
+        raw = JSON.parse(body.text)
       } catch {
         return reply({ response: '', available: deps.isEnabled(), error: 'invalid json' }, 400)
       }
@@ -97,7 +102,7 @@ export function createAskHandler(deps: AskDeps): {
       }
 
       if (!deps.isEnabled()) {
-        return reply({ response: UNAVAILABLE_MESSAGE, available: false })
+        return reply({ response: UNAVAILABLE_MESSAGE, available: false, error: 'unavailable' })
       }
 
       const limit = deps.limiter.check(key)
@@ -129,13 +134,14 @@ export function createAskHandler(deps: AskDeps): {
 
       if (result.refused) {
         log({ status: 200, turns, refused: true })
-        return reply({ response: DECLINED_MESSAGE, available: true })
+        return reply({ response: DECLINED_MESSAGE, available: true, error: 'declined' })
       }
 
       const screened = screenReply(result.text, deps.allowedEmails)
       if (!screened.ok) {
-        log({ status: 200, turns, screened: true, empty: result.text.trim().length === 0 })
-        return reply({ response: UPSTREAM_ERROR_MESSAGE, available: true })
+        const empty = result.text.trim().length === 0
+        log({ status: 200, turns, screened: true, empty })
+        return reply({ response: UPSTREAM_ERROR_MESSAGE, available: true, error: empty ? 'empty' : 'screened' })
       }
 
       log({ status: 200, turns, chars: screened.text.length })

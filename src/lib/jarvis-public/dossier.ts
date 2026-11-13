@@ -85,6 +85,15 @@ function projectBlock(project: DossierProject): string {
     `- What it is: ${project.description}`,
     `- Tags: ${project.tags.join(', ')}`,
   ]
+  // Mirrors what the Now page shows for current work: the short note and the
+  // stage chip (which defaults to "building" there). The stage is his own
+  // note, never a deployment check.
+  if (project.status === 'current') {
+    if (project.nowNote) lines.push(`- Now page note: ${project.nowNote}`)
+    lines.push(
+      `- Stage on the Now page: ${project.nowStatus ?? 'building'} (his own note, not a deployment check)`,
+    )
+  }
   if (project.link) lines.push(`- Public link: ${project.link}`)
   lines.push(`- Page on this site: ${SITE_URL}/projetos/?project=${project.id}`)
   if (project.caseNote) {
