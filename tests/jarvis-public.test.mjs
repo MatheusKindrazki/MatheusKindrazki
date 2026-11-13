@@ -103,6 +103,24 @@ test('dossier interview section appears only when notes exist', () => {
   assert.ok(withNote.includes('Because tools should be portable.'));
 });
 
+test('shipped interview notes are well formed, carry no numbers or contacts, and reach the dossier', async () => {
+  const { interviewNotes } = await loadTsModules('src/lib/jarvis-public/interview.ts');
+  assert.ok(Array.isArray(interviewNotes) && interviewNotes.length > 0);
+  assert.equal(new Set(interviewNotes.map((note) => note.question)).size, interviewNotes.length);
+  const dossier = buildDossier(dossierInput(interviewNotes));
+  assert.match(dossier, /Interview notes — answers Matheus approved/);
+  for (const note of interviewNotes) {
+    assert.ok(note.question.trim().endsWith('?'), note.question);
+    assert.ok(note.answer.trim().length >= 40, note.question);
+    const text = `${note.question} ${note.answer}`;
+    // This file is public: no contacts, links, money or figures in an answer.
+    assert.doesNotMatch(text, /@|https?:\/\/|www\./i, note.question);
+    assert.doesNotMatch(text, /R\$|US\$|\$\s?\d|€|\d/, note.question);
+    assert.doesNotMatch(text, /\b(partner\w*|equity|sócio\w*|salário\w*|faturamento)\b/i, note.question);
+    assert.ok(dossier.includes(note.question) && dossier.includes(note.answer), note.question);
+  }
+});
+
 test('system prompt embeds the dossier and is deterministic', () => {
   const dossier = buildDossier(dossierInput());
   const system = prompt.buildSystemPrompt(dossier);
