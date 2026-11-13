@@ -13,21 +13,45 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useJarvis } from './JarvisProvider'
-import {
-  useJarvisChat,
-  JARVIS_INTRO,
-  type ChatMessage,
-  type SuggestedButton,
-} from '@/hooks/useJarvisChat'
+import { useJarvisChat, type ChatMessage } from '@/hooks/useJarvisChat'
+import { PUBLIC_SUGGESTIONS } from '@/lib/jarvis-public/prompt'
+import { splitLinks } from '@/lib/jarvis-public/links'
+import { LINK_EMAILS, LINK_TARGETS } from '@/lib/jarvis-public/site-links'
 import styles from './JarvisChat.module.css'
 
-// Jarvis is offline for visitors (it's the owner's private assistant — see
-// /api/ask). No starter prompts, since nothing will be answered. Restore these
-// only once a hardened public read-only mode exists.
-const SUGGESTIONS: string[] = []
-// Deliberately an explainer, not a publicly writable chat. Enabling a public
-// assistant is a separate backend/security decision, not a copy change.
-const VISITOR_CHAT_AVAILABLE = false
+// Only URLs the site itself publishes (and any page on the site) become
+// clickable in replies; see links.ts.
+const OWN_HOST = LINK_TARGETS.siteHost.replace(/^www\./, '')
+
+function isOwnHost(href: string): boolean {
+  try {
+    return new URL(href).hostname.toLowerCase().replace(/^www\./, '') === OWN_HOST
+  } catch {
+    return false
+  }
+}
+
+function LinkedText({ text }: { text: string }) {
+  return (
+    <>
+      {splitLinks(text, LINK_TARGETS, LINK_EMAILS).map((segment, i) => {
+        if (segment.type === 'text') return <span key={i}>{segment.value}</span>
+        const external = segment.href.startsWith('https://') && !isOwnHost(segment.href)
+        return (
+          <a
+            key={i}
+            href={segment.href}
+            data-cursor="link"
+            className="underline underline-offset-4"
+            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {segment.value}
+          </a>
+        )
+      })}
+    </>
+  )
+}
 
 function useIsNarrow(breakpoint = 640): boolean {
   const [narrow, setNarrow] = useState(false)
@@ -46,12 +70,10 @@ function useIsNarrow(breakpoint = 640): boolean {
 
 interface MessageProps {
   message: ChatMessage
-  onSuggestedClick: (text: string) => void
-  disabled: boolean
   isFirst?: boolean
 }
 
-function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: MessageProps) {
+function MessageBubble({ message, isFirst }: MessageProps) {
   if (message.role === 'user') {
     return (
       <div className={isFirst ? '' : styles.blockGap}>
@@ -73,9 +95,6 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
       </div>
     )
   }
-
-  const hasSources = !!message.sources && message.sources.length > 0
-  const hasSuggested = !!message.suggestedButtons && message.suggestedButtons.length > 0
 
   return (
     <div className={isFirst ? '' : styles.blockGap}>
@@ -102,34 +121,8 @@ function MessageBubble({ message, onSuggestedClick, disabled, isFirst }: Message
         className="text-[15px] leading-[28px] text-[var(--color-kindra-meta-high)] whitespace-pre-wrap"
         style={{ fontFamily: 'var(--font-body)' }}
       >
-        {message.content}
+        <LinkedText text={message.content} />
       </p>
-      {hasSources && (
-        <p
-          className={`${styles.sourcesGap} text-[10px] tracking-[0.2em] uppercase text-[var(--color-kindra-meta-low)]`}
-          style={{ fontFamily: 'var(--font-body)' }}
-        >
-          <span className="text-[var(--color-kindra-rule-strong)]">//</span>{' '}
-          grounded on &middot; {message.sources!.join(' · ')}
-        </p>
-      )}
-      {hasSuggested && (
-        <div className={`${styles.suggestedGap} flex flex-wrap gap-2`}>
-          {message.suggestedButtons!.map((b: SuggestedButton, i) => (
-            <button
-              key={`${b.text}-${i}`}
-              type="button"
-              data-cursor="link"
-              onClick={() => onSuggestedClick(b.text)}
-              disabled={disabled}
-              className={`${styles.chip} rounded-full border border-[var(--color-kindra-rule)] text-[11px] tracking-[0.02em] text-[var(--color-kindra-meta-mid)] transition-all duration-300 hover:border-[var(--color-kindra-yellow)] hover:text-white disabled:opacity-40`}
-              style={{ fontFamily: 'var(--font-body)' }}
-            >
-              {b.text}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -176,8 +169,11 @@ function LoadingBubble() {
    ──────────────────────────────────────────────────────────────────── */
 
 export default function JarvisChat() {
-  const { open, setOpen } = useJarvis()
-  const { messages, loading, send } = useJarvisChat()
+  // `available` comes from GET /api/ask: the public edition (published notes
+  // only, no connection to the private Jarvis) is switched on server-side.
+  // While it is off, the panel stays an explainer with contact/case links.
+  const { open, setOpen, available } = useJarvis()
+  const { messages, loading, send } = useJarvisChat(available)
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -203,12 +199,14 @@ export default function JarvisChat() {
   useEffect(() => {
     if (!open) return
     const previousFocus = document.activeElement as HTMLElement | null
-    const frame = window.requestAnimationFrame(() => closeRef.current?.focus())
+    const frame = window.requestAnimationFrame(() =>
+      available ? textareaRef.current?.focus() : closeRef.current?.focus(),
+    )
     return () => {
       window.cancelAnimationFrame(frame)
       previousFocus?.focus()
     }
-  }, [open])
+  }, [open, available])
 
   useEffect(() => {
     if (!open) return
@@ -235,11 +233,11 @@ export default function JarvisChat() {
   const submit = useCallback(
     (text: string) => {
       const trimmed = text.trim()
-      if (!VISITOR_CHAT_AVAILABLE || !trimmed || loading) return
+      if (!available || !trimmed || loading) return
       setInput('')
       void send(trimmed)
     },
-    [send, loading],
+    [send, loading, available],
   )
 
   const handleSubmit = (e: FormEvent) => {
@@ -256,12 +254,13 @@ export default function JarvisChat() {
 
   const showSuggestions = useMemo(() => {
     return (
-      SUGGESTIONS.length > 0 &&
+      available &&
+      PUBLIC_SUGGESTIONS.length > 0 &&
       messages.length === 1 &&
       messages[0].role === 'assistant' &&
-      messages[0].content === JARVIS_INTRO
+      messages[0].local === true
     )
-  }, [messages])
+  }, [messages, available])
 
   const hasInput = input.trim().length > 0
 
@@ -306,7 +305,7 @@ export default function JarvisChat() {
             role="dialog"
             ref={panelRef}
             id="jarvis-panel"
-            aria-label="About Jarvis, private assistant"
+            aria-label={available ? 'Ask Jarvis, public edition' : 'About Jarvis, private assistant'}
             aria-modal="true"
             initial={panelInitial}
             animate={panelAnimate}
@@ -330,9 +329,13 @@ export default function JarvisChat() {
                   >
                     <span
                       className="relative inline-flex h-[5px] w-[5px] rounded-full"
-                      style={{ background: 'var(--color-kindra-meta-low)' }}
+                      style={{
+                        background: available
+                          ? 'var(--color-kindra-yellow)'
+                          : 'var(--color-kindra-meta-low)',
+                      }}
                     />
-                    private assistant · offline
+                    {available ? 'public edition · published notes' : 'private assistant · offline'}
                   </p>
                 </div>
                 <button
@@ -362,8 +365,6 @@ export default function JarvisChat() {
                 <MessageBubble
                   key={i}
                   message={m}
-                  onSuggestedClick={submit}
-                  disabled={loading}
                   isFirst={i === 0}
                 />
               ))}
@@ -379,7 +380,7 @@ export default function JarvisChat() {
                     try asking
                   </p>
                   <div className="flex flex-col gap-3">
-                    {SUGGESTIONS.map((s) => (
+                    {PUBLIC_SUGGESTIONS.map((s) => (
                       <button
                         key={s}
                         type="button"
@@ -406,7 +407,7 @@ export default function JarvisChat() {
                 aria-hidden
                 className={`${styles.inputDivider} h-px w-full bg-[var(--color-kindra-rule)]`}
               />
-              {VISITOR_CHAT_AVAILABLE ? (
+              {available ? (
               <form onSubmit={handleSubmit}>
                 <div className="flex items-start gap-4">
                   <span
@@ -422,9 +423,10 @@ export default function JarvisChat() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     rows={1}
-                    disabled={loading}
-                    placeholder="ask anything..."
-                    className="flex-1 resize-none bg-transparent text-[15px] leading-[26px] text-white outline-none placeholder:text-[var(--color-kindra-meta-low)] disabled:opacity-40"
+                    readOnly={loading}
+                    maxLength={800}
+                    placeholder="ask about Matheus's work..."
+                    className={`flex-1 resize-none bg-transparent text-[15px] leading-[26px] text-white outline-none placeholder:text-[var(--color-kindra-meta-low)] ${loading ? 'opacity-40' : ''}`}
                     style={{ fontFamily: 'var(--font-body)' }}
                   />
                   <button
@@ -453,8 +455,8 @@ export default function JarvisChat() {
                 className={`${styles.helperGap} text-[9px] uppercase tracking-[0.3em] text-[var(--color-kindra-meta-mid)]`}
                 style={{ fontFamily: 'var(--font-body)' }}
               >
-                {VISITOR_CHAT_AVAILABLE
-                  ? 'esc to close · enter to send · shift+enter for new line'
+                {available
+                  ? 'public edition · published notes only · enter to send · esc to close'
                   : 'private system · no public chat · esc to close'}
               </p>
             </div>
